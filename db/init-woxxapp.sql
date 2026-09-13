@@ -1,6 +1,8 @@
-CREATE USER woxxapp WITH PASSWORD 'CHANGE_ME_WOXXAPP_PASSWORD';
+CREATE USER woxxapp WITH PASSWORD 'WoxxAppPasswordChangeMe2026!';
 CREATE DATABASE woxxapp OWNER woxxapp;
 \c woxxapp
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TYPE tenant_status AS ENUM ('pending', 'active', 'suspended');
 CREATE TYPE billing_cycle AS ENUM ('monthly', 'yearly');
