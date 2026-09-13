@@ -1,0 +1,1 @@
+export const ModuleCard = () => <div>Module</div>;
