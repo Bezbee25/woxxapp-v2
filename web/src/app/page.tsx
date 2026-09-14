@@ -158,39 +158,39 @@ export default function LandingPage() {
             </div>
           </a>
 
-          {/* LIENS DE NAVIGATION CENTRAUX TRÈS CONTRASTÉS */}
-          <div className="hidden lg:flex items-center gap-2 text-sm font-black text-slate-900">
+          {/* BOUTONS D'ONGLETS DU MENU (TRÈS VISIBLES & CLIQUABLES) */}
+          <div className="hidden lg:flex items-center gap-2.5 text-xs font-black">
             <a 
               href="#showroom" 
-              className="px-3.5 py-2 rounded-xl border border-transparent hover:border-slate-900 hover:bg-slate-100 transition flex items-center gap-2 text-slate-950"
+              className="bg-white hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-2"
             >
-              <span>Showroom Démo</span>
-              <span className="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-md font-black shadow-xs">Live</span>
+              <span>🎬 Showroom</span>
+              <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.2 rounded font-black">Live</span>
             </a>
             <a 
               href="#tarifs" 
-              className="px-3.5 py-2 rounded-xl border border-transparent hover:border-slate-900 hover:bg-slate-100 transition text-slate-950"
+              className="bg-white hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5"
             >
-              Grille Tarifaire
+              <span>🏷️ Grille Tarifaire</span>
             </a>
             <a 
               href="#elise-moi" 
-              className="px-3.5 py-2 rounded-xl border border-transparent hover:border-slate-900 hover:bg-rose-50 transition flex items-center gap-2 text-slate-950"
+              className="bg-white hover:bg-rose-100 text-slate-950 px-3.5 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5"
             >
-              <span>Élise & Moi</span>
-              <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-md font-black shadow-xs">Accompagnement</span>
+              <span>🤝 Élise & Moi</span>
+              <span className="bg-rose-500 text-white text-[10px] px-1.5 py-0.2 rounded font-black">Aide</span>
             </a>
             <a 
               href="#etapes" 
-              className="px-3.5 py-2 rounded-xl border border-transparent hover:border-slate-900 hover:bg-slate-100 transition text-slate-950"
+              className="bg-white hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5"
             >
-              4 Étapes
+              <span>⚡ 4 Étapes</span>
             </a>
             <a 
               href="#faq" 
-              className="px-3.5 py-2 rounded-xl border border-transparent hover:border-slate-900 hover:bg-slate-100 transition text-slate-950"
+              className="bg-white hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5"
             >
-              FAQ
+              <span>❓ FAQ</span>
             </a>
           </div>
 
@@ -198,13 +198,13 @@ export default function LandingPage() {
           <div className="flex items-center gap-3">
             <a 
               href="/login" 
-              className="hidden sm:inline-flex items-center text-sm font-black text-slate-900 hover:text-blue-600 px-4 py-2.5 rounded-xl border-2 border-slate-300 hover:border-slate-900 bg-white transition shadow-xs"
+              className="hidden sm:inline-flex items-center text-xs font-black text-slate-900 hover:text-blue-600 px-4 py-2.5 rounded-xl border-2 border-slate-900 bg-white hover:bg-slate-100 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all"
             >
               Espace Client
             </a>
             <a 
               href="#tarifs" 
-              className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-black px-5 py-2.5 rounded-xl border-2 border-slate-900 shadow-brutal-sm hover:shadow-brutal hover:-translate-x-0.5 hover:-translate-y-0.5 transition active:translate-x-0 active:translate-y-0"
+              className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black px-5 py-2.5 rounded-xl border-2 border-slate-900 shadow-brutal hover:shadow-brutal-lg hover:-translate-x-0.5 hover:-translate-y-0.5 transition active:translate-x-0 active:translate-y-0"
             >
               Créer ma boutique →
             </a>
