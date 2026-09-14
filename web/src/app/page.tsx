@@ -173,10 +173,10 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ── 2. HERO SECTION PLEINE LARGEUR (AMBRE & OR) ───────────── */}
+      {/* ── 2. HERO SECTION PLEINE LARGEUR (VIDÉO WEBM ANIMÉE & AMBRE) ── */}
       <section className="relative w-full py-20 sm:py-28 border-b-2 border-slate-900 overflow-hidden">
         <SectionMediaBackground 
-          src="/images/hero-bg.webp" 
+          src="/images/hero-bg.webm" 
           alt="Commerçant artisan et technologie moderne"
           gradient="from-amber-50/75 via-white/50 to-[#FFFDF9]/90" 
         />
@@ -242,7 +242,7 @@ export default function LandingPage() {
       {/* ── 3. SHOWROOM (ZOREA EN SITE RÉFÉRENCE + DEMO PIZZA & MODE) ── */}
       <section id="showroom" className="relative py-24 border-y-2 border-slate-900 overflow-hidden">
         <SectionMediaBackground 
-          src="/images/showroom-bg.webp" 
+          src="/images/showroom-bg.webm" 
           alt="Showroom de boutiques et commerces"
           gradient="from-slate-100/90 via-white/70 to-slate-100/90" 
         />
@@ -521,10 +521,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 4. SECTION ÉLISE & MOI (AVEC SA PROPRE IMAGE EN ARRIÈRE-PLAN) ── */}
+      {/* ── 4. SECTION ÉLISE & MOI (VIDÉO WEBM ANIMÉE & AMBIANCE ROSE) ── */}
       <section id="elise-moi" className="relative py-24 border-b-2 border-slate-900 overflow-hidden">
         <SectionMediaBackground 
-          src="/images/elise-card.webp" 
+          src="/images/three_woman.webm" 
           alt="Studio et accompagnement d'affaires Élise & Moi"
           gradient="from-rose-50/85 via-white/60 to-amber-50/80" 
         />
@@ -594,10 +594,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 5. SIMULATEUR DE TARIFS ATLASSIAN (VERT ÉMERAUDE & COMMERCE) ───── */}
+      {/* ── 5. SIMULATEUR DE TARIFS ATLASSIAN (VIDÉO WEBM ANIMÉE & ÉMERAUDE) ── */}
       <section id="tarifs" className="relative py-24 border-b-2 border-slate-900 overflow-hidden">
         <SectionMediaBackground 
-          src="/images/pricing-bg.webp" 
+          src="/images/pricing.webm" 
           alt="Boutique et commerce soigné"
           gradient="from-emerald-50/85 via-white/55 to-[#FFFDF9]/90" 
         />
@@ -815,10 +815,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 6. DÉMARRAGE EN 4 ÉTAPES (BLEU COBALT & WORKFLOW) ──────── */}
+      {/* ── 6. DÉMARRAGE EN 4 ÉTAPES (VIDÉO WEBM ANIMÉE & BLEU COBALT) ── */}
       <section id="etapes" className="relative py-24 border-b-2 border-slate-900 overflow-hidden">
         <SectionMediaBackground 
-          src="/images/steps-bg.webp" 
+          src="/images/steps-bg.webm" 
           alt="Créateur artisan travaillant sur son ordinateur"
           gradient="from-blue-50/85 via-white/50 to-slate-50/90" 
         />
@@ -861,23 +861,17 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 7. FAQ ACCORDÉON (ARDOISE & AMBRE CLAIR) ────────────────── */}
-      <section id="faq" className="relative py-24 border-b-2 border-slate-900 overflow-hidden">
-        <SectionMediaBackground 
-          src="/images/faq-bg.webp" 
-          alt="Atelier et détails d'artisanat soigné"
-          gradient="from-slate-100/90 via-white/60 to-[#FFFDF9]/95" 
-        />
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="text-xs font-black tracking-widest text-slate-700 uppercase bg-slate-200 px-3 py-1 rounded-full border border-slate-400 inline-block mb-3">
-              Assistance & Réponses
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-4">
-              Questions Fréquentes
-            </h2>
-            <p className="text-slate-700 font-medium">Tout ce que vous devez savoir en toute transparence.</p>
-          </div>
+      {/* ── 7. FAQ ACCORDÉON (FOND CLAIR ET ÉPURÉ) ──────────────────── */}
+      <section id="faq" className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <span className="text-xs font-black tracking-widest text-slate-700 uppercase bg-slate-200 px-3 py-1 rounded-full border border-slate-400 inline-block mb-3">
+            Assistance & Réponses
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-4">
+            Questions Fréquentes
+          </h2>
+          <p className="text-slate-700 font-medium">Tout ce que vous devez savoir en toute transparence.</p>
+        </div>
 
           <div className="space-y-4">
             {faqs.map((faq, i) => (
@@ -897,7 +891,6 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
-        </div>
       </section>
 
       {/* ── 8. FOOTER ────────────────────────────────────────────── */}
