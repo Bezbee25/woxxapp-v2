@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Check, 
   Store, 
@@ -9,6 +9,7 @@ import {
   Zap, 
   Layers, 
   ArrowRight, 
+  ArrowUp,
   Sparkles,
   Truck,
   CreditCard,
@@ -75,6 +76,20 @@ export default function LandingPage() {
   const [isAnnual, setIsAnnual] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [selectedDemoTab, setSelectedDemoTab] = useState<"zorea" | "pizza" | "mode">("zorea");
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // Gestion de la visibilité du bouton de retour en haut
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // Options du simulateur de prix interactif
   const [optEcommerce, setOptEcommerce] = useState(true);
@@ -120,46 +135,70 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFDF9] text-slate-900 font-sans antialiased selection:bg-amber-300 selection:text-slate-900">
+    <div className="min-h-screen bg-[#FFFDF9] text-slate-900 font-sans antialiased selection:bg-amber-300 selection:text-slate-900 relative">
       {/* ── BANDEAU D'ANNONCE TOP ─────────────────────────────────── */}
-      <div className="bg-slate-900 text-white text-xs font-medium py-2.5 px-4 text-center border-b border-slate-800 flex items-center justify-center gap-2">
-        <span className="bg-amber-400 text-slate-950 text-[10px] font-black uppercase px-2 py-0.5 rounded shadow-sm">Nouveau</span>
-        <span>Infrastructure Kubernetes 2026 : Déploiement instantané de votre boutique en moins de 15 secondes.</span>
+      <div className="bg-slate-900 text-white text-xs font-semibold py-2.5 px-4 text-center border-b-2 border-slate-900 flex items-center justify-center gap-2 shadow-inner">
+        <span className="bg-amber-400 text-slate-950 text-[11px] font-black uppercase px-2.5 py-0.5 rounded border border-slate-900 shadow-sm">Nouveau</span>
+        <span className="font-bold">Infrastructure Kubernetes 2026 : Déploiement instantané de votre boutique en moins de 15 secondes.</span>
       </div>
 
-      {/* ── 1. NAVBAR ────────────────────────────────────────────── */}
-      <nav className="sticky top-0 z-50 bg-[#FFFDF9]/90 backdrop-blur-md border-b-2 border-slate-900">
+      {/* ── 1. NAVBAR CLAIRE, NETTE ET TRÈS LISIBLE ────────────────── */}
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b-2 border-slate-900 shadow-brutal-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-amber-400 border-2 border-slate-900 shadow-brutal-sm flex items-center justify-center font-black text-xl">
+          {/* LOGO */}
+          <a href="#" className="flex items-center gap-3 group">
+            <div className="w-12 h-12 rounded-2xl bg-amber-400 border-2 border-slate-900 shadow-brutal-sm flex items-center justify-center font-black text-2xl group-hover:scale-105 transition-transform">
               🏪
             </div>
             <div>
               <span className="font-black text-2xl tracking-tight text-slate-900 block leading-none">
                 WOXX<span className="text-blue-600">APP</span>
               </span>
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Plateforme Commerçants</span>
+              <span className="text-[10px] font-black text-slate-600 uppercase tracking-wider">Plateforme Commerçants</span>
             </div>
-          </div>
+          </a>
 
-          <div className="hidden lg:flex items-center gap-8 text-sm font-bold text-slate-700">
-            <a href="#showroom" className="hover:text-blue-600 transition flex items-center gap-1.5">
+          {/* LIENS DE NAVIGATION CENTRAUX TRÈS CONTRASTÉS */}
+          <div className="hidden lg:flex items-center gap-2 text-sm font-black text-slate-900">
+            <a 
+              href="#showroom" 
+              className="px-3.5 py-2 rounded-xl border border-transparent hover:border-slate-900 hover:bg-slate-100 transition flex items-center gap-2 text-slate-950"
+            >
               <span>Showroom Démo</span>
-              <span className="bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded font-bold">Live</span>
+              <span className="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-md font-black shadow-xs">Live</span>
             </a>
-            <a href="#tarifs" className="hover:text-blue-600 transition">Grille Tarifaire</a>
-            <a href="#elise-moi" className="hover:text-blue-600 transition flex items-center gap-1.5">
+            <a 
+              href="#tarifs" 
+              className="px-3.5 py-2 rounded-xl border border-transparent hover:border-slate-900 hover:bg-slate-100 transition text-slate-950"
+            >
+              Grille Tarifaire
+            </a>
+            <a 
+              href="#elise-moi" 
+              className="px-3.5 py-2 rounded-xl border border-transparent hover:border-slate-900 hover:bg-rose-50 transition flex items-center gap-2 text-slate-950"
+            >
               <span>Élise & Moi</span>
-              <span className="bg-rose-100 text-rose-700 text-[10px] px-1.5 py-0.5 rounded font-bold">Accompagnement</span>
+              <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-md font-black shadow-xs">Accompagnement</span>
             </a>
-            <a href="#etapes" className="hover:text-blue-600 transition">Démarrage en 4 étapes</a>
-            <a href="#faq" className="hover:text-blue-600 transition">FAQ</a>
+            <a 
+              href="#etapes" 
+              className="px-3.5 py-2 rounded-xl border border-transparent hover:border-slate-900 hover:bg-slate-100 transition text-slate-950"
+            >
+              4 Étapes
+            </a>
+            <a 
+              href="#faq" 
+              className="px-3.5 py-2 rounded-xl border border-transparent hover:border-slate-900 hover:bg-slate-100 transition text-slate-950"
+            >
+              FAQ
+            </a>
           </div>
 
+          {/* ACTIONS NAVBAR */}
           <div className="flex items-center gap-3">
             <a 
               href="/login" 
-              className="hidden sm:inline-block text-sm font-bold text-slate-800 hover:text-blue-600 px-4 py-2.5 rounded-xl transition"
+              className="hidden sm:inline-flex items-center text-sm font-black text-slate-900 hover:text-blue-600 px-4 py-2.5 rounded-xl border-2 border-slate-300 hover:border-slate-900 bg-white transition shadow-xs"
             >
               Espace Client
             </a>
@@ -750,45 +789,42 @@ export default function LandingPage() {
               </button>
             </div>
 
-            {/* CARTE 4 : RESTAURATION EXPRESS */}
-            <div 
-              onClick={() => setOptFoodDelivery(!optFoodDelivery)}
-              className={`border-2 border-slate-900 rounded-2xl p-6 transition cursor-pointer flex flex-col justify-between ${optFoodDelivery ? 'bg-rose-50/80 shadow-brutal' : 'bg-white shadow-brutal-sm opacity-85 hover:opacity-100'}`}
-            >
+            {/* CARTE 4 : RESTAURATION EXPRESS (EN COURS DE DEV) */}
+            <div className="bg-slate-100/90 border-2 border-slate-900 rounded-2xl p-6 shadow-brutal-sm flex flex-col justify-between opacity-85 relative">
+              <div className="absolute -top-3 right-6 bg-amber-400 text-slate-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded border border-slate-900 shadow-xs">
+                En cours de dev
+              </div>
+
               <div>
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-3 mt-1">
                   <div className="flex items-center gap-2">
-                    <UtensilsCrossed className="w-6 h-6 text-rose-600" />
-                    <h3 className="text-lg font-black">Restauration Express</h3>
+                    <UtensilsCrossed className="w-6 h-6 text-amber-600" />
+                    <h3 className="text-lg font-black text-slate-900">Restauration Express</h3>
                   </div>
-                  <input 
-                    type="checkbox" 
-                    checked={optFoodDelivery} 
-                    onChange={() => {}} 
-                    className="w-5 h-5 rounded border-2 border-slate-900 text-rose-600 focus:ring-0" 
-                  />
+                  <span className="text-xs font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">
+                    Bientôt
+                  </span>
                 </div>
-                <p className="text-xs text-slate-500 font-medium mb-6">Pour snacks, pizzerias et restaurants avec livraison directe.</p>
+                <p className="text-xs text-slate-600 font-medium mb-6">Pour snacks, pizzerias et restaurants avec livraison directe et tickets cuisine.</p>
 
-                <div className="mb-6 pb-6 border-b border-slate-200/60">
+                <div className="mb-6 pb-6 border-b border-slate-300/80">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-black text-slate-900">+{isAnnual ? "300 €" : "30 €"}</span>
-                    <span className="text-xs font-bold text-slate-500">{isAnnual ? "/ an" : "/ mois"}</span>
+                    <span className="text-2xl font-black text-slate-800">Bientôt disponible</span>
                   </div>
-                  <p className="text-[11px] text-rose-700 font-bold mt-1">Idéal métiers de bouche</p>
+                  <p className="text-[11px] text-slate-500 font-bold mt-1">Intégration Deliveroo & UberEats</p>
                 </div>
 
-                <ul className="space-y-3 text-xs font-medium text-slate-600 mb-6">
-                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rose-600 shrink-0" /> Passerelle UberEats / Deliveroo</li>
-                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rose-600 shrink-0" /> Impression des tickets en cuisine</li>
-                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rose-600 shrink-0" /> Gestion des temps de préparation</li>
-                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rose-600 shrink-0" /> Alertes sonores nouvelle commande</li>
+                <ul className="space-y-3 text-xs font-medium text-slate-500 mb-6">
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-slate-400 shrink-0" /> Passerelle UberEats / Deliveroo</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-slate-400 shrink-0" /> Impression des tickets en cuisine</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-slate-400 shrink-0" /> Gestion des temps de préparation</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-slate-400 shrink-0" /> Alertes sonores nouvelle commande</li>
                 </ul>
               </div>
 
-              <button className={`w-full py-2.5 text-xs font-black rounded-xl border-2 border-slate-900 transition ${optFoodDelivery ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
-                {optFoodDelivery ? "✓ Module Ajouté" : "+ Ajouter cette option"}
-              </button>
+              <div className="w-full py-2.5 text-xs font-black rounded-xl border-2 border-slate-400 bg-slate-200 text-slate-600 text-center cursor-not-allowed">
+                🚀 En cours de développement
+              </div>
             </div>
           </div>
 
@@ -940,6 +976,17 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* ── 9. BOUTON FLOTTANT DE RETOUR EN HAUT ──────────────────── */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          aria-label="Remonter en haut de la page"
+          className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 border-2 border-slate-900 shadow-brutal hover:shadow-brutal-lg hover:-translate-y-1 transition-all active:translate-y-0 flex items-center justify-center cursor-pointer group"
+        >
+          <ArrowUp className="w-6 h-6 stroke-[3] group-hover:-translate-y-0.5 transition-transform" />
+        </button>
+      )}
     </div>
   );
 }
