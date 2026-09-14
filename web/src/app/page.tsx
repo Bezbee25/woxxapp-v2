@@ -33,6 +33,44 @@ import {
   Lock
 } from "lucide-react";
 
+// Composant d'arrière-plan universel pour les sections (Image WebP ou Vidéo WebM animée en boucle)
+function SectionMediaBackground({
+  src,
+  alt = "Arrière-plan WoxxApp",
+  gradient = "from-white/60 via-white/40 to-[#FFFDF9]/90",
+  videoSrc
+}: {
+  src: string;
+  alt?: string;
+  gradient?: string;
+  videoSrc?: string;
+}) {
+  const mediaUrl = videoSrc || src;
+  const isVideo = mediaUrl.endsWith(".webm") || mediaUrl.endsWith(".mp4");
+
+  return (
+    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      {isVideo ? (
+        <video 
+          src={mediaUrl} 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          className="w-full h-full object-cover object-center"
+        />
+      ) : (
+        <img 
+          src={src} 
+          alt={alt} 
+          className="w-full h-full object-cover object-center"
+        />
+      )}
+      <div className={`absolute inset-0 bg-gradient-to-b ${gradient} backdrop-blur-[0.5px]`}></div>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const [isAnnual, setIsAnnual] = useState(true);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -135,18 +173,13 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ── 2. HERO SECTION PLEINE LARGEUR (IMAGE EN BACKGROUND NETTE ET CLAIRE) ── */}
-      <section className="relative w-full py-20 sm:py-28 border-b-2 border-slate-900 overflow-hidden bg-slate-100">
-        {/* Image de fond pleine largeur : commerçant et numérique en boutique lumineuse */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1556740758-90de374c12ad?w=2400&auto=format&fit=crop&q=80" 
-            alt="Commerçant artisan et technologie moderne" 
-            className="w-full h-full object-cover object-center"
-          />
-          {/* Léger voile translucide clair pour faire ressortir l'image tout en garantissant un contraste parfait */}
-          <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-[#FFFDF9]/90 backdrop-blur-[1px]"></div>
-        </div>
+      {/* ── 2. HERO SECTION PLEINE LARGEUR (AMBRE & OR) ───────────── */}
+      <section className="relative w-full py-20 sm:py-28 border-b-2 border-slate-900 overflow-hidden">
+        <SectionMediaBackground 
+          src="/images/hero-bg.webp" 
+          alt="Commerçant artisan et technologie moderne"
+          gradient="from-amber-50/75 via-white/50 to-[#FFFDF9]/90" 
+        />
 
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 backdrop-blur-md border-2 border-slate-900 shadow-brutal-sm text-slate-950 text-xs font-black mb-8">
@@ -483,10 +516,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 4. SECTION ÉLISE & MOI (AVEC LOGO OFFICIEL D'ÉLISE) ────── */}
-      <section id="elise-moi" className="py-20 bg-amber-50/70 border-b-2 border-slate-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white border-2 border-slate-900 rounded-3xl p-8 sm:p-12 shadow-brutal-lg relative overflow-hidden">
+      {/* ── 4. SECTION ÉLISE & MOI (AVEC LOGO OFFICIEL D'ÉLISE & FOND ROSE CHALEUREUX) ── */}
+      <section id="elise-moi" className="relative py-24 border-b-2 border-slate-900 overflow-hidden">
+        <SectionMediaBackground 
+          src="/images/elise-bg.webp" 
+          alt="Studio et accompagnement d'affaires"
+          gradient="from-rose-50/85 via-white/55 to-amber-50/85" 
+        />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white/95 backdrop-blur-md border-2 border-slate-900 rounded-3xl p-8 sm:p-12 shadow-brutal-lg relative overflow-hidden">
             <div className="relative z-10 grid lg:grid-cols-12 gap-8 items-center">
               <div className="lg:col-span-8 space-y-5">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-100 border border-rose-300 text-rose-800 text-xs font-black">
@@ -499,7 +537,7 @@ export default function LandingPage() {
                   <span className="text-rose-600">Élise & Moi s'occupe de tout pour vous.</span>
                 </h3>
 
-                <p className="text-slate-600 text-base leading-relaxed">
+                <p className="text-slate-600 text-base leading-relaxed font-medium">
                   Confiez la mise en place de votre boutique à notre chargée d'affaires et Office Manager partenaire <strong className="text-slate-900 font-bold">Élise & Moi</strong> (<a href="https://elise-et-moi.fr/" target="_blank" rel="noopener noreferrer" className="underline font-bold text-rose-600 hover:text-rose-700">elise-et-moi.fr</a>). Une assistance humaine sur mesure, sur simple devis.
                 </p>
 
@@ -523,16 +561,13 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* CARTE PARTENAIRE AVEC LOGO & PHOTO RÉELLE D'ÉLISE & MOI */}
+              {/* CARTE PARTENAIRE AVEC MINIATURE DU HAUT DU SITE D'ÉLISE & MOI */}
               <div className="lg:col-span-4 bg-slate-50 border-2 border-slate-900 rounded-2xl p-6 text-center space-y-4 shadow-brutal-sm">
-                <div className="w-24 h-24 rounded-2xl bg-white border-2 border-slate-900 mx-auto p-2 shadow-brutal-xs flex items-center justify-center overflow-hidden">
+                <div className="w-full aspect-[16/9] rounded-xl bg-white border-2 border-slate-900 mx-auto shadow-brutal-xs overflow-hidden">
                   <img 
-                    src="https://elise-et-moi.fr/assets/penpot/hero-logo.webp" 
-                    alt="Logo Élise & Moi" 
-                    className="w-full h-full object-contain"
-                    onError={(e) => {
-                      e.currentTarget.src = "https://elise-et-moi.fr/favicon.svg";
-                    }}
+                    src="/images/elise-card.webp" 
+                    alt="Bannière Élise & Moi" 
+                    className="w-full h-full object-cover hover:scale-105 transition duration-300"
                   />
                 </div>
                 <div>
@@ -554,284 +589,309 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 5. SIMULATEUR DE TARIFS ATLASSIAN (ENGAGEMENT 1 AN) ───── */}
-      <section id="tarifs" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="text-xs font-black tracking-widest text-emerald-700 uppercase bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block mb-3">
-            Tarification Atlassian Modulaire
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight mb-4">
-            Payez uniquement ce dont vous avez besoin.
-          </h2>
-          <p className="text-slate-600 text-base sm:text-lg">
-            Un socle indispensable à tarif mini avec engagement 1 an, complété par les modules de votre choix activables à tout moment.
-          </p>
-
-          {/* Toggle Switch Annuel / Mensuel */}
-          <div className="mt-8 inline-flex items-center gap-3 bg-white p-2 rounded-2xl border-2 border-slate-900 shadow-brutal-sm">
-            <button 
-              onClick={() => setIsAnnual(false)}
-              className={`px-5 py-2.5 rounded-xl text-sm font-black transition ${!isAnnual ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-            >
-              Facturation Mensuelle (15 €/mois)
-            </button>
-            <button 
-              onClick={() => setIsAnnual(true)}
-              className={`px-5 py-2.5 rounded-xl text-sm font-black transition flex items-center gap-2 ${isAnnual ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
-            >
-              <span>Facturation Annuelle (150 €/an)</span>
-              <span className="bg-emerald-400 text-slate-950 text-xs font-extrabold px-2 py-0.5 rounded-md">-17%</span>
-            </button>
-          </div>
-        </div>
-
-        {/* GRILLE DES MODULES */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch mb-12">
-          {/* CARTE 1 : SOCLE VITRINE */}
-          <div className="bg-white border-2 border-slate-900 rounded-2xl p-6 shadow-brutal flex flex-col justify-between relative">
-            <div className="absolute -top-3 left-6 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded border border-slate-900">
-              Socle Inclus d'Office
-            </div>
-
-            <div>
-              <div className="flex items-center gap-2 mt-2 mb-3">
-                <Store className="w-6 h-6 text-emerald-600" />
-                <h3 className="text-lg font-black">Site Vitrine & Retrait</h3>
-              </div>
-              <p className="text-xs text-slate-500 font-medium mb-6">Pour présenter vos activités et recevoir vos commandes.</p>
-
-              <div className="mb-6 pb-6 border-b border-slate-100">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-black text-slate-900">{isAnnual ? "150 €" : "15 €"}</span>
-                  <span className="text-xs font-bold text-slate-500">{isAnnual ? "/ an" : "/ mois"}</span>
-                </div>
-                <p className="text-[11px] text-amber-700 font-bold mt-1">Engagement 1 an</p>
-              </div>
-
-              <ul className="space-y-3 text-xs font-medium text-slate-600 mb-6">
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Site responsive mobile & PC</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Horaires, adresse et informations d'accès</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Click & Collect sans paiement</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Sous-domaine *.woxxapp.de</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Hébergement cloud K8s & SSL</li>
-              </ul>
-            </div>
-
-            <div className="bg-emerald-50 text-emerald-900 text-xs font-bold py-2.5 px-3 rounded-xl text-center border border-emerald-200">
-              ✓ Inclus dans toute commande
-            </div>
-          </div>
-
-          {/* CARTE 2 : VENTE DE PRODUITS + STRIPE */}
-          <div 
-            onClick={() => setOptEcommerce(!optEcommerce)}
-            className={`border-2 border-slate-900 rounded-2xl p-6 transition cursor-pointer flex flex-col justify-between ${optEcommerce ? 'bg-blue-50/50 shadow-brutal' : 'bg-white shadow-brutal-sm opacity-80 hover:opacity-100'}`}
-          >
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <ShoppingBag className="w-6 h-6 text-blue-600" />
-                  <h3 className="text-lg font-black">Vente de Produits</h3>
-                </div>
-                <input 
-                  type="checkbox" 
-                  checked={optEcommerce} 
-                  onChange={() => {}} 
-                  className="w-5 h-5 rounded border-2 border-slate-900 text-blue-600 focus:ring-0" 
-                />
-              </div>
-              <p className="text-xs text-slate-500 font-medium mb-6">Catalogue en ligne avec encaissement direct par carte.</p>
-
-              <div className="mb-6 pb-6 border-b border-slate-200/60">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-black text-slate-900">+{isAnnual ? "300 €" : "30 €"}</span>
-                  <span className="text-xs font-bold text-slate-500">{isAnnual ? "/ an" : "/ mois"}</span>
-                </div>
-                <p className="text-[11px] text-blue-700 font-bold mt-1">+ 2% par transaction Stripe</p>
-              </div>
-
-              <ul className="space-y-3 text-xs font-medium text-slate-600 mb-6">
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-600 shrink-0" /> Catalogue & fiches produits illimitées</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-600 shrink-0" /> Gestion des stocks & variantes</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-600 shrink-0" /> Paiement CB, Apple Pay & Google Pay</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-600 shrink-0" /> WoxxPay / Stripe Connect sécurisé</li>
-              </ul>
-            </div>
-
-            <button className={`w-full py-2.5 text-xs font-black rounded-xl border-2 border-slate-900 transition ${optEcommerce ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
-              {optEcommerce ? "✓ Module Ajouté" : "+ Ajouter cette option"}
-            </button>
-          </div>
-
-          {/* CARTE 3 : TRANSPORT & EXPÉDITION */}
-          <div 
-            onClick={() => setOptShipping(!optShipping)}
-            className={`border-2 border-slate-900 rounded-2xl p-6 transition cursor-pointer flex flex-col justify-between ${optShipping ? 'bg-indigo-50/50 shadow-brutal' : 'bg-white shadow-brutal-sm opacity-80 hover:opacity-100'}`}
-          >
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Truck className="w-6 h-6 text-indigo-600" />
-                  <h3 className="text-lg font-black">Transport & Envoi</h3>
-                </div>
-                <input 
-                  type="checkbox" 
-                  checked={optShipping} 
-                  onChange={() => {}} 
-                  className="w-5 h-5 rounded border-2 border-slate-900 text-indigo-600 focus:ring-0" 
-                />
-              </div>
-              <p className="text-xs text-slate-500 font-medium mb-6">Expédiez partout en France et en Europe en quelques clics.</p>
-
-              <div className="mb-6 pb-6 border-b border-slate-200/60">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-black text-slate-900">+{isAnnual ? "300 €" : "30 €"}</span>
-                  <span className="text-xs font-bold text-slate-500">{isAnnual ? "/ an" : "/ mois"}</span>
-                </div>
-                <p className="text-[11px] text-indigo-700 font-bold mt-1">Nécessite le module Vente</p>
-              </div>
-
-              <ul className="space-y-3 text-xs font-medium text-slate-600 mb-6">
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-indigo-600 shrink-0" /> SendCloud / WoxxShip intégré</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-indigo-600 shrink-0" /> Colissimo, Mondial Relay, Chronopost</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-indigo-600 shrink-0" /> Calcul automatique des frais de port</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-indigo-600 shrink-0" /> Impression des étiquettes en 1 clic</li>
-              </ul>
-            </div>
-
-            <button className={`w-full py-2.5 text-xs font-black rounded-xl border-2 border-slate-900 transition ${optShipping ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
-              {optShipping ? "✓ Module Ajouté" : "+ Ajouter cette option"}
-            </button>
-          </div>
-
-          {/* CARTE 4 : RESTAURATION EXPRESS */}
-          <div 
-            onClick={() => setOptFoodDelivery(!optFoodDelivery)}
-            className={`border-2 border-slate-900 rounded-2xl p-6 transition cursor-pointer flex flex-col justify-between ${optFoodDelivery ? 'bg-rose-50/50 shadow-brutal' : 'bg-white shadow-brutal-sm opacity-80 hover:opacity-100'}`}
-          >
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <UtensilsCrossed className="w-6 h-6 text-rose-600" />
-                  <h3 className="text-lg font-black">Restauration Express</h3>
-                </div>
-                <input 
-                  type="checkbox" 
-                  checked={optFoodDelivery} 
-                  onChange={() => {}} 
-                  className="w-5 h-5 rounded border-2 border-slate-900 text-rose-600 focus:ring-0" 
-                />
-              </div>
-              <p className="text-xs text-slate-500 font-medium mb-6">Pour snacks, pizzerias et restaurants avec livraison directe.</p>
-
-              <div className="mb-6 pb-6 border-b border-slate-200/60">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-black text-slate-900">+{isAnnual ? "300 €" : "30 €"}</span>
-                  <span className="text-xs font-bold text-slate-500">{isAnnual ? "/ an" : "/ mois"}</span>
-                </div>
-                <p className="text-[11px] text-rose-700 font-bold mt-1">Idéal métiers de bouche</p>
-              </div>
-
-              <ul className="space-y-3 text-xs font-medium text-slate-600 mb-6">
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rose-600 shrink-0" /> Passerelle UberEats / Deliveroo</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rose-600 shrink-0" /> Impression des tickets en cuisine</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rose-600 shrink-0" /> Gestion des temps de préparation</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rose-600 shrink-0" /> Alertes sonores nouvelle commande</li>
-              </ul>
-            </div>
-
-            <button className={`w-full py-2.5 text-xs font-black rounded-xl border-2 border-slate-900 transition ${optFoodDelivery ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
-              {optFoodDelivery ? "✓ Module Ajouté" : "+ Ajouter cette option"}
-            </button>
-          </div>
-        </div>
-
-        {/* TOTAL RÉCAPITULATIF DU SIMULATEUR */}
-        <div className="bg-slate-900 text-white border-2 border-slate-900 rounded-3xl p-6 sm:p-8 shadow-brutal-lg flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <span className="text-xs font-bold text-amber-400 uppercase tracking-widest">Votre Configuration Personnalisée</span>
-            <h4 className="text-2xl sm:text-3xl font-black mt-1">
-              Total estimé : <span className="text-amber-400">{totalPrice} €</span> <span className="text-xs font-normal text-slate-400">{isAnnual ? "HT / an" : "HT / mois"} (Engagement 1 an)</span>
-            </h4>
-            <p className="text-xs text-slate-400 mt-1">
-              Comprend le socle Vitrine {optEcommerce ? "+ Vente en ligne" : ""} {optShipping ? "+ Transport" : ""} {optFoodDelivery ? "+ Restauration" : ""}.
+      {/* ── 5. SIMULATEUR DE TARIFS ATLASSIAN (VERT ÉMERAUDE & COMMERCE) ───── */}
+      <section id="tarifs" className="relative py-24 border-b-2 border-slate-900 overflow-hidden">
+        <SectionMediaBackground 
+          src="/images/pricing-bg.webp" 
+          alt="Boutique et commerce soigné"
+          gradient="from-emerald-50/85 via-white/55 to-[#FFFDF9]/90" 
+        />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-xs font-black tracking-widest text-emerald-800 uppercase bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block mb-3">
+              Tarification Atlassian Modulaire
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight mb-4">
+              Payez uniquement ce dont vous avez besoin.
+            </h2>
+            <p className="text-slate-700 text-base sm:text-lg font-medium">
+              Un socle indispensable à tarif mini avec engagement 1 an, complété par les modules de votre choix activables à tout moment.
             </p>
+
+            {/* Toggle Switch Annuel / Mensuel */}
+            <div className="mt-8 inline-flex items-center gap-3 bg-white p-2 rounded-2xl border-2 border-slate-900 shadow-brutal-sm">
+              <button 
+                onClick={() => setIsAnnual(false)}
+                className={`px-5 py-2.5 rounded-xl text-sm font-black transition ${!isAnnual ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+              >
+                Facturation Mensuelle (15 €/mois)
+              </button>
+              <button 
+                onClick={() => setIsAnnual(true)}
+                className={`px-5 py-2.5 rounded-xl text-sm font-black transition flex items-center gap-2 ${isAnnual ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+              >
+                <span>Facturation Annuelle (150 €/an)</span>
+                <span className="bg-emerald-400 text-slate-950 text-xs font-extrabold px-2 py-0.5 rounded-md">-17%</span>
+              </button>
+            </div>
           </div>
 
-          <a 
-            href="/register" 
-            className="w-full md:w-auto bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-base px-8 py-4 rounded-2xl border-2 border-white shadow-brutal-sm hover:shadow-brutal transition flex items-center justify-center gap-2 shrink-0"
-          >
-            <span>Commander et déployer mon site</span>
-            <ArrowRight className="w-5 h-5" />
-          </a>
+          {/* GRILLE DES MODULES */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch mb-12">
+            {/* CARTE 1 : SOCLE VITRINE */}
+            <div className="bg-white border-2 border-slate-900 rounded-2xl p-6 shadow-brutal flex flex-col justify-between relative">
+              <div className="absolute -top-3 left-6 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded border border-slate-900">
+                Socle Inclus d'Office
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 mt-2 mb-3">
+                  <Store className="w-6 h-6 text-emerald-600" />
+                  <h3 className="text-lg font-black">Site Vitrine & Retrait</h3>
+                </div>
+                <p className="text-xs text-slate-500 font-medium mb-6">Pour présenter vos activités et recevoir vos commandes.</p>
+
+                <div className="mb-6 pb-6 border-b border-slate-100">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-black text-slate-900">{isAnnual ? "150 €" : "15 €"}</span>
+                    <span className="text-xs font-bold text-slate-500">{isAnnual ? "/ an" : "/ mois"}</span>
+                  </div>
+                  <p className="text-[11px] text-amber-700 font-bold mt-1">Engagement 1 an</p>
+                </div>
+
+                <ul className="space-y-3 text-xs font-medium text-slate-600 mb-6">
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Site responsive mobile & PC</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Horaires, adresse et informations d'accès</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Click & Collect sans paiement</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Sous-domaine *.woxxapp.de</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600 shrink-0" /> Hébergement cloud K8s & SSL</li>
+                </ul>
+              </div>
+
+              <div className="bg-emerald-50 text-emerald-900 text-xs font-bold py-2.5 px-3 rounded-xl text-center border border-emerald-200">
+                ✓ Inclus dans toute commande
+              </div>
+            </div>
+
+            {/* CARTE 2 : VENTE DE PRODUITS + STRIPE */}
+            <div 
+              onClick={() => setOptEcommerce(!optEcommerce)}
+              className={`border-2 border-slate-900 rounded-2xl p-6 transition cursor-pointer flex flex-col justify-between ${optEcommerce ? 'bg-blue-50/80 shadow-brutal' : 'bg-white shadow-brutal-sm opacity-85 hover:opacity-100'}`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <ShoppingBag className="w-6 h-6 text-blue-600" />
+                    <h3 className="text-lg font-black">Vente de Produits</h3>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={optEcommerce} 
+                    onChange={() => {}} 
+                    className="w-5 h-5 rounded border-2 border-slate-900 text-blue-600 focus:ring-0" 
+                  />
+                </div>
+                <p className="text-xs text-slate-500 font-medium mb-6">Catalogue en ligne avec encaissement direct par carte.</p>
+
+                <div className="mb-6 pb-6 border-b border-slate-200/60">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-black text-slate-900">+{isAnnual ? "300 €" : "30 €"}</span>
+                    <span className="text-xs font-bold text-slate-500">{isAnnual ? "/ an" : "/ mois"}</span>
+                  </div>
+                  <p className="text-[11px] text-blue-700 font-bold mt-1">+ 2% par transaction Stripe</p>
+                </div>
+
+                <ul className="space-y-3 text-xs font-medium text-slate-600 mb-6">
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-600 shrink-0" /> Catalogue & fiches produits illimitées</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-600 shrink-0" /> Gestion des stocks & variantes</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-600 shrink-0" /> Paiement CB, Apple Pay & Google Pay</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-600 shrink-0" /> WoxxPay / Stripe Connect sécurisé</li>
+                </ul>
+              </div>
+
+              <button className={`w-full py-2.5 text-xs font-black rounded-xl border-2 border-slate-900 transition ${optEcommerce ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
+                {optEcommerce ? "✓ Module Ajouté" : "+ Ajouter cette option"}
+              </button>
+            </div>
+
+            {/* CARTE 3 : TRANSPORT & EXPÉDITION */}
+            <div 
+              onClick={() => setOptShipping(!optShipping)}
+              className={`border-2 border-slate-900 rounded-2xl p-6 transition cursor-pointer flex flex-col justify-between ${optShipping ? 'bg-indigo-50/80 shadow-brutal' : 'bg-white shadow-brutal-sm opacity-85 hover:opacity-100'}`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Truck className="w-6 h-6 text-indigo-600" />
+                    <h3 className="text-lg font-black">Transport & Envoi</h3>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={optShipping} 
+                    onChange={() => {}} 
+                    className="w-5 h-5 rounded border-2 border-slate-900 text-indigo-600 focus:ring-0" 
+                  />
+                </div>
+                <p className="text-xs text-slate-500 font-medium mb-6">Expédiez partout en France et en Europe en quelques clics.</p>
+
+                <div className="mb-6 pb-6 border-b border-slate-200/60">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-black text-slate-900">+{isAnnual ? "300 €" : "30 €"}</span>
+                    <span className="text-xs font-bold text-slate-500">{isAnnual ? "/ an" : "/ mois"}</span>
+                  </div>
+                  <p className="text-[11px] text-indigo-700 font-bold mt-1">Nécessite le module Vente</p>
+                </div>
+
+                <ul className="space-y-3 text-xs font-medium text-slate-600 mb-6">
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-indigo-600 shrink-0" /> SendCloud / WoxxShip intégré</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-indigo-600 shrink-0" /> Colissimo, Mondial Relay, Chronopost</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-indigo-600 shrink-0" /> Calcul automatique des frais de port</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-indigo-600 shrink-0" /> Impression des étiquettes en 1 clic</li>
+                </ul>
+              </div>
+
+              <button className={`w-full py-2.5 text-xs font-black rounded-xl border-2 border-slate-900 transition ${optShipping ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
+                {optShipping ? "✓ Module Ajouté" : "+ Ajouter cette option"}
+              </button>
+            </div>
+
+            {/* CARTE 4 : RESTAURATION EXPRESS */}
+            <div 
+              onClick={() => setOptFoodDelivery(!optFoodDelivery)}
+              className={`border-2 border-slate-900 rounded-2xl p-6 transition cursor-pointer flex flex-col justify-between ${optFoodDelivery ? 'bg-rose-50/80 shadow-brutal' : 'bg-white shadow-brutal-sm opacity-85 hover:opacity-100'}`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <UtensilsCrossed className="w-6 h-6 text-rose-600" />
+                    <h3 className="text-lg font-black">Restauration Express</h3>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={optFoodDelivery} 
+                    onChange={() => {}} 
+                    className="w-5 h-5 rounded border-2 border-slate-900 text-rose-600 focus:ring-0" 
+                  />
+                </div>
+                <p className="text-xs text-slate-500 font-medium mb-6">Pour snacks, pizzerias et restaurants avec livraison directe.</p>
+
+                <div className="mb-6 pb-6 border-b border-slate-200/60">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-black text-slate-900">+{isAnnual ? "300 €" : "30 €"}</span>
+                    <span className="text-xs font-bold text-slate-500">{isAnnual ? "/ an" : "/ mois"}</span>
+                  </div>
+                  <p className="text-[11px] text-rose-700 font-bold mt-1">Idéal métiers de bouche</p>
+                </div>
+
+                <ul className="space-y-3 text-xs font-medium text-slate-600 mb-6">
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rose-600 shrink-0" /> Passerelle UberEats / Deliveroo</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rose-600 shrink-0" /> Impression des tickets en cuisine</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rose-600 shrink-0" /> Gestion des temps de préparation</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rose-600 shrink-0" /> Alertes sonores nouvelle commande</li>
+                </ul>
+              </div>
+
+              <button className={`w-full py-2.5 text-xs font-black rounded-xl border-2 border-slate-900 transition ${optFoodDelivery ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
+                {optFoodDelivery ? "✓ Module Ajouté" : "+ Ajouter cette option"}
+              </button>
+            </div>
+          </div>
+
+          {/* TOTAL RÉCAPITULATIF DU SIMULATEUR */}
+          <div className="bg-slate-900 text-white border-2 border-slate-900 rounded-3xl p-6 sm:p-8 shadow-brutal-lg flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <span className="text-xs font-bold text-amber-400 uppercase tracking-widest">Votre Configuration Personnalisée</span>
+              <h4 className="text-2xl sm:text-3xl font-black mt-1">
+                Total estimé : <span className="text-amber-400">{totalPrice} €</span> <span className="text-xs font-normal text-slate-400">{isAnnual ? "HT / an" : "HT / mois"} (Engagement 1 an)</span>
+              </h4>
+              <p className="text-xs text-slate-400 mt-1">
+                Comprend le socle Vitrine {optEcommerce ? "+ Vente en ligne" : ""} {optShipping ? "+ Transport" : ""} {optFoodDelivery ? "+ Restauration" : ""}.
+              </p>
+            </div>
+
+            <a 
+              href="/register" 
+              className="w-full md:w-auto bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-base px-8 py-4 rounded-2xl border-2 border-white shadow-brutal-sm hover:shadow-brutal transition flex items-center justify-center gap-2 shrink-0"
+            >
+              <span>Commander et déployer mon site</span>
+              <ArrowRight className="w-5 h-5" />
+            </a>
+          </div>
         </div>
       </section>
 
-      {/* ── 6. DÉMARRAGE EN 4 ÉTAPES ──────────────────────────────── */}
-      <section id="etapes" className="py-20 bg-white border-t-2 border-slate-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ── 6. DÉMARRAGE EN 4 ÉTAPES (BLEU COBALT & WORKFLOW) ──────── */}
+      <section id="etapes" className="relative py-24 border-b-2 border-slate-900 overflow-hidden">
+        <SectionMediaBackground 
+          src="/images/steps-bg.webp" 
+          alt="Créateur artisan travaillant sur son ordinateur"
+          gradient="from-blue-50/85 via-white/50 to-slate-50/90" 
+        />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-xs font-black tracking-widest text-blue-700 uppercase bg-blue-100 px-3 py-1 rounded-full border border-blue-300 inline-block mb-3">
+              Mise en route express
+            </span>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-4">
               Prêt en 4 étapes simples.
             </h2>
-            <p className="text-slate-600 font-medium">De l'inscription à votre premier client en ligne.</p>
+            <p className="text-slate-700 font-medium">De l'inscription à votre premier client en ligne.</p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-slate-50 border-2 border-slate-900 rounded-2xl p-6 shadow-brutal-sm">
+            <div className="bg-white/95 backdrop-blur-sm border-2 border-slate-900 rounded-2xl p-6 shadow-brutal-sm">
               <div className="w-10 h-10 rounded-xl bg-amber-300 border-2 border-slate-900 flex items-center justify-center font-black text-lg mb-4">1</div>
               <h3 className="font-black text-base mb-2">Choix du sous-domaine</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">Indiquez le nom de votre commerce (ex: salon-lucie) pour réserver votre adresse en 30 secondes.</p>
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">Indiquez le nom de votre commerce (ex: salon-lucie) pour réserver votre adresse en 30 secondes.</p>
             </div>
 
-            <div className="bg-slate-50 border-2 border-slate-900 rounded-2xl p-6 shadow-brutal-sm">
+            <div className="bg-white/95 backdrop-blur-sm border-2 border-slate-900 rounded-2xl p-6 shadow-brutal-sm">
               <div className="w-10 h-10 rounded-xl bg-blue-300 border-2 border-slate-900 flex items-center justify-center font-black text-lg mb-4">2</div>
               <h3 className="font-black text-base mb-2">Paiement du Pack</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">Réglez votre pack de base en toute sécurité par carte bancaire via Stripe.</p>
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">Réglez votre pack de base en toute sécurité par carte bancaire via Stripe.</p>
             </div>
 
-            <div className="bg-slate-50 border-2 border-slate-900 rounded-2xl p-6 shadow-brutal-sm">
+            <div className="bg-white/95 backdrop-blur-sm border-2 border-slate-900 rounded-2xl p-6 shadow-brutal-sm">
               <div className="w-10 h-10 rounded-xl bg-emerald-300 border-2 border-slate-900 flex items-center justify-center font-black text-lg mb-4">3</div>
               <h3 className="font-black text-base mb-2">Déploiement K8s (15s)</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">Notre cluster Kubernetes crée automatiquement votre pod, votre base et votre certificat SSL.</p>
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">Notre cluster Kubernetes crée automatiquement votre pod, votre base et votre certificat SSL.</p>
             </div>
 
-            <div className="bg-slate-50 border-2 border-slate-900 rounded-2xl p-6 shadow-brutal-sm">
+            <div className="bg-white/95 backdrop-blur-sm border-2 border-slate-900 rounded-2xl p-6 shadow-brutal-sm">
               <div className="w-10 h-10 rounded-xl bg-rose-300 border-2 border-slate-900 flex items-center justify-center font-black text-lg mb-4">4</div>
               <h3 className="font-black text-base mb-2">Personnalisation</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">Connectez-vous à votre interface pour ajouter vos horaires, vos photos et vos produits.</p>
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">Connectez-vous à votre interface pour ajouter vos horaires, vos photos et vos produits.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── 7. FAQ ACCORDÉON ──────────────────────────────────────── */}
-      <section id="faq" className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-4">
-            Questions Fréquentes
-          </h2>
-          <p className="text-slate-600 font-medium">Tout ce que vous devez savoir en toute transparence.</p>
-        </div>
+      {/* ── 7. FAQ ACCORDÉON (ARDOISE & AMBRE CLAIR) ────────────────── */}
+      <section id="faq" className="relative py-24 border-b-2 border-slate-900 overflow-hidden">
+        <SectionMediaBackground 
+          src="/images/faq-bg.webp" 
+          alt="Atelier et détails d'artisanat soigné"
+          gradient="from-slate-100/90 via-white/60 to-[#FFFDF9]/95" 
+        />
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <span className="text-xs font-black tracking-widest text-slate-700 uppercase bg-slate-200 px-3 py-1 rounded-full border border-slate-400 inline-block mb-3">
+              Assistance & Réponses
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-4">
+              Questions Fréquentes
+            </h2>
+            <p className="text-slate-700 font-medium">Tout ce que vous devez savoir en toute transparence.</p>
+          </div>
 
-        <div className="space-y-4">
-          {faqs.map((faq, i) => (
-            <div key={i} className="bg-white border-2 border-slate-900 rounded-2xl overflow-hidden shadow-brutal-sm">
-              <button 
-                onClick={() => toggleFaq(i)}
-                className="w-full p-6 text-left font-black text-base sm:text-lg text-slate-900 flex justify-between items-center gap-4 hover:bg-slate-50 transition"
-              >
-                <span>{faq.q}</span>
-                <ChevronDown className={`w-5 h-5 text-slate-900 shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
-              </button>
-              {openFaq === i && (
-                <div className="px-6 pb-6 text-sm text-slate-600 border-t-2 border-slate-100 pt-4 leading-relaxed font-medium">
-                  {faq.a}
-                </div>
-              )}
-            </div>
-          ))}
+          <div className="space-y-4">
+            {faqs.map((faq, i) => (
+              <div key={i} className="bg-white/95 backdrop-blur-sm border-2 border-slate-900 rounded-2xl overflow-hidden shadow-brutal-sm">
+                <button 
+                  onClick={() => toggleFaq(i)}
+                  className="w-full p-6 text-left font-black text-base sm:text-lg text-slate-900 flex justify-between items-center gap-4 hover:bg-slate-50 transition"
+                >
+                  <span>{faq.q}</span>
+                  <ChevronDown className={`w-5 h-5 text-slate-900 shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
+                </button>
+                {openFaq === i && (
+                  <div className="px-6 pb-6 text-sm text-slate-700 border-t-2 border-slate-100 pt-4 leading-relaxed font-medium">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
