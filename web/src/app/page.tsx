@@ -158,37 +158,37 @@ export default function LandingPage() {
             </div>
           </a>
 
-          {/* BOUTONS D'ONGLETS DU MENU (TRÈS VISIBLES & CLIQUABLES) */}
-          <div className="hidden lg:flex items-center gap-2.5 text-xs font-black">
+          {/* BOUTONS D'ONGLETS DU MENU (TRÈS VISIBLES & SUR UNE SEULE LIGNE) */}
+          <div className="hidden lg:flex items-center gap-2 text-xs font-black whitespace-nowrap">
             <a 
               href="#showroom" 
-              className="bg-white hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-2"
+              className="bg-white hover:bg-amber-300 text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
             >
               <span>🎬 Showroom</span>
               <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.2 rounded font-black">Live</span>
             </a>
             <a 
               href="#tarifs" 
-              className="bg-white hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5"
+              className="bg-white hover:bg-amber-300 text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
             >
               <span>🏷️ Grille Tarifaire</span>
             </a>
             <a 
               href="#elise-moi" 
-              className="bg-white hover:bg-rose-100 text-slate-950 px-3.5 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5"
+              className="bg-white hover:bg-rose-100 text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
             >
               <span>🤝 Élise & Moi</span>
               <span className="bg-rose-500 text-white text-[10px] px-1.5 py-0.2 rounded font-black">Aide</span>
             </a>
             <a 
               href="#etapes" 
-              className="bg-white hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5"
+              className="bg-white hover:bg-amber-300 text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
             >
               <span>⚡ 4 Étapes</span>
             </a>
             <a 
               href="#faq" 
-              className="bg-white hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5"
+              className="bg-white hover:bg-amber-300 text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
             >
               <span>❓ FAQ</span>
             </a>
