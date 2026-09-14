@@ -240,8 +240,13 @@ export default function LandingPage() {
       </section>
 
       {/* ── 3. SHOWROOM (ZOREA EN SITE RÉFÉRENCE + DEMO PIZZA & MODE) ── */}
-      <section id="showroom" className="py-24 bg-white border-y-2 border-slate-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="showroom" className="relative py-24 border-y-2 border-slate-900 overflow-hidden">
+        <SectionMediaBackground 
+          src="/images/showroom-bg.webp" 
+          alt="Showroom de boutiques et commerces"
+          gradient="from-slate-100/90 via-white/70 to-slate-100/90" 
+        />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>
               <span className="text-xs font-black tracking-widest text-blue-600 uppercase bg-blue-50 px-3 py-1 rounded-full border border-blue-200 inline-block mb-3">
@@ -516,12 +521,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 4. SECTION ÉLISE & MOI (AVEC LOGO OFFICIEL D'ÉLISE & FOND ROSE CHALEUREUX) ── */}
+      {/* ── 4. SECTION ÉLISE & MOI (AVEC SA PROPRE IMAGE EN ARRIÈRE-PLAN) ── */}
       <section id="elise-moi" className="relative py-24 border-b-2 border-slate-900 overflow-hidden">
         <SectionMediaBackground 
-          src="/images/elise-bg.webp" 
-          alt="Studio et accompagnement d'affaires"
-          gradient="from-rose-50/85 via-white/55 to-amber-50/85" 
+          src="/images/elise-card.webp" 
+          alt="Studio et accompagnement d'affaires Élise & Moi"
+          gradient="from-rose-50/85 via-white/60 to-amber-50/80" 
         />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white/95 backdrop-blur-md border-2 border-slate-900 rounded-3xl p-8 sm:p-12 shadow-brutal-lg relative overflow-hidden">
