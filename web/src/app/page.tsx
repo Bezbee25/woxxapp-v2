@@ -73,7 +73,7 @@ function SectionMediaBackground({
 }
 
 export default function LandingPage() {
-  const [isAnnual, setIsAnnual] = useState(true);
+  const [isAnnual, setIsAnnual] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [selectedDemoTab, setSelectedDemoTab] = useState<"zorea" | "pizza" | "mode">("zorea");
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -656,15 +656,15 @@ export default function LandingPage() {
             <div className="mt-8 inline-flex items-center gap-3 bg-white p-2 rounded-2xl border-2 border-slate-900 shadow-brutal-sm">
               <button 
                 onClick={() => setIsAnnual(false)}
-                className={`px-5 py-2.5 rounded-xl text-sm font-black transition ${!isAnnual ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                className={`px-5 py-2.5 rounded-xl text-sm font-black transition ${!isAnnual ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-700 hover:text-slate-950'}`}
               >
-                Facturation Mensuelle (15 €/mois)
+                Facturation Mensuelle
               </button>
               <button 
                 onClick={() => setIsAnnual(true)}
-                className={`px-5 py-2.5 rounded-xl text-sm font-black transition flex items-center gap-2 ${isAnnual ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                className={`px-5 py-2.5 rounded-xl text-sm font-black transition flex items-center gap-2 ${isAnnual ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-700 hover:text-slate-950'}`}
               >
-                <span>Facturation Annuelle (150 €/an)</span>
+                <span>Facturation Annuelle</span>
                 <span className="bg-emerald-400 text-slate-950 text-xs font-extrabold px-2 py-0.5 rounded-md">-17%</span>
               </button>
             </div>
