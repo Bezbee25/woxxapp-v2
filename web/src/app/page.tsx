@@ -28,7 +28,9 @@ import {
   Coffee,
   HeartHandshake,
   Gem,
-  CalendarCheck
+  CalendarCheck,
+  Award,
+  Lock
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -50,8 +52,12 @@ export default function LandingPage() {
 
   const faqs = [
     {
-      q: "Est-ce que je peux changer d'offre ou ajouter des options à tout moment ?",
-      a: "Oui, à 100% ! Vous pouvez démarrer avec le simple pack Vitrine et ajouter la vente en ligne ou le transport quand vous êtes prêt depuis votre espace client, en 1 clic."
+      q: "Quel est l'engagement pour mon abonnement ?",
+      a: "L'abonnement comporte un engagement d'un an (1 an), payable en une fois à tarif préférentiel (150 € / an pour le socle vitrine) ou mensualisé à 15 € / mois."
+    },
+    {
+      q: "Est-ce que je peux ajouter des options (Vente en ligne, Transport) en cours d'année ?",
+      a: "Oui, tout à fait ! Vous pouvez démarrer avec le pack Vitrine et activer le module E-commerce Stripe ou l'expédition SendCloud à tout moment depuis votre espace d'administration."
     },
     {
       q: "Je ne suis pas du tout technique, est-ce fait pour moi ?",
@@ -59,11 +65,11 @@ export default function LandingPage() {
     },
     {
       q: "C'est quoi la commission de 2% sur les paiements par carte ?",
-      a: "Sur chaque vente payée par carte bancaire via le système WoxxPay / Stripe Connect, nous prélevons 2% pour couvrir le traitement technique sécurisé. Le reste est versé directement sur votre compte bancaire."
+      a: "Sur chaque vente payée par carte bancaire via le système WoxxPay / Stripe Connect, nous prélevons 2% pour couvrir le traitement technique bancaire sécurisé. Le reste est versé directement sur votre compte bancaire."
     },
     {
       q: "Puis-je utiliser mon propre nom de domaine (ex: www.mon-salon.fr) ?",
-      a: "Oui ! Chaque boutique reçoit d'office une adresse *.woxxapp.de sécurisée, et nous pouvons brancher votre propre nom de domaine personnalisé sur demande."
+      a: "Oui ! Chaque boutique reçoit d'office une adresse *.woxxapp.de sécurisée, et nous pouvons configurer votre propre nom de domaine personnalisé sur demande."
     },
     {
       q: "En quoi consiste l'accompagnement par Élise & Moi ?",
@@ -129,170 +135,67 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ── 2. HERO SECTION (AVEC GALERIE DE STYLES COMMERÇANTS) ─── */}
-      <section className="pt-16 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="text-center max-w-4xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border-2 border-slate-900 shadow-brutal-sm text-slate-900 text-xs font-extrabold mb-8">
-            <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500" />
-            <span>Fini les sites à 5 000 € que personne ne sait modifier</span>
+      {/* ── 2. HERO SECTION (AVEC IMAGE DE FOND IMMERSIVE & STYLE BRUTALIST) ── */}
+      <section className="relative pt-12 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
+        {/* BANNIÈRE HERO AVEC IMAGE DE FOND STYLISÉE */}
+        <div className="relative rounded-3xl border-2 border-slate-900 shadow-brutal-xl overflow-hidden bg-slate-900 text-white min-h-[540px] flex items-center">
+          {/* Image de fond avec overlay sombre pour lisibilité maximale */}
+          <div className="absolute inset-0 z-0">
+            <img 
+              src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1800&auto=format&fit=crop&q=80" 
+              alt="Commerce & Artisanat Atelier" 
+              className="w-full h-full object-cover object-center opacity-30 filter saturate-150"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-slate-950/60"></div>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-slate-900 leading-[1.08] mb-8">
-            Votre commerce en ligne,<br />
-            <span className="relative inline-block mt-2">
-              <span className="relative z-10 bg-amber-300 px-4 py-1 border-2 border-slate-900 shadow-brutal rounded-2xl rotate-[-1deg] inline-block">
-                prêt en 10 minutes.
+          <div className="relative z-10 p-8 sm:p-14 lg:p-16 max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-400 border-2 border-slate-900 shadow-brutal-sm text-slate-950 text-xs font-black mb-6">
+              <Sparkles className="w-4 h-4 fill-slate-950" />
+              <span>Solution clé en main pour commerçants & artisans</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.1] mb-6">
+              Votre commerce en ligne,<br />
+              <span className="relative inline-block mt-2">
+                <span className="bg-amber-300 text-slate-950 px-3 py-1 border-2 border-slate-900 shadow-brutal rounded-xl rotate-[-1deg] inline-block">
+                  prêt en 10 minutes.
+                </span>
               </span>
-            </span>
-          </h1>
+            </h1>
 
-          <p className="text-lg sm:text-2xl text-slate-600 max-w-3xl mx-auto leading-relaxed font-medium mb-10">
-            Artisans, restaurateurs, coiffeurs, créateurs : obtenez un site vitrine ultra-rapide avec Click & Collect par défaut, et activez la vente en ligne ou le transport à la carte.
-          </p>
+            <p className="text-base sm:text-xl text-slate-300 leading-relaxed font-medium mb-8 max-w-2xl">
+              Artisans, restaurateurs, coiffeurs, créateurs : obtenez un site vitrine ultra-rapide avec Click & Collect par défaut, et activez la vente en ligne ou le transport à la carte.
+            </p>
 
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-14">
-            <a 
-              href="#tarifs" 
-              className="w-full sm:w-auto bg-slate-900 hover:bg-blue-600 text-white text-base sm:text-lg font-black px-8 py-4 rounded-2xl border-2 border-slate-900 shadow-brutal hover:shadow-brutal-lg hover:-translate-x-1 hover:-translate-y-1 transition active:translate-x-0 active:translate-y-0 flex items-center justify-center gap-3"
-            >
-              <span>Lancer ma boutique</span>
-              <ArrowRight className="w-5 h-5" />
-            </a>
-            <a 
-              href="#showroom" 
-              className="w-full sm:w-auto bg-white hover:bg-slate-100 text-slate-900 text-base sm:text-lg font-bold px-8 py-4 rounded-2xl border-2 border-slate-900 shadow-brutal-sm hover:shadow-brutal hover:-translate-x-0.5 hover:-translate-y-0.5 transition flex items-center justify-center gap-2"
-            >
-              <Play className="w-4 h-4 fill-slate-900" />
-              <span>Explorer les 3 démos réelles</span>
-            </a>
-          </div>
-        </div>
+            <div className="flex flex-col sm:flex-row gap-4 mb-10">
+              <a 
+                href="#tarifs" 
+                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-base font-black px-7 py-4 rounded-xl border-2 border-slate-900 shadow-brutal hover:shadow-brutal-lg hover:-translate-x-0.5 hover:-translate-y-0.5 transition active:translate-x-0 active:translate-y-0 flex items-center justify-center gap-2"
+              >
+                <span>Lancer ma boutique</span>
+                <ArrowRight className="w-5 h-5" />
+              </a>
+              <a 
+                href="#showroom" 
+                className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white text-base font-bold px-7 py-4 rounded-xl border-2 border-white/40 shadow-sm transition flex items-center justify-center gap-2"
+              >
+                <Play className="w-4 h-4 fill-white" />
+                <span>Voir le Showroom démo</span>
+              </a>
+            </div>
 
-        {/* ── GALERIE VISUELLE DES STYLES DE COMMERCE (DANS LE HERO) ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-          {/* CARTE STYLE 1 : BIJOUTERIE & ARTISANAT */}
-          <div className="bg-white rounded-2xl border-2 border-slate-900 p-4 shadow-brutal hover:-translate-y-1 transition flex flex-col justify-between group">
-            <div>
-              <div className="relative rounded-xl overflow-hidden aspect-[4/3] border-2 border-slate-900 mb-3 bg-slate-100">
-                <img 
-                  src="https://zorea.fr/uploads/boucle_oreil_fleur_4-1784839877178-157423169.webp" 
-                  alt="Bijouterie Zorea" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                />
-                <span className="absolute top-2 left-2 bg-slate-900/90 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded border border-slate-700">
-                  💎 Artisanat & Créations
-                </span>
-              </div>
-              <h4 className="font-black text-base text-slate-900">Bijoux & Maroquinerie</h4>
-              <p className="text-xs text-slate-500 font-medium mt-1">Galerie haute définition, storytelling créateur et vente sécurisée.</p>
-            </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-700">
-              <span className="flex items-center gap-1 text-emerald-600"><Check className="w-3.5 h-3.5" /> Vente CB Stripe</span>
-              <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200">10 min chrono</span>
-            </div>
-          </div>
-
-          {/* CARTE STYLE 2 : RESTAURATION & PIZZERIA */}
-          <div className="bg-white rounded-2xl border-2 border-slate-900 p-4 shadow-brutal hover:-translate-y-1 transition flex flex-col justify-between group">
-            <div>
-              <div className="relative rounded-xl overflow-hidden aspect-[4/3] border-2 border-slate-900 mb-3 bg-slate-100">
-                <img 
-                  src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&auto=format&fit=crop&q=80" 
-                  alt="Pizzeria Fast Food" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                />
-                <span className="absolute top-2 left-2 bg-slate-900/90 text-rose-300 text-[10px] font-black px-2 py-0.5 rounded border border-slate-700">
-                  🍕 Pizzerias & Snacks
-                </span>
-              </div>
-              <h4 className="font-black text-base text-slate-900">Restauration & Cuisine</h4>
-              <p className="text-xs text-slate-500 font-medium mt-1">Menu interactif, suppléments au choix et Click & Collect minute.</p>
-            </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-700">
-              <span className="flex items-center gap-1 text-rose-600"><Check className="w-3.5 h-3.5" /> Click & Collect</span>
-              <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200">10 min chrono</span>
-            </div>
-          </div>
-
-          {/* CARTE STYLE 3 : COIFFURE & INSTITUTS */}
-          <div className="bg-white rounded-2xl border-2 border-slate-900 p-4 shadow-brutal hover:-translate-y-1 transition flex flex-col justify-between group">
-            <div>
-              <div className="relative rounded-xl overflow-hidden aspect-[4/3] border-2 border-slate-900 mb-3 bg-slate-100">
-                <img 
-                  src="https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&auto=format&fit=crop&q=80" 
-                  alt="Coiffure et Beauté" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                />
-                <span className="absolute top-2 left-2 bg-slate-900/90 text-blue-300 text-[10px] font-black px-2 py-0.5 rounded border border-slate-700">
-                  ✂️ Salons & Esthétique
-                </span>
-              </div>
-              <h4 className="font-black text-base text-slate-900">Coiffure & Bien-être</h4>
-              <p className="text-xs text-slate-500 font-medium mt-1">Grille des prestations, photos de vos réalisations et coordonnées Google.</p>
-            </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-700">
-              <span className="flex items-center gap-1 text-blue-600"><Check className="w-3.5 h-3.5" /> Prise de RDV</span>
-              <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200">10 min chrono</span>
-            </div>
-          </div>
-
-          {/* CARTE STYLE 4 : BOUTIQUE MODE & TEXTILE */}
-          <div className="bg-white rounded-2xl border-2 border-slate-900 p-4 shadow-brutal hover:-translate-y-1 transition flex flex-col justify-between group">
-            <div>
-              <div className="relative rounded-xl overflow-hidden aspect-[4/3] border-2 border-slate-900 mb-3 bg-slate-100">
-                <img 
-                  src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&auto=format&fit=crop&q=80" 
-                  alt="Mode et Chaussures" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                />
-                <span className="absolute top-2 left-2 bg-slate-900/90 text-emerald-300 text-[10px] font-black px-2 py-0.5 rounded border border-slate-700">
-                  👗 Mode & Accessoires
-                </span>
-              </div>
-              <h4 className="font-black text-base text-slate-900">Prêt-à-porter & Deco</h4>
-              <p className="text-xs text-slate-500 font-medium mt-1">Variantes de tailles/couleurs, stocks en direct et étiquettes Mondial Relay.</p>
-            </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-700">
-              <span className="flex items-center gap-1 text-indigo-600"><Check className="w-3.5 h-3.5" /> Envoi Mondial Relay</span>
-              <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200">10 min chrono</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Badges de Réassurance */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-6 border-t-2 border-slate-200">
-          <div className="bg-white p-3 rounded-xl border border-slate-200 text-left flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">✓</div>
-            <div>
-              <p className="text-xs font-black">Sans engagement</p>
-              <p className="text-[10px] text-slate-500">Libre à tout moment</p>
-            </div>
-          </div>
-          <div className="bg-white p-3 rounded-xl border border-slate-200 text-left flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center font-bold">🔒</div>
-            <div>
-              <p className="text-xs font-black">Certificat SSL inclus</p>
-              <p className="text-[10px] text-slate-500">Paiement HTTPS sécurisé</p>
-            </div>
-          </div>
-          <div className="bg-white p-3 rounded-xl border border-slate-200 text-left flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center font-bold">⚡</div>
-            <div>
-              <p className="text-xs font-black">Déploiement 15s</p>
-              <p className="text-[10px] text-slate-500">Kubernetes automatisé</p>
-            </div>
-          </div>
-          <div className="bg-white p-3 rounded-xl border border-slate-200 text-left flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-800 flex items-center justify-center font-bold">🤝</div>
-            <div>
-              <p className="text-xs font-black">Support humain</p>
-              <p className="text-[10px] text-slate-500">Accompagnement dédié</p>
+            <div className="flex flex-wrap items-center gap-5 text-xs sm:text-sm font-semibold text-slate-300">
+              <span className="flex items-center gap-1.5 text-amber-300"><Lock className="w-4 h-4" /> Engagement 1 an</span>
+              <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-400" /> SSL inclus</span>
+              <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-amber-400" /> Déploiement K8s 15s</span>
+              <span className="flex items-center gap-1.5"><HeartHandshake className="w-4 h-4 text-rose-400" /> Support dédié</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── 3. SHOWROOM INTERACTIF (AVEC VRAIS SITES ET VIDÉOS) ──── */}
+      {/* ── 3. SHOWROOM (ZOREA EN SITE RÉFÉRENCE + DEMO PIZZA & MODE) ── */}
       <section id="showroom" className="py-24 bg-white border-y-2 border-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
@@ -305,7 +208,7 @@ export default function LandingPage() {
               </h2>
             </div>
             <p className="text-slate-600 max-w-md text-sm font-medium">
-              Ce ne sont pas des maquettes Figma ou des concepts abstraits : ce sont les vrais sites hébergés sur notre cluster.
+              Explorez la boutique en production <strong className="text-slate-900">zorea.fr</strong> et nos sites de démonstrations interactifs.
             </p>
           </div>
 
@@ -315,39 +218,41 @@ export default function LandingPage() {
               onClick={() => setSelectedDemoTab("zorea")}
               className={`px-5 py-3 rounded-xl font-bold text-sm border-2 border-slate-900 transition flex items-center gap-2 ${selectedDemoTab === "zorea" ? "bg-amber-300 shadow-brutal -translate-y-0.5" : "bg-white hover:bg-slate-100 shadow-brutal-sm"}`}
             >
-              <span>💍 Zorea (Bijouterie & Artisanat)</span>
-              <span className="bg-slate-900 text-white text-[10px] font-black px-1.5 py-0.5 rounded">Site Référence</span>
+              <span>💍 Zorea (Bijouterie d'Art)</span>
+              <span className="bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded">Site Client Réel</span>
             </button>
             <button 
               onClick={() => setSelectedDemoTab("pizza")}
               className={`px-5 py-3 rounded-xl font-bold text-sm border-2 border-slate-900 transition flex items-center gap-2 ${selectedDemoTab === "pizza" ? "bg-amber-300 shadow-brutal -translate-y-0.5" : "bg-white hover:bg-slate-100 shadow-brutal-sm"}`}
             >
-              <span>🍕 Store Pizza (Restauration & Click & Collect)</span>
+              <span>🍕 Store Pizza (Restauration)</span>
+              <span className="bg-slate-200 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Démo</span>
             </button>
             <button 
               onClick={() => setSelectedDemoTab("mode")}
               className={`px-5 py-3 rounded-xl font-bold text-sm border-2 border-slate-900 transition flex items-center gap-2 ${selectedDemoTab === "mode" ? "bg-amber-300 shadow-brutal -translate-y-0.5" : "bg-white hover:bg-slate-100 shadow-brutal-sm"}`}
             >
-              <span>👗 Store Mode (Prêt-à-porter & Stocks)</span>
+              <span>👗 Store Mode (Prêt-à-porter)</span>
+              <span className="bg-slate-200 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded">Démo</span>
             </button>
           </div>
 
-          {/* CONTENU DÉTAILLÉ DE L'ONGLET SÉLECTIONNÉ */}
+          {/* CONTENU ONGLET 1 : ZOREA (SITE CLIENT RÉEL) */}
           {selectedDemoTab === "zorea" && (
             <div className="bg-slate-50 border-2 border-slate-900 rounded-3xl p-6 sm:p-10 shadow-brutal-lg">
               <div className="grid lg:grid-cols-12 gap-8 items-center">
                 <div className="lg:col-span-5 space-y-6">
                   <div className="flex items-center gap-2">
-                    <span className="bg-emerald-100 text-emerald-800 text-xs font-black px-3 py-1 rounded-full border border-emerald-300">
-                      Boutique Client Officielle Active
+                    <span className="bg-emerald-100 text-emerald-900 text-xs font-black px-3 py-1 rounded-full border border-emerald-300 flex items-center gap-1.5">
+                      <Award className="w-3.5 h-3.5 text-emerald-700" />
+                      <span>Boutique Client en Production (Référence)</span>
                     </span>
-                    <span className="text-xs font-bold text-slate-500">https://zorea.fr</span>
                   </div>
                   <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
                     Zorea — Bijouterie & Créations d'Art
                   </h3>
                   <p className="text-slate-600 text-base leading-relaxed">
-                    Le site vitrine et e-commerce de référence. Galerie photo immersive haute définition, intégration vidéo d'ambiance en arrière-plan, catalogue complet avec variantes de pierres, et tunnel de commande Stripe et suivi d'envoi.
+                    Le site vitrine et e-commerce de référence. Galerie photo immersive haute définition, intégration vidéo d'ambiance en arrière-plan, catalogue complet avec variantes de pierres, tunnel de commande Stripe et suivi d'envoi SendCloud.
                   </p>
 
                   <div className="grid grid-cols-2 gap-3 pt-2">
@@ -368,7 +273,7 @@ export default function LandingPage() {
                       rel="noopener noreferrer" 
                       className="inline-flex bg-slate-900 hover:bg-blue-600 text-white font-black text-sm px-8 py-4 rounded-xl border-2 border-slate-900 shadow-brutal-sm hover:shadow-brutal transition items-center justify-center gap-2"
                     >
-                      <span>Visiter zorea.fr en direct</span>
+                      <span>Visiter le site zorea.fr</span>
                       <ExternalLink className="w-4 h-4" />
                     </a>
                   </div>
@@ -386,7 +291,7 @@ export default function LandingPage() {
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-black px-3 py-1.5 rounded-lg border border-white/20">
-                      Vidéo réelle du site zorea.fr
+                      Vidéo réelle en direct de zorea.fr
                     </div>
                   </div>
 
@@ -418,20 +323,21 @@ export default function LandingPage() {
             </div>
           )}
 
+          {/* CONTENU ONGLET 2 : DEMO PIZZA (DÉMO) */}
           {selectedDemoTab === "pizza" && (
             <div className="bg-slate-50 border-2 border-slate-900 rounded-3xl p-6 sm:p-10 shadow-brutal-lg">
               <div className="grid lg:grid-cols-12 gap-8 items-center">
                 <div className="lg:col-span-5 space-y-6">
                   <div className="flex items-center gap-2">
                     <span className="bg-amber-100 text-amber-900 text-xs font-black px-3 py-1 rounded-full border border-amber-300">
-                      Module Restauration & Click & Collect
+                      Site de Démonstration Restauration
                     </span>
                   </div>
                   <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
                     Demo Pizza — Fast-Food & Restauration
                   </h3>
                   <p className="text-slate-600 text-base leading-relaxed">
-                    Conçu pour les pizzerias, snacks, boulangeries et traiteurs. Prise de commande ultra-rapide sur mobile, choix des suppléments/ingrédients, sélection du créneau de retrait en boutique ou livraison.
+                    Démonstration pour pizzerias, snacks, boulangeries et traiteurs. Prise de commande ultra-rapide sur mobile, choix des suppléments/ingrédients, sélection du créneau de retrait en boutique ou livraison.
                   </p>
 
                   <div className="grid grid-cols-2 gap-3 pt-2">
@@ -452,7 +358,7 @@ export default function LandingPage() {
                       rel="noopener noreferrer" 
                       className="inline-flex bg-slate-900 hover:bg-blue-600 text-white font-black text-sm px-8 py-4 rounded-xl border-2 border-slate-900 shadow-brutal-sm hover:shadow-brutal transition items-center justify-center gap-2"
                     >
-                      <span>Visiter store-pizza.woxxapp.de</span>
+                      <span>Visiter la démo store-pizza</span>
                       <ExternalLink className="w-4 h-4" />
                     </a>
                   </div>
@@ -493,20 +399,21 @@ export default function LandingPage() {
             </div>
           )}
 
+          {/* CONTENU ONGLET 3 : DEMO MODE (DÉMO) */}
           {selectedDemoTab === "mode" && (
             <div className="bg-slate-50 border-2 border-slate-900 rounded-3xl p-6 sm:p-10 shadow-brutal-lg">
               <div className="grid lg:grid-cols-12 gap-8 items-center">
                 <div className="lg:col-span-5 space-y-6">
                   <div className="flex items-center gap-2">
                     <span className="bg-blue-100 text-blue-900 text-xs font-black px-3 py-1 rounded-full border border-blue-300">
-                      Module Prêt-à-porter & Expédition
+                      Site de Démonstration Mode
                     </span>
                   </div>
                   <h3 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
                     Demo Mode — Prêt-à-porter & Chaussures
                   </h3>
                   <p className="text-slate-600 text-base leading-relaxed">
-                    Gestion des tailles (S, M, L, XL), des couleurs, suivi précis des stocks pour éviter les ruptures, et génération d'étiquettes d'expédition SendCloud (Colissimo & Mondial Relay).
+                    Démonstration pour boutiques textiles. Gestion des tailles (S, M, L, XL), des couleurs, suivi précis des stocks pour éviter les ruptures, et génération d'étiquettes d'expédition SendCloud (Colissimo & Mondial Relay).
                   </p>
 
                   <div className="grid grid-cols-2 gap-3 pt-2">
@@ -527,7 +434,7 @@ export default function LandingPage() {
                       rel="noopener noreferrer" 
                       className="inline-flex bg-slate-900 hover:bg-blue-600 text-white font-black text-sm px-8 py-4 rounded-xl border-2 border-slate-900 shadow-brutal-sm hover:shadow-brutal transition items-center justify-center gap-2"
                     >
-                      <span>Visiter store-mode.woxxapp.de</span>
+                      <span>Visiter la démo store-mode</span>
                       <ExternalLink className="w-4 h-4" />
                     </a>
                   </div>
@@ -565,12 +472,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 4. SECTION ÉLISE & MOI (CHARGÉE D'AFFAIRES & DEVIS) ────── */}
+      {/* ── 4. SECTION ÉLISE & MOI (AVEC LOGO OFFICIEL D'ÉLISE) ────── */}
       <section id="elise-moi" className="py-20 bg-amber-50/70 border-b-2 border-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white border-2 border-slate-900 rounded-3xl p-8 sm:p-12 shadow-brutal-lg relative overflow-hidden">
-            <div className="absolute -right-12 -top-12 w-48 h-48 bg-rose-100 rounded-full border-2 border-slate-900 -z-0 opacity-60"></div>
-
             <div className="relative z-10 grid lg:grid-cols-12 gap-8 items-center">
               <div className="lg:col-span-8 space-y-5">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-100 border border-rose-300 text-rose-800 text-xs font-black">
@@ -607,12 +512,21 @@ export default function LandingPage() {
                 </div>
               </div>
 
+              {/* CARTE PARTENAIRE AVEC LOGO & PHOTO RÉELLE D'ÉLISE & MOI */}
               <div className="lg:col-span-4 bg-slate-50 border-2 border-slate-900 rounded-2xl p-6 text-center space-y-4 shadow-brutal-sm">
-                <div className="w-16 h-16 rounded-full bg-rose-200 border-2 border-slate-900 mx-auto flex items-center justify-center text-2xl font-black">
-                  👩‍💼
+                <div className="w-24 h-24 rounded-2xl bg-white border-2 border-slate-900 mx-auto p-2 shadow-brutal-xs flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="https://elise-et-moi.fr/assets/penpot/hero-logo.webp" 
+                    alt="Logo Élise & Moi" 
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      // Fallback propre si l'image directe est bloquée
+                      e.currentTarget.src = "https://elise-et-moi.fr/favicon.svg";
+                    }}
+                  />
                 </div>
                 <div>
-                  <h4 className="font-black text-lg text-slate-900">Élise & Moi</h4>
+                  <h4 className="font-black text-xl text-slate-900">Élise & Moi</h4>
                   <p className="text-xs text-slate-500 font-medium">Chargée d'affaires & Gestion externalisée</p>
                 </div>
                 <a 
@@ -630,7 +544,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 5. SIMULATEUR DE TARIFS ATLASSIAN INTERACTIF ─────────── */}
+      {/* ── 5. SIMULATEUR DE TARIFS ATLASSIAN (ENGAGEMENT 1 AN) ───── */}
       <section id="tarifs" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-xs font-black tracking-widest text-emerald-700 uppercase bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 inline-block mb-3">
@@ -640,7 +554,7 @@ export default function LandingPage() {
             Payez uniquement ce dont vous avez besoin.
           </h2>
           <p className="text-slate-600 text-base sm:text-lg">
-            Un socle indispensable à tarif mini, complété par les modules de votre choix activables à tout moment.
+            Un socle indispensable à tarif mini avec engagement 1 an, complété par les modules de votre choix activables à tout moment.
           </p>
 
           {/* Toggle Switch Annuel / Mensuel */}
@@ -649,13 +563,13 @@ export default function LandingPage() {
               onClick={() => setIsAnnual(false)}
               className={`px-5 py-2.5 rounded-xl text-sm font-black transition ${!isAnnual ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
             >
-              Facturation Mensuelle
+              Facturation Mensuelle (15 €/mois)
             </button>
             <button 
               onClick={() => setIsAnnual(true)}
               className={`px-5 py-2.5 rounded-xl text-sm font-black transition flex items-center gap-2 ${isAnnual ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
             >
-              <span>Facturation Annuelle</span>
+              <span>Facturation Annuelle (150 €/an)</span>
               <span className="bg-emerald-400 text-slate-950 text-xs font-extrabold px-2 py-0.5 rounded-md">-17%</span>
             </button>
           </div>
@@ -681,7 +595,7 @@ export default function LandingPage() {
                   <span className="text-4xl font-black text-slate-900">{isAnnual ? "150 €" : "15 €"}</span>
                   <span className="text-xs font-bold text-slate-500">{isAnnual ? "/ an" : "/ mois"}</span>
                 </div>
-                {isAnnual && <p className="text-[11px] text-emerald-600 font-bold mt-1">Soit 12,50 € / mois</p>}
+                <p className="text-[11px] text-amber-700 font-bold mt-1">Engagement 1 an</p>
               </div>
 
               <ul className="space-y-3 text-xs font-medium text-slate-600 mb-6">
@@ -827,7 +741,7 @@ export default function LandingPage() {
           <div>
             <span className="text-xs font-bold text-amber-400 uppercase tracking-widest">Votre Configuration Personnalisée</span>
             <h4 className="text-2xl sm:text-3xl font-black mt-1">
-              Total estimé : <span className="text-amber-400">{totalPrice} €</span> <span className="text-xs font-normal text-slate-400">{isAnnual ? "HT / an" : "HT / mois"}</span>
+              Total estimé : <span className="text-amber-400">{totalPrice} €</span> <span className="text-xs font-normal text-slate-400">{isAnnual ? "HT / an" : "HT / mois"} (Engagement 1 an)</span>
             </h4>
             <p className="text-xs text-slate-400 mt-1">
               Comprend le socle Vitrine {optEcommerce ? "+ Vente en ligne" : ""} {optShipping ? "+ Transport" : ""} {optFoodDelivery ? "+ Restauration" : ""}.
@@ -926,11 +840,11 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h5 className="text-white font-bold text-xs uppercase tracking-wider mb-4">Démos en direct</h5>
+              <h5 className="text-white font-bold text-xs uppercase tracking-wider mb-4">Démos & Clients</h5>
               <ul className="space-y-2 text-xs">
-                <li><a href="https://zorea.fr" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">Zorea Bijouterie</a></li>
-                <li><a href="https://store-pizza.woxxapp.de" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">Store Pizza</a></li>
-                <li><a href="https://store-mode.woxxapp.de" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">Store Mode</a></li>
+                <li><a href="https://zorea.fr" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">Zorea Bijouterie (Client)</a></li>
+                <li><a href="https://store-pizza.woxxapp.de" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">Store Pizza (Démo)</a></li>
+                <li><a href="https://store-mode.woxxapp.de" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">Store Mode (Démo)</a></li>
               </ul>
             </div>
 
