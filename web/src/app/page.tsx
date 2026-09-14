@@ -26,7 +26,9 @@ import {
   HelpCircle,
   Scissors,
   Coffee,
-  HeartHandshake
+  HeartHandshake,
+  Gem,
+  CalendarCheck
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -127,9 +129,9 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ── 2. HERO SECTION (Style OneFin & Brutalist) ────────────── */}
+      {/* ── 2. HERO SECTION (AVEC GALERIE DE STYLES COMMERÇANTS) ─── */}
       <section className="pt-16 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="text-center max-w-4xl mx-auto mb-16">
+        <div className="text-center max-w-4xl mx-auto mb-14">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border-2 border-slate-900 shadow-brutal-sm text-slate-900 text-xs font-extrabold mb-8">
             <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500" />
             <span>Fini les sites à 5 000 € que personne ne sait modifier</span>
@@ -164,36 +166,127 @@ export default function LandingPage() {
               <span>Explorer les 3 démos réelles</span>
             </a>
           </div>
+        </div>
 
-          {/* Badges de Réassurance */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-6 border-t-2 border-slate-200">
-            <div className="bg-white p-3 rounded-xl border border-slate-200 text-left flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">✓</div>
-              <div>
-                <p className="text-xs font-black">Sans engagement</p>
-                <p className="text-[10px] text-slate-500">Libre à tout moment</p>
+        {/* ── GALERIE VISUELLE DES STYLES DE COMMERCE (DANS LE HERO) ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+          {/* CARTE STYLE 1 : BIJOUTERIE & ARTISANAT */}
+          <div className="bg-white rounded-2xl border-2 border-slate-900 p-4 shadow-brutal hover:-translate-y-1 transition flex flex-col justify-between group">
+            <div>
+              <div className="relative rounded-xl overflow-hidden aspect-[4/3] border-2 border-slate-900 mb-3 bg-slate-100">
+                <img 
+                  src="https://zorea.fr/uploads/boucle_oreil_fleur_4-1784839877178-157423169.webp" 
+                  alt="Bijouterie Zorea" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                />
+                <span className="absolute top-2 left-2 bg-slate-900/90 text-amber-300 text-[10px] font-black px-2 py-0.5 rounded border border-slate-700">
+                  💎 Artisanat & Créations
+                </span>
               </div>
+              <h4 className="font-black text-base text-slate-900">Bijoux & Maroquinerie</h4>
+              <p className="text-xs text-slate-500 font-medium mt-1">Galerie haute définition, storytelling créateur et vente sécurisée.</p>
             </div>
-            <div className="bg-white p-3 rounded-xl border border-slate-200 text-left flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center font-bold">🔒</div>
-              <div>
-                <p className="text-xs font-black">Certificat SSL inclus</p>
-                <p className="text-[10px] text-slate-500">Paiement HTTPS sécurisé</p>
-              </div>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-700">
+              <span className="flex items-center gap-1 text-emerald-600"><Check className="w-3.5 h-3.5" /> Vente CB Stripe</span>
+              <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200">10 min chrono</span>
             </div>
-            <div className="bg-white p-3 rounded-xl border border-slate-200 text-left flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center font-bold">⚡</div>
-              <div>
-                <p className="text-xs font-black">Déploiement 15s</p>
-                <p className="text-[10px] text-slate-500">Kubernetes automatisé</p>
+          </div>
+
+          {/* CARTE STYLE 2 : RESTAURATION & PIZZERIA */}
+          <div className="bg-white rounded-2xl border-2 border-slate-900 p-4 shadow-brutal hover:-translate-y-1 transition flex flex-col justify-between group">
+            <div>
+              <div className="relative rounded-xl overflow-hidden aspect-[4/3] border-2 border-slate-900 mb-3 bg-slate-100">
+                <img 
+                  src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&auto=format&fit=crop&q=80" 
+                  alt="Pizzeria Fast Food" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                />
+                <span className="absolute top-2 left-2 bg-slate-900/90 text-rose-300 text-[10px] font-black px-2 py-0.5 rounded border border-slate-700">
+                  🍕 Pizzerias & Snacks
+                </span>
               </div>
+              <h4 className="font-black text-base text-slate-900">Restauration & Cuisine</h4>
+              <p className="text-xs text-slate-500 font-medium mt-1">Menu interactif, suppléments au choix et Click & Collect minute.</p>
             </div>
-            <div className="bg-white p-3 rounded-xl border border-slate-200 text-left flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-800 flex items-center justify-center font-bold">🤝</div>
-              <div>
-                <p className="text-xs font-black">Support humain</p>
-                <p className="text-[10px] text-slate-500">Accompagnement dédié</p>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-700">
+              <span className="flex items-center gap-1 text-rose-600"><Check className="w-3.5 h-3.5" /> Click & Collect</span>
+              <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200">10 min chrono</span>
+            </div>
+          </div>
+
+          {/* CARTE STYLE 3 : COIFFURE & INSTITUTS */}
+          <div className="bg-white rounded-2xl border-2 border-slate-900 p-4 shadow-brutal hover:-translate-y-1 transition flex flex-col justify-between group">
+            <div>
+              <div className="relative rounded-xl overflow-hidden aspect-[4/3] border-2 border-slate-900 mb-3 bg-slate-100">
+                <img 
+                  src="https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&auto=format&fit=crop&q=80" 
+                  alt="Coiffure et Beauté" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                />
+                <span className="absolute top-2 left-2 bg-slate-900/90 text-blue-300 text-[10px] font-black px-2 py-0.5 rounded border border-slate-700">
+                  ✂️ Salons & Esthétique
+                </span>
               </div>
+              <h4 className="font-black text-base text-slate-900">Coiffure & Bien-être</h4>
+              <p className="text-xs text-slate-500 font-medium mt-1">Grille des prestations, photos de vos réalisations et coordonnées Google.</p>
+            </div>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-700">
+              <span className="flex items-center gap-1 text-blue-600"><Check className="w-3.5 h-3.5" /> Prise de RDV</span>
+              <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200">10 min chrono</span>
+            </div>
+          </div>
+
+          {/* CARTE STYLE 4 : BOUTIQUE MODE & TEXTILE */}
+          <div className="bg-white rounded-2xl border-2 border-slate-900 p-4 shadow-brutal hover:-translate-y-1 transition flex flex-col justify-between group">
+            <div>
+              <div className="relative rounded-xl overflow-hidden aspect-[4/3] border-2 border-slate-900 mb-3 bg-slate-100">
+                <img 
+                  src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&auto=format&fit=crop&q=80" 
+                  alt="Mode et Chaussures" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                />
+                <span className="absolute top-2 left-2 bg-slate-900/90 text-emerald-300 text-[10px] font-black px-2 py-0.5 rounded border border-slate-700">
+                  👗 Mode & Accessoires
+                </span>
+              </div>
+              <h4 className="font-black text-base text-slate-900">Prêt-à-porter & Deco</h4>
+              <p className="text-xs text-slate-500 font-medium mt-1">Variantes de tailles/couleurs, stocks en direct et étiquettes Mondial Relay.</p>
+            </div>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-700">
+              <span className="flex items-center gap-1 text-indigo-600"><Check className="w-3.5 h-3.5" /> Envoi Mondial Relay</span>
+              <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200">10 min chrono</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Badges de Réassurance */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-6 border-t-2 border-slate-200">
+          <div className="bg-white p-3 rounded-xl border border-slate-200 text-left flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">✓</div>
+            <div>
+              <p className="text-xs font-black">Sans engagement</p>
+              <p className="text-[10px] text-slate-500">Libre à tout moment</p>
+            </div>
+          </div>
+          <div className="bg-white p-3 rounded-xl border border-slate-200 text-left flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center font-bold">🔒</div>
+            <div>
+              <p className="text-xs font-black">Certificat SSL inclus</p>
+              <p className="text-[10px] text-slate-500">Paiement HTTPS sécurisé</p>
+            </div>
+          </div>
+          <div className="bg-white p-3 rounded-xl border border-slate-200 text-left flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center font-bold">⚡</div>
+            <div>
+              <p className="text-xs font-black">Déploiement 15s</p>
+              <p className="text-[10px] text-slate-500">Kubernetes automatisé</p>
+            </div>
+          </div>
+          <div className="bg-white p-3 rounded-xl border border-slate-200 text-left flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-800 flex items-center justify-center font-bold">🤝</div>
+            <div>
+              <p className="text-xs font-black">Support humain</p>
+              <p className="text-[10px] text-slate-500">Accompagnement dédié</p>
             </div>
           </div>
         </div>
@@ -223,7 +316,7 @@ export default function LandingPage() {
               className={`px-5 py-3 rounded-xl font-bold text-sm border-2 border-slate-900 transition flex items-center gap-2 ${selectedDemoTab === "zorea" ? "bg-amber-300 shadow-brutal -translate-y-0.5" : "bg-white hover:bg-slate-100 shadow-brutal-sm"}`}
             >
               <span>💍 Zorea (Bijouterie & Artisanat)</span>
-              <span className="bg-slate-900 text-white text-[10px] font-black px-1.5 py-0.5 rounded">Référence</span>
+              <span className="bg-slate-900 text-white text-[10px] font-black px-1.5 py-0.5 rounded">Site Référence</span>
             </button>
             <button 
               onClick={() => setSelectedDemoTab("pizza")}
@@ -246,7 +339,7 @@ export default function LandingPage() {
                 <div className="lg:col-span-5 space-y-6">
                   <div className="flex items-center gap-2">
                     <span className="bg-emerald-100 text-emerald-800 text-xs font-black px-3 py-1 rounded-full border border-emerald-300">
-                      Boutique Officielle Active
+                      Boutique Client Officielle Active
                     </span>
                     <span className="text-xs font-bold text-slate-500">https://zorea.fr</span>
                   </div>
@@ -254,13 +347,13 @@ export default function LandingPage() {
                     Zorea — Bijouterie & Créations d'Art
                   </h3>
                   <p className="text-slate-600 text-base leading-relaxed">
-                    Le site vitrine et e-commerce de référence. Galerie photo immersive haute définition, intégration vidéo d'ambiance en arrière-plan, catalogue complet avec variantes de pierres, et tunnel de commande Stripe.
+                    Le site vitrine et e-commerce de référence. Galerie photo immersive haute définition, intégration vidéo d'ambiance en arrière-plan, catalogue complet avec variantes de pierres, et tunnel de commande Stripe et suivi d'envoi.
                   </p>
 
                   <div className="grid grid-cols-2 gap-3 pt-2">
                     <div className="bg-white p-3.5 rounded-xl border border-slate-200">
                       <p className="text-xs font-bold text-slate-500 uppercase">Modules Actifs</p>
-                      <p className="text-sm font-black text-slate-900 mt-0.5">Vitrine + Vente + Stripe</p>
+                      <p className="text-sm font-black text-slate-900 mt-0.5">Vitrine + Vente + Stripe + Transport</p>
                     </div>
                     <div className="bg-white p-3.5 rounded-xl border border-slate-200">
                       <p className="text-xs font-bold text-slate-500 uppercase">Temps de Chargement</p>
@@ -268,23 +361,15 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  <div className="pt-4">
                     <a 
                       href="https://zorea.fr" 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="bg-slate-900 hover:bg-blue-600 text-white font-bold text-sm px-6 py-3.5 rounded-xl border-2 border-slate-900 shadow-brutal-sm hover:shadow-brutal transition flex items-center justify-center gap-2"
+                      className="inline-flex bg-slate-900 hover:bg-blue-600 text-white font-black text-sm px-8 py-4 rounded-xl border-2 border-slate-900 shadow-brutal-sm hover:shadow-brutal transition items-center justify-center gap-2"
                     >
-                      <span>Ouvrir zorea.fr</span>
+                      <span>Visiter zorea.fr en direct</span>
                       <ExternalLink className="w-4 h-4" />
-                    </a>
-                    <a 
-                      href="https://zorea.fr/admin" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm px-6 py-3.5 rounded-xl border-2 border-slate-900 shadow-brutal-sm hover:shadow-brutal transition flex items-center justify-center gap-2"
-                    >
-                      <span>Tester l'interface Gérant</span>
                     </a>
                   </div>
                 </div>
@@ -360,23 +445,15 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  <div className="pt-4">
                     <a 
                       href="https://store-pizza.woxxapp.de" 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="bg-slate-900 hover:bg-blue-600 text-white font-bold text-sm px-6 py-3.5 rounded-xl border-2 border-slate-900 shadow-brutal-sm hover:shadow-brutal transition flex items-center justify-center gap-2"
+                      className="inline-flex bg-slate-900 hover:bg-blue-600 text-white font-black text-sm px-8 py-4 rounded-xl border-2 border-slate-900 shadow-brutal-sm hover:shadow-brutal transition items-center justify-center gap-2"
                     >
-                      <span>Ouvrir store-pizza</span>
+                      <span>Visiter store-pizza.woxxapp.de</span>
                       <ExternalLink className="w-4 h-4" />
-                    </a>
-                    <a 
-                      href="https://store-pizza.woxxapp.de/admin" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm px-6 py-3.5 rounded-xl border-2 border-slate-900 shadow-brutal-sm hover:shadow-brutal transition flex items-center justify-center gap-2"
-                    >
-                      <span>Tester le backoffice cuisine</span>
                     </a>
                   </div>
                 </div>
@@ -443,23 +520,15 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  <div className="pt-4">
                     <a 
                       href="https://store-mode.woxxapp.de" 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="bg-slate-900 hover:bg-blue-600 text-white font-bold text-sm px-6 py-3.5 rounded-xl border-2 border-slate-900 shadow-brutal-sm hover:shadow-brutal transition flex items-center justify-center gap-2"
+                      className="inline-flex bg-slate-900 hover:bg-blue-600 text-white font-black text-sm px-8 py-4 rounded-xl border-2 border-slate-900 shadow-brutal-sm hover:shadow-brutal transition items-center justify-center gap-2"
                     >
-                      <span>Ouvrir store-mode</span>
+                      <span>Visiter store-mode.woxxapp.de</span>
                       <ExternalLink className="w-4 h-4" />
-                    </a>
-                    <a 
-                      href="https://store-mode.woxxapp.de/admin" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm px-6 py-3.5 rounded-xl border-2 border-slate-900 shadow-brutal-sm hover:shadow-brutal transition flex items-center justify-center gap-2"
-                    >
-                      <span>Tester l'interface Gérant</span>
                     </a>
                   </div>
                 </div>
