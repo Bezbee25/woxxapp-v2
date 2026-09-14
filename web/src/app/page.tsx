@@ -46,6 +46,29 @@ export default function LandingPage() {
   const foodPrice = optFoodDelivery ? (isAnnual ? 300 : 30) : 0;
   const totalPrice = basePrice + ecommercePrice + shippingPrice + foodPrice;
 
+  const faqs = [
+    {
+      q: "Est-ce que je peux changer d'offre ou ajouter des options à tout moment ?",
+      a: "Oui, à 100% ! Vous pouvez démarrer avec le simple pack Vitrine et ajouter la vente en ligne ou le transport quand vous êtes prêt depuis votre espace client, en 1 clic."
+    },
+    {
+      q: "Je ne suis pas du tout technique, est-ce fait pour moi ?",
+      a: "C'est exactement conçu pour vous. Si vous savez envoyer un message sur WhatsApp, vous saurez gérer votre boutique en ligne. Aucune ligne de code n'est nécessaire."
+    },
+    {
+      q: "C'est quoi la commission de 2% sur les paiements par carte ?",
+      a: "Sur chaque vente payée par carte bancaire via le système WoxxPay / Stripe Connect, nous prélevons 2% pour couvrir le traitement technique sécurisé. Le reste est versé directement sur votre compte bancaire."
+    },
+    {
+      q: "Puis-je utiliser mon propre nom de domaine (ex: www.mon-salon.fr) ?",
+      a: "Oui ! Chaque boutique reçoit d'office une adresse *.woxxapp.de sécurisée, et nous pouvons brancher votre propre nom de domaine personnalisé sur demande."
+    },
+    {
+      q: "En quoi consiste l'accompagnement par Élise & Moi ?",
+      a: "Élise & Moi prend en charge de A à Z la saisie de votre catalogue de produits, la mise en page de votre charte graphique, et vous guide pas à pas lors d'une session de formation personnalisée."
+    }
+  ];
+
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
   };
