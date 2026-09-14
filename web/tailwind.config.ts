@@ -15,6 +15,14 @@ const config: Config = {
         warning: "var(--color-warning)",
         muted: "var(--color-text-muted)",
       },
+      boxShadow: {
+        'brutal-xs': '2px 2px 0px 0px #0F172A',
+        'brutal-sm': '3px 3px 0px 0px #0F172A',
+        'brutal': '5px 5px 0px 0px #0F172A',
+        'brutal-lg': '8px 8px 0px 0px #0F172A',
+        'brutal-xl': '12px 12px 0px 0px #0F172A',
+        'brutal-hover': '2px 2px 0px 0px #0F172A',
+      },
     },
   },
   plugins: [
