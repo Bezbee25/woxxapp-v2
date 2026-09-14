@@ -135,26 +135,26 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* ── 2. HERO SECTION PLEINE LARGEUR (IMAGE EN BACKGROUND, CLAIRE, SANS CADRE) ── */}
-      <section className="relative w-full py-20 sm:py-28 border-b-2 border-slate-900 overflow-hidden bg-[#FFFDF9]">
-        {/* Véritable image de fond claire sur toute la largeur : atelier et artisanat moderne */}
+      {/* ── 2. HERO SECTION PLEINE LARGEUR (IMAGE EN BACKGROUND NETTE ET CLAIRE) ── */}
+      <section className="relative w-full py-20 sm:py-28 border-b-2 border-slate-900 overflow-hidden bg-slate-100">
+        {/* Image de fond pleine largeur : commerçant et numérique en boutique lumineuse */}
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1556742049-0a67e55722c3?w=2400&auto=format&fit=crop&q=80" 
-            alt="Artisans et technologie moderne" 
-            className="w-full h-full object-cover object-center opacity-25"
+            src="https://images.unsplash.com/photo-1556740758-90de374c12ad?w=2400&auto=format&fit=crop&q=80" 
+            alt="Commerçant artisan et technologie moderne" 
+            className="w-full h-full object-cover object-center"
           />
-          {/* Léger voile clair pour garantir un contraste et une lisibilité parfaite des textes */}
-          <div className="absolute inset-0 bg-[#FFFDF9]/75"></div>
+          {/* Léger voile translucide clair pour faire ressortir l'image tout en garantissant un contraste parfait */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-[#FFFDF9]/90 backdrop-blur-[1px]"></div>
         </div>
 
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border-2 border-slate-900 shadow-brutal-sm text-slate-950 text-xs font-black mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 backdrop-blur-md border-2 border-slate-900 shadow-brutal-sm text-slate-950 text-xs font-black mb-8">
             <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500" />
             <span>La technologie moderne au service des artisans & commerçants</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-slate-900 leading-[1.08] mb-8">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-slate-900 leading-[1.08] mb-8 drop-shadow-sm">
             Votre commerce en ligne,<br />
             <span className="relative inline-block mt-2">
               <span className="bg-amber-300 text-slate-950 px-4 py-1 border-2 border-slate-900 shadow-brutal rounded-2xl rotate-[-1deg] inline-block">
@@ -163,7 +163,7 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          <p className="text-lg sm:text-2xl text-slate-700 leading-relaxed font-medium max-w-3xl mx-auto mb-12">
+          <p className="text-lg sm:text-2xl text-slate-900 leading-relaxed font-semibold max-w-3xl mx-auto mb-12">
             Artisans, créateurs, restaurateurs, coiffeurs : obtenez un site vitrine ultra-rapide avec Click & Collect par défaut, et activez la vente en ligne ou le transport à la carte.
           </p>
 
