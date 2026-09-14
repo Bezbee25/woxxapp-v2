@@ -158,39 +158,44 @@ export default function LandingPage() {
             </div>
           </a>
 
-          {/* BOUTONS D'ONGLETS DU MENU (TRÈS VISIBLES & SUR UNE SEULE LIGNE) */}
-          <div className="hidden lg:flex items-center gap-2 text-xs font-black whitespace-nowrap">
+          {/* MENU DE NAVIGATION PRINCIPALE (BARRE D'ONGLETS BIEN VISIBLE & CLIQUEABLE) */}
+          <div className="hidden md:flex items-center gap-1.5 bg-slate-100/90 p-1.5 rounded-2xl border-2 border-slate-900 shadow-brutal-xs whitespace-nowrap">
             <a 
               href="#showroom" 
-              className="bg-white hover:bg-amber-300 text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
+              className="bg-white hover:bg-amber-300 text-slate-950 px-3.5 py-1.5 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all inline-flex items-center gap-1.5 text-xs font-black whitespace-nowrap shrink-0"
             >
-              <span>🎬 Showroom</span>
-              <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.2 rounded font-black">Live</span>
+              <span>🎬</span>
+              <span className="whitespace-nowrap">Showroom</span>
+              <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded font-black leading-none">Live</span>
             </a>
             <a 
               href="#tarifs" 
-              className="bg-white hover:bg-amber-300 text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
+              className="bg-white hover:bg-amber-300 text-slate-950 px-3.5 py-1.5 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all inline-flex items-center gap-1.5 text-xs font-black whitespace-nowrap shrink-0"
             >
-              <span>🏷️ Grille Tarifaire</span>
+              <span>🏷️</span>
+              <span className="whitespace-nowrap">Tarifs</span>
             </a>
             <a 
               href="#elise-moi" 
-              className="bg-white hover:bg-rose-100 text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
+              className="bg-white hover:bg-rose-100 text-slate-950 px-3.5 py-1.5 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all inline-flex items-center gap-1.5 text-xs font-black whitespace-nowrap shrink-0"
             >
-              <span>🤝 Élise & Moi</span>
-              <span className="bg-rose-500 text-white text-[10px] px-1.5 py-0.2 rounded font-black">Aide</span>
+              <span>🤝</span>
+              <span className="whitespace-nowrap">Élise & Moi</span>
+              <span className="bg-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded font-black leading-none">Aide</span>
             </a>
             <a 
               href="#etapes" 
-              className="bg-white hover:bg-amber-300 text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
+              className="bg-white hover:bg-amber-300 text-slate-950 px-3.5 py-1.5 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all inline-flex items-center gap-1.5 text-xs font-black whitespace-nowrap shrink-0"
             >
-              <span>⚡ 4 Étapes</span>
+              <span>⚡</span>
+              <span className="whitespace-nowrap">4 Étapes</span>
             </a>
             <a 
               href="#faq" 
-              className="bg-white hover:bg-amber-300 text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
+              className="bg-white hover:bg-amber-300 text-slate-950 px-3.5 py-1.5 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all inline-flex items-center gap-1.5 text-xs font-black whitespace-nowrap shrink-0"
             >
-              <span>❓ FAQ</span>
+              <span>❓</span>
+              <span className="whitespace-nowrap">FAQ</span>
             </a>
           </div>
 
