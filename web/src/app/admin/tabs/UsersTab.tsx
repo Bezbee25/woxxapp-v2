@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Search, UserPlus, Shield, Briefcase, User as UserIcon, RefreshCw, Check, X } from 'lucide-react';
+import { Users, Search, UserPlus, Shield, Briefcase, RefreshCw, X } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 
 interface UserItem {
@@ -40,7 +40,6 @@ export function UsersTab() {
       const data = await apiRequest<UserItem[]>(url);
       setUsers(data || []);
 
-      // Filtrer les chargés d'affaires pour les assignations
       const reps = (data || []).filter(u => u.role === 'charge_daffaire' || u.role === 'admin');
       setSalesReps(reps);
     } catch (err) {
@@ -116,12 +115,12 @@ export function UsersTab() {
   return (
     <div className="space-y-6">
       {/* Header & Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0D121F] p-5 rounded-2xl border border-slate-800">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border-2 border-slate-900 shadow-brutal">
         <div>
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Users className="w-5 h-5 text-cyan-400" /> Utilisateurs & Permissions ({users.length})
+          <h2 className="text-xl font-black text-slate-950 flex items-center gap-2">
+            <Users className="w-6 h-6 text-blue-600" /> Utilisateurs & Permissions ({users.length})
           </h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-600 font-medium mt-1">
             Gérez les comptes, promouvez des chargés d'affaires et assignez les portefeuilles clients.
           </p>
         </div>
@@ -135,14 +134,14 @@ export function UsersTab() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && fetchUsers()}
-              className="pl-9 pr-4 py-2 bg-slate-900/80 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 w-52"
+              className="pl-9 pr-4 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white w-52"
             />
           </div>
 
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-900/80 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500"
+            className="px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
           >
             <option value="ALL">Tous les rôles</option>
             <option value="ADMIN">Administrateurs</option>
@@ -152,14 +151,14 @@ export function UsersTab() {
 
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-2 shadow-md shadow-cyan-500/20 transition"
+            className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl text-xs flex items-center gap-2 border-2 border-slate-900 shadow-brutal-xs transition"
           >
             <UserPlus className="w-4 h-4" /> Nouvel Utilisateur
           </button>
 
           <button
             onClick={fetchUsers}
-            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition border border-slate-700"
+            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl transition border-2 border-slate-900 shadow-brutal-xs"
             title="Rafraîchir"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -168,10 +167,10 @@ export function UsersTab() {
       </div>
 
       {/* Table des Utilisateurs */}
-      <div className="bg-[#0D121F] border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      <div className="bg-white border-2 border-slate-900 rounded-3xl overflow-hidden shadow-brutal">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-[#080B12] text-slate-400 uppercase font-semibold border-b border-slate-800">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead className="bg-slate-50 text-slate-700 uppercase font-black border-b-2 border-slate-900">
               <tr>
                 <th className="px-5 py-4">Utilisateur</th>
                 <th className="px-5 py-4">Rôle</th>
@@ -181,28 +180,28 @@ export function UsersTab() {
                 <th className="px-5 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y-2 divide-slate-100 font-bold text-slate-900">
               {users.map((u) => (
-                <tr key={u.id} className="hover:bg-slate-800/30 transition">
+                <tr key={u.id} className="hover:bg-slate-50/80 transition">
                   <td className="px-5 py-4">
-                    <div className="font-bold text-white text-sm">{u.full_name || 'Sans nom'}</div>
-                    <div className="text-slate-400 font-mono text-[11px]">{u.email}</div>
+                    <div className="font-black text-slate-950 text-sm">{u.full_name || 'Sans nom'}</div>
+                    <div className="text-slate-500 font-mono text-[11px] font-normal">{u.email}</div>
                   </td>
                   <td className="px-5 py-4">
                     <select
                       value={u.role.toUpperCase()}
                       onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold border focus:outline-none ${
+                      className={`px-2.5 py-1 rounded-lg text-xs font-black border-2 border-slate-900 shadow-brutal-xs focus:outline-none ${
                         u.role === 'admin'
-                          ? 'bg-purple-500/10 text-purple-400 border-purple-500/30'
+                          ? 'bg-purple-100 text-purple-900'
                           : u.role === 'charge_daffaire'
-                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                          : 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
+                          ? 'bg-amber-100 text-amber-900'
+                          : 'bg-blue-100 text-blue-900'
                       }`}
                     >
-                      <option value="ADMIN" className="bg-slate-900 text-purple-400">ADMIN</option>
-                      <option value="CHARGE_DAFFAIRE" className="bg-slate-900 text-amber-400">CHARGE D'AFFAIRES</option>
-                      <option value="CLIENT" className="bg-slate-900 text-cyan-400">CLIENT</option>
+                      <option value="ADMIN">ADMIN</option>
+                      <option value="CHARGE_DAFFAIRE">CHARGE D'AFFAIRES</option>
+                      <option value="CLIENT">CLIENT</option>
                     </select>
                   </td>
                   <td className="px-5 py-4">
@@ -210,7 +209,7 @@ export function UsersTab() {
                       <select
                         value={u.assigned_sales_rep_id || ''}
                         onChange={(e) => handleAssignRep(u.id, e.target.value)}
-                        className="px-2.5 py-1 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-cyan-500"
+                        className="px-2.5 py-1 bg-slate-50 border-2 border-slate-900 rounded-lg text-xs font-bold text-slate-900 focus:outline-none"
                       >
                         <option value="">Aucun assigné</option>
                         {salesReps.map((r) => (
@@ -220,22 +219,24 @@ export function UsersTab() {
                         ))}
                       </select>
                     ) : (
-                      <span className="text-slate-500 text-[11px] italic">Non applicable</span>
+                      <span className="text-slate-400 text-[11px] font-normal italic">Non applicable</span>
                     )}
                   </td>
-                  <td className="px-5 py-4 font-mono text-slate-300">
+                  <td className="px-5 py-4 font-mono font-bold text-slate-900">
                     {u.role === 'charge_daffaire' ? (
-                      <span>{u.stats?.clients || 0} clients</span>
+                      <span className="bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full border border-amber-300">
+                        {u.stats?.clients || 0} clients
+                      </span>
                     ) : (
                       <span>{u.stats?.tenants || 0} boutique(s)</span>
                     )}
                   </td>
                   <td className="px-5 py-4">
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold ${
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border ${
                         u.is_active
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                          : 'bg-rose-100 text-rose-800 border-rose-300'
                       }`}
                     >
                       {u.is_active ? 'Actif' : 'Désactivé'}
@@ -244,10 +245,10 @@ export function UsersTab() {
                   <td className="px-5 py-4 text-right">
                     <button
                       onClick={() => handleToggleActive(u.id, u.is_active)}
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+                      className={`px-3 py-1 rounded-xl text-xs font-black border-2 border-slate-900 shadow-brutal-xs transition ${
                         u.is_active
-                          ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30'
-                          : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
+                          ? 'bg-rose-100 hover:bg-rose-200 text-rose-800'
+                          : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800'
                       }`}
                     >
                       {u.is_active ? 'Désactiver' : 'Réactiver'}
@@ -262,15 +263,15 @@ export function UsersTab() {
 
       {/* Modal Création Utilisateur */}
       {isCreateOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0D121F] border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-fade-in-up">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="font-bold text-white text-lg flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-cyan-400" /> Nouvel Utilisateur
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border-2 border-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-brutal-lg">
+            <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
+              <h3 className="font-black text-slate-950 text-lg flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-blue-600" /> Nouvel Utilisateur
               </h3>
               <button
                 onClick={() => setIsCreateOpen(false)}
-                className="text-slate-400 hover:text-white p-1"
+                className="text-slate-600 hover:text-slate-950 p-1 border-2 border-slate-900 rounded-lg bg-slate-100"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -278,47 +279,47 @@ export function UsersTab() {
 
             <form onSubmit={handleCreateUser} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Nom Complet</label>
+                <label className="block text-xs font-black text-slate-900 mb-1">Nom Complet</label>
                 <input
                   type="text"
                   required
                   value={newFullName}
                   onChange={(e) => setNewFullName(e.target.value)}
                   placeholder="Ex: Jean Dupont"
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500"
+                  className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Adresse Email</label>
+                <label className="block text-xs font-black text-slate-900 mb-1">Adresse Email</label>
                 <input
                   type="email"
                   required
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   placeholder="jean.dupont@example.com"
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500"
+                  className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Mot de Passe</label>
+                <label className="block text-xs font-black text-slate-900 mb-1">Mot de Passe</label>
                 <input
                   type="password"
                   required
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500"
+                  className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Rôle</label>
+                <label className="block text-xs font-black text-slate-900 mb-1">Rôle</label>
                 <select
                   value={newRole}
                   onChange={(e: any) => setNewRole(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500"
+                  className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none"
                 >
                   <option value="CLIENT">Client</option>
                   <option value="CHARGE_DAFFAIRE">Chargé d'Affaires</option>
@@ -326,17 +327,17 @@ export function UsersTab() {
                 </select>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex justify-end gap-3 pt-4 border-t-2 border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsCreateOpen(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-xl text-xs transition"
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 font-black rounded-xl text-xs border-2 border-slate-900 transition"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl text-xs transition"
+                  className="px-5 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl text-xs border-2 border-slate-900 shadow-brutal-xs transition"
                 >
                   Créer l'utilisateur
                 </button>

@@ -86,33 +86,36 @@ export function AdminSidebar({
 
   return (
     <aside
-      className={`h-screen sticky top-0 bg-[#0A0E17] border-r border-slate-800 flex flex-col justify-between transition-all duration-300 z-30 select-none ${
+      className={`h-screen sticky top-0 bg-white border-r-2 border-slate-900 flex flex-col justify-between transition-all duration-300 z-30 select-none shadow-brutal-xs ${
         isCollapsed ? 'w-20' : 'w-64'
       }`}
     >
       {/* Header Sidebar */}
       <div>
-        <div className="h-16 border-b border-slate-800 flex items-center justify-between px-4">
+        <div className="h-20 border-b-2 border-slate-900 flex items-center justify-between px-4 bg-white">
           {!isCollapsed && (
             <div className="flex items-center gap-2 overflow-hidden">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-slate-950 font-black text-sm shadow-md shadow-cyan-500/20">
-                W2
+              <div className="w-10 h-10 rounded-xl bg-amber-400 border-2 border-slate-900 flex items-center justify-center text-slate-950 font-black text-sm shadow-brutal-xs">
+                🛡️
               </div>
-              <span className="font-extrabold text-white text-base tracking-tight truncate">
-                Admin <span className="text-cyan-400">Control</span>
-              </span>
+              <div className="leading-tight">
+                <span className="font-black text-slate-950 text-base tracking-tight block">
+                  WOXX<span className="text-blue-600">APP</span>
+                </span>
+                <span className="text-[10px] font-black uppercase text-slate-500">Admin Control</span>
+              </div>
             </div>
           )}
 
           {isCollapsed && (
-            <div className="mx-auto w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-slate-950 font-black text-sm">
+            <div className="mx-auto w-10 h-10 rounded-xl bg-amber-400 border-2 border-slate-900 flex items-center justify-center text-slate-950 font-black text-base shadow-brutal-xs">
               W
             </div>
           )}
 
           <button
             onClick={onToggleCollapse}
-            className={`p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition ${
+            className={`p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-900 text-slate-900 shadow-brutal-xs transition ${
               isCollapsed ? 'hidden' : 'block'
             }`}
             title={isCollapsed ? 'Déplier la barre latérale' : 'Replier la barre latérale'}
@@ -121,12 +124,11 @@ export function AdminSidebar({
           </button>
         </div>
 
-        {/* Bouton de repliement centré si collapsed */}
         {isCollapsed && (
-          <div className="flex justify-center py-2 border-b border-slate-800">
+          <div className="flex justify-center py-3 border-b-2 border-slate-900 bg-slate-50">
             <button
               onClick={onToggleCollapse}
-              className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition"
+              className="p-2 rounded-xl bg-white hover:bg-slate-100 border-2 border-slate-900 text-slate-900 shadow-brutal-xs transition"
               title="Déplier la barre latérale"
             >
               <ChevronRight className="w-4 h-4" />
@@ -135,11 +137,11 @@ export function AdminSidebar({
         )}
 
         {/* Navigation Items */}
-        <div className="p-3 space-y-6 overflow-y-auto max-h-[calc(100vh-170px)] custom-scrollbar">
+        <div className="p-3 space-y-5 overflow-y-auto max-h-[calc(100vh-170px)]">
           {navSections.map((section, idx) => (
             <div key={idx} className="space-y-1">
               {!isCollapsed && (
-                <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider px-3 mb-2">
+                <div className="text-[10px] uppercase font-black text-slate-500 tracking-wider px-3 mb-1.5">
                   {section.title}
                 </div>
               )}
@@ -150,14 +152,14 @@ export function AdminSidebar({
                   <button
                     key={item.id}
                     onClick={() => onSelectTab(item.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-black transition-all ${
                       isActive
-                        ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 border border-cyan-500/40 shadow-sm shadow-cyan-500/10'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent'
+                        ? 'bg-amber-400 text-slate-950 border-2 border-slate-900 shadow-brutal-xs'
+                        : 'text-slate-700 hover:text-slate-950 hover:bg-slate-100 border-2 border-transparent'
                     } ${isCollapsed ? 'justify-center px-0' : ''}`}
                     title={isCollapsed ? item.label : undefined}
                   >
-                    <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+                    <Icon className="w-4 h-4 shrink-0 text-slate-900" />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
                   </button>
                 );
@@ -168,10 +170,10 @@ export function AdminSidebar({
       </div>
 
       {/* Footer Sidebar */}
-      <div className="p-3 border-t border-slate-800 bg-[#080B12] space-y-1">
+      <div className="p-3 border-t-2 border-slate-900 bg-slate-50 space-y-1.5">
         <Link
           href="/"
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition ${
+          className={`w-full flex items-center gap-2.5 px-3 py-2 bg-white hover:bg-slate-100 border-2 border-slate-900 rounded-xl text-xs font-black text-slate-900 shadow-brutal-xs transition ${
             isCollapsed ? 'justify-center px-0' : ''
           }`}
           title={isCollapsed ? "Retour au Site Public" : undefined}
@@ -182,7 +184,7 @@ export function AdminSidebar({
 
         <button
           onClick={onLogout}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition ${
+          className={`w-full flex items-center gap-2.5 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-800 border-2 border-slate-900 rounded-xl text-xs font-black shadow-brutal-xs transition ${
             isCollapsed ? 'justify-center px-0' : ''
           }`}
           title={isCollapsed ? "Déconnexion" : undefined}

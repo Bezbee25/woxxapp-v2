@@ -57,19 +57,19 @@ export function SubscriptionsTab() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0D121F] p-5 rounded-2xl border border-slate-800">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border-2 border-slate-900 shadow-brutal">
         <div>
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-emerald-400" /> Abonnements & Facturation Directe
+          <h2 className="text-xl font-black text-slate-950 flex items-center gap-2">
+            <CreditCard className="w-6 h-6 text-emerald-600" /> Abonnements & Facturation Directe
           </h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-600 font-medium mt-1">
             Suivi des encaissements WoxxPay (15 €/mois ou 150 €/an) et registre des factures.
           </p>
         </div>
 
         <button
           onClick={fetchSubscriptions}
-          className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition border border-slate-700 self-start md:self-auto"
+          className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl transition border-2 border-slate-900 shadow-brutal-xs self-start md:self-auto"
           title="Rafraîchir"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -78,56 +78,56 @@ export function SubscriptionsTab() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-[#0D121F] border border-slate-800 p-5 rounded-2xl">
-          <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
+        <div className="bg-white border-2 border-slate-900 p-5 rounded-3xl shadow-brutal">
+          <div className="flex items-center justify-between text-slate-600 text-xs font-black uppercase mb-2">
             <span>Revenu Total TTC</span>
-            <DollarSign className="w-4 h-4 text-emerald-400" />
+            <DollarSign className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-2xl font-black text-white">
+          <div className="text-3xl font-black text-slate-950">
             {data?.stats?.totalRevenueTtc?.toFixed(2) || '0.00'} €
           </div>
         </div>
 
-        <div className="bg-[#0D121F] border border-slate-800 p-5 rounded-2xl">
-          <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
+        <div className="bg-white border-2 border-slate-900 p-5 rounded-3xl shadow-brutal">
+          <div className="flex items-center justify-between text-slate-600 text-xs font-black uppercase mb-2">
             <span>Revenu Total HT</span>
-            <TrendingUp className="w-4 h-4 text-cyan-400" />
+            <TrendingUp className="w-4 h-4 text-blue-600" />
           </div>
-          <div className="text-2xl font-black text-cyan-400">
+          <div className="text-3xl font-black text-blue-600">
             {data?.stats?.totalRevenueHt?.toFixed(2) || '0.00'} €
           </div>
         </div>
 
-        <div className="bg-[#0D121F] border border-slate-800 p-5 rounded-2xl">
-          <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
+        <div className="bg-white border-2 border-slate-900 p-5 rounded-3xl shadow-brutal">
+          <div className="flex items-center justify-between text-slate-600 text-xs font-black uppercase mb-2">
             <span>Abonnements Actifs</span>
-            <CreditCard className="w-4 h-4 text-purple-400" />
+            <CreditCard className="w-4 h-4 text-purple-600" />
           </div>
-          <div className="text-2xl font-black text-white">
+          <div className="text-3xl font-black text-slate-950">
             {data?.stats?.activeSubscriptionsCount || 0}
           </div>
         </div>
 
-        <div className="bg-[#0D121F] border border-slate-800 p-5 rounded-2xl">
-          <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
+        <div className="bg-white border-2 border-slate-900 p-5 rounded-3xl shadow-brutal">
+          <div className="flex items-center justify-between text-slate-600 text-xs font-black uppercase mb-2">
             <span>Factures Émises</span>
-            <FileText className="w-4 h-4 text-amber-400" />
+            <FileText className="w-4 h-4 text-amber-600" />
           </div>
-          <div className="text-2xl font-black text-amber-400">
+          <div className="text-3xl font-black text-amber-500">
             {data?.stats?.totalInvoicesCount || 0}
           </div>
         </div>
       </div>
 
       {/* Table des Factures Récentes */}
-      <div className="bg-[#0D121F] border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-        <div className="p-4 bg-[#080B12] border-b border-slate-800 font-bold text-sm text-white flex items-center justify-between">
+      <div className="bg-white border-2 border-slate-900 rounded-3xl overflow-hidden shadow-brutal">
+        <div className="p-5 bg-slate-50 border-b-2 border-slate-900 font-black text-sm text-slate-950 flex items-center justify-between">
           <span>Dernières Factures Émises</span>
-          <span className="text-xs text-slate-500 font-normal">Conservation décennale Art. L123-22</span>
+          <span className="text-xs text-slate-500 font-bold">Conservation décennale Art. L123-22</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-[#0A0E17] text-slate-400 uppercase font-semibold border-b border-slate-800">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead className="bg-white text-slate-700 uppercase font-black border-b-2 border-slate-900">
               <tr>
                 <th className="px-5 py-4">N° Facture</th>
                 <th className="px-5 py-4">Date</th>
@@ -138,24 +138,24 @@ export function SubscriptionsTab() {
                 <th className="px-5 py-4">Statut</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y-2 divide-slate-100 font-bold text-slate-900">
               {data?.invoices?.map((inv) => (
-                <tr key={inv.id} className="hover:bg-slate-800/30 transition">
-                  <td className="px-5 py-4 font-mono font-bold text-cyan-400">{inv.invoiceNumber}</td>
-                  <td className="px-5 py-4 text-slate-400">
+                <tr key={inv.id} className="hover:bg-slate-50/80 transition">
+                  <td className="px-5 py-4 font-mono font-black text-blue-600">{inv.invoiceNumber}</td>
+                  <td className="px-5 py-4 text-slate-600">
                     {new Date(inv.createdAt).toLocaleDateString('fr-FR')}
                   </td>
                   <td className="px-5 py-4">
-                    <div className="text-white">{inv.user?.fullName || 'Client'}</div>
-                    <div className="text-slate-500 text-[11px] font-mono">{inv.user?.email || 'N/A'}</div>
+                    <div className="text-slate-950 font-black">{inv.user?.fullName || 'Client'}</div>
+                    <div className="text-slate-500 text-[11px] font-mono font-normal">{inv.user?.email || 'N/A'}</div>
                   </td>
-                  <td className="px-5 py-4 font-mono">{inv.totalHt.toFixed(2)} €</td>
-                  <td className="px-5 py-4 font-mono text-slate-400">
+                  <td className="px-5 py-4 font-mono font-black">{inv.totalHt.toFixed(2)} €</td>
+                  <td className="px-5 py-4 font-mono text-slate-600">
                     {inv.isVatExempt ? '0.00 € (Exo)' : `${inv.totalVat.toFixed(2)} € (${inv.vatRate}%)`}
                   </td>
-                  <td className="px-5 py-4 font-mono font-bold text-white">{inv.totalTtc.toFixed(2)} €</td>
+                  <td className="px-5 py-4 font-mono font-black text-slate-950">{inv.totalTtc.toFixed(2)} €</td>
                   <td className="px-5 py-4">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
                       <CheckCircle className="w-3 h-3" /> {inv.status}
                     </span>
                   </td>
@@ -163,7 +163,7 @@ export function SubscriptionsTab() {
               ))}
               {(!data?.invoices || data.invoices.length === 0) && !loading && (
                 <tr>
-                  <td colSpan={7} className="px-5 py-10 text-center text-slate-500">
+                  <td colSpan={7} className="px-5 py-10 text-center text-slate-500 font-bold">
                     Aucune facture émise pour le moment.
                   </td>
                 </tr>

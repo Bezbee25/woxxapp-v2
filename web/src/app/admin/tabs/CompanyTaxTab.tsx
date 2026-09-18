@@ -73,81 +73,81 @@ export function CompanyTaxTab() {
   };
 
   if (loading) {
-    return <div className="p-8 text-slate-400">Chargement des paramètres fiscaux...</div>;
+    return <div className="p-8 text-slate-500 font-bold">Chargement des paramètres fiscaux...</div>;
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-[#0D121F] p-5 rounded-2xl border border-slate-800">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-          <Building2 className="w-5 h-5 text-cyan-400" /> Structure Fiscale & Facturation
+      <div className="bg-white p-6 rounded-3xl border-2 border-slate-900 shadow-brutal">
+        <h2 className="text-xl font-black text-slate-950 flex items-center gap-2">
+          <Building2 className="w-6 h-6 text-blue-600" /> Structure Fiscale & Facturation
         </h2>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-slate-600 font-medium mt-1">
           Configurez votre régime fiscal (Micro-entreprise sans TVA ou Société assujettie) pour générer des factures conformes aux lois françaises.
         </p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Choix Régime Fiscal */}
-        <div className="bg-[#0D121F] border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
-          <h3 className="text-sm uppercase font-bold text-cyan-400 tracking-wider">
+        <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 space-y-4 shadow-brutal">
+          <h3 className="text-xs uppercase font-black text-slate-500 tracking-wider">
             1. Régime Fiscal de l'Entreprise
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label
               onClick={() => handleTaxTypeChange('MICRO_ENTERPRISE')}
-              className={`p-5 rounded-xl border cursor-pointer flex flex-col justify-between transition ${
+              className={`p-5 rounded-2xl border-2 cursor-pointer flex flex-col justify-between transition ${
                 taxType === 'MICRO_ENTERPRISE'
-                  ? 'bg-cyan-500/10 border-cyan-500 text-white'
-                  : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                  ? 'bg-amber-50 border-slate-900 shadow-brutal-xs'
+                  : 'bg-white border-slate-200 hover:border-slate-400'
               }`}
             >
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-sm text-white">Micro-Entreprise / Auto-Entrepreneur</span>
+                  <span className="font-black text-sm text-slate-950">Micro-Entreprise / Auto-Entrepreneur</span>
                   <input
                     type="radio"
                     name="tax_type"
                     checked={taxType === 'MICRO_ENTERPRISE'}
                     onChange={() => {}}
-                    className="accent-cyan-400"
+                    className="accent-slate-900"
                   />
                 </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Franchise en base de TVA (Art. 293 B du Code Général des Impôts). Aucune TVA n'est facturée aux clients.
+                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                  Franchise en base de TVA (Art. 293 B du CGI). Aucune TVA n'est facturée aux clients.
                 </p>
               </div>
-              <div className="mt-4 text-[11px] font-mono text-cyan-400 bg-cyan-500/10 p-2 rounded-lg">
-                Mention auto : "Franchise en base de TVA, art. 293 B du CGI"
+              <div className="mt-4 text-[11px] font-mono font-bold text-slate-900 bg-amber-200 p-2.5 rounded-xl border border-slate-900">
+                Mention légale : "Franchise en base de TVA, art. 293 B du CGI"
               </div>
             </label>
 
             <label
               onClick={() => handleTaxTypeChange('SAS_SARL_WITH_VAT')}
-              className={`p-5 rounded-xl border cursor-pointer flex flex-col justify-between transition ${
+              className={`p-5 rounded-2xl border-2 cursor-pointer flex flex-col justify-between transition ${
                 taxType === 'SAS_SARL_WITH_VAT'
-                  ? 'bg-cyan-500/10 border-cyan-500 text-white'
-                  : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                  ? 'bg-blue-50 border-slate-900 shadow-brutal-xs'
+                  : 'bg-white border-slate-200 hover:border-slate-400'
               }`}
             >
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-sm text-white">Société avec TVA (SAS, SARL, SASU...)</span>
+                  <span className="font-black text-sm text-slate-950">Société avec TVA (SAS, SARL, SASU...)</span>
                   <input
                     type="radio"
                     name="tax_type"
                     checked={taxType === 'SAS_SARL_WITH_VAT'}
                     onChange={() => {}}
-                    className="accent-cyan-400"
+                    className="accent-slate-900"
                   />
                 </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Assujetti à la TVA française (taux normal de 20%). Le montant HT, TVA et TTC apparaissent séparément sur les factures.
+                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                  Assujetti à la TVA française (taux normal de 20%). Les montants HT, TVA et TTC sont dissociés.
                 </p>
               </div>
-              <div className="mt-4 text-[11px] font-mono text-cyan-400 bg-cyan-500/10 p-2 rounded-lg">
+              <div className="mt-4 text-[11px] font-mono font-bold text-blue-900 bg-blue-100 p-2.5 rounded-xl border border-blue-300">
                 TVA standard 20.0% appliquée
               </div>
             </label>
@@ -155,110 +155,110 @@ export function CompanyTaxTab() {
 
           {taxType === 'SAS_SARL_WITH_VAT' && (
             <div className="pt-2">
-              <label className="block text-xs font-medium text-slate-400 mb-1">Taux de TVA (%)</label>
+              <label className="block text-xs font-black text-slate-900 mb-1">Taux de TVA (%)</label>
               <input
                 type="number"
                 step="0.1"
                 value={vatRate}
                 onChange={(e) => setVatRate(e.target.value)}
-                className="w-48 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500"
+                className="w-48 px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
               />
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1">
+            <label className="block text-xs font-black text-slate-900 mb-1">
               Mention Légale Imposée sur Factures
             </label>
             <input
               type="text"
               value={legalNotice}
               onChange={(e) => setLegalNotice(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500"
+              className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
             />
           </div>
         </div>
 
         {/* Coordonnées de l'Entreprise */}
-        <div className="bg-[#0D121F] border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
-          <h3 className="text-sm uppercase font-bold text-cyan-400 tracking-wider">
+        <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 space-y-4 shadow-brutal">
+          <h3 className="text-xs uppercase font-black text-slate-500 tracking-wider">
             2. Coordonnées Officielles de l'Émetteur
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">Raison Sociale / Nom</label>
+              <label className="block text-xs font-black text-slate-900 mb-1">Raison Sociale / Nom</label>
               <input
                 type="text"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500"
+                className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">Numéro SIRET</label>
+              <label className="block text-xs font-black text-slate-900 mb-1">Numéro SIRET</label>
               <input
                 type="text"
                 value={siret}
                 onChange={(e) => setSiret(e.target.value)}
                 placeholder="123 456 789 00012"
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500"
+                className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">N° TVA Intracommunautaire</label>
+              <label className="block text-xs font-black text-slate-900 mb-1">N° TVA Intracommunautaire</label>
               <input
                 type="text"
                 value={vatNumber}
                 onChange={(e) => setVatNumber(e.target.value)}
-                placeholder="FR12345678900 (si applicable)"
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500"
+                placeholder="FR12345678900"
+                className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">Email de Contact Facturation</label>
+              <label className="block text-xs font-black text-slate-900 mb-1">Email de Contact Facturation</label>
               <input
                 type="email"
                 value={companyEmail}
                 onChange={(e) => setCompanyEmail(e.target.value)}
                 placeholder="facturation@woxxapp.de"
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500"
+                className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-xs font-medium text-slate-400 mb-1">Adresse Complète du Siège</label>
+              <label className="block text-xs font-black text-slate-900 mb-1">Adresse Complète du Siège</label>
               <input
                 type="text"
                 value={companyAddress}
                 onChange={(e) => setCompanyAddress(e.target.value)}
                 placeholder="10 Rue de la Paix, 75001 Paris, France"
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500"
+                className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
               />
             </div>
           </div>
         </div>
 
         {/* Submit */}
-        <div className="flex items-center justify-between bg-[#0D121F] p-4 rounded-2xl border border-slate-800">
-          <div className="text-xs text-slate-400 flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-cyan-400" />
+        <div className="flex items-center justify-between bg-white p-5 rounded-3xl border-2 border-slate-900 shadow-brutal">
+          <div className="text-xs text-slate-600 font-medium flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-amber-500" />
             <span>Les modifications s'appliqueront immédiatement à toutes les nouvelles factures.</span>
           </div>
 
           <div className="flex items-center gap-3">
             {savedSuccess && (
-              <span className="text-xs text-emerald-400 flex items-center gap-1">
+              <span className="text-xs text-emerald-800 bg-emerald-100 px-3 py-1 rounded-lg border border-emerald-300 font-black flex items-center gap-1">
                 <CheckCircle2 className="w-4 h-4" /> Paramètres enregistrés !
               </span>
             )}
             <button
               type="submit"
               disabled={saving}
-              className="px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-2 shadow-md shadow-cyan-500/20 transition disabled:opacity-50"
+              className="px-6 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl text-xs flex items-center gap-2 border-2 border-slate-900 shadow-brutal-xs transition disabled:opacity-50"
             >
               <Save className="w-4 h-4" /> {saving ? 'Enregistrement...' : 'Enregistrer la Configuration'}
             </button>
