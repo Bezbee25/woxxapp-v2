@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import Link from 'next/link';
 import { Lock } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 
@@ -127,29 +127,29 @@ export function LandingFooter() {
               </li>
               <li className="pt-2 border-t border-slate-800 space-y-2">
                 <div>
-                  <a href="/policies/cgv" className="hover:text-amber-400 transition">
+                  <Link href="/policies/cgv" className="hover:text-amber-400 transition">
                     📄 Conditions Générales de Vente (CGV)
-                  </a>
+                  </Link>
                 </div>
                 <div>
-                  <a href="/policies/cgu" className="hover:text-amber-400 transition">
+                  <Link href="/policies/cgu" className="hover:text-amber-400 transition">
                     📜 Conditions d'Utilisation (CGU)
-                  </a>
+                  </Link>
                 </div>
                 <div>
-                  <a href="/policies/legal" className="hover:text-amber-400 transition">
+                  <Link href="/policies/legal" className="hover:text-amber-400 transition">
                     🏛️ Mentions Légales
-                  </a>
+                  </Link>
                 </div>
                 <div>
-                  <a href="/policies/gdpr" className="hover:text-amber-400 transition">
+                  <Link href="/policies/gdpr" className="hover:text-amber-400 transition">
                     🛡️ Protection des Données (RGPD)
-                  </a>
+                  </Link>
                 </div>
                 <div>
-                  <a href="/policies/cookies" className="hover:text-amber-400 transition">
+                  <Link href="/policies/cookies" className="hover:text-amber-400 transition">
                     🍪 Gestion des Cookies
-                  </a>
+                  </Link>
                 </div>
               </li>
             </ul>
@@ -159,21 +159,21 @@ export function LandingFooter() {
         <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
           <p>© 2026 WoxxApp SAS. Tous droits réservés.</p>
           <div className="flex items-center gap-4">
-            <a href="/policies/legal" className="hover:text-slate-400 transition">
+            <Link href="/policies/legal" className="hover:text-slate-400 transition">
               Mentions Légales
-            </a>
+            </Link>
             <span>•</span>
-            <a href="/policies/cgv" className="hover:text-slate-400 transition">
+            <Link href="/policies/cgv" className="hover:text-slate-400 transition">
               CGV
-            </a>
+            </Link>
             <span>•</span>
-            <a href="/policies/cgu" className="hover:text-slate-400 transition">
+            <Link href="/policies/cgu" className="hover:text-slate-400 transition">
               CGU
-            </a>
+            </Link>
             <span>•</span>
-            <a href="/policies/gdpr" className="hover:text-slate-400 transition">
+            <Link href="/policies/gdpr" className="hover:text-slate-400 transition">
               RGPD
-            </a>
+            </Link>
           </div>
         </div>
       </div>
