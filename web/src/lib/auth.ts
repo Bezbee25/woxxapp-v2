@@ -40,7 +40,7 @@ export async function getAuthenticatedUser(req?: NextRequest | Request): Promise
 
   // 1. Essayer depuis les cookies Next.js
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     token = cookieStore.get('woxx_token')?.value;
   } catch {
     // Si cookies() n'est pas accessible, on passe à req

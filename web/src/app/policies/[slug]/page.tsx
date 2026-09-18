@@ -11,13 +11,14 @@ interface PolicyData {
   updatedAt: string;
 }
 
-export default function PolicyPage({ params }: { params: { slug: string } }) {
+export default function PolicyPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = React.use(params);
   const [data, setData] = useState<PolicyData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/api/cms/policies/${params.slug}`)
+    fetch(`/api/cms/policies/${resolvedParams.slug}`)
       .then(async (res) => {
         if (!res.ok) throw new Error('Document introuvable');
         return res.json();
@@ -31,7 +32,7 @@ export default function PolicyPage({ params }: { params: { slug: string } }) {
       .finally(() => {
         setLoading(false);
       });
-  }, [params.slug]);
+  }, [resolvedParams.slug]);
 
   if (loading) {
     return (
@@ -92,7 +93,6 @@ export default function PolicyPage({ params }: { params: { slug: string } }) {
             <span>Dernière mise à jour : {new Date(data.updatedAt).toLocaleDateString('fr-FR')}</span>
           </div>
 
-          {/* Simple Markdown Render */}
           <div className="space-y-6 text-slate-300 leading-relaxed font-normal whitespace-pre-line text-sm md:text-base">
             {data.content}
           </div>

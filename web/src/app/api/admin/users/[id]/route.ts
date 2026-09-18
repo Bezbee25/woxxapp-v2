@@ -5,11 +5,11 @@ import { Role } from '@prisma/client';
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireRole(['ADMIN'], req);
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const { role, assignedSalesRepId, isActive, password, fullName } = body;
 
@@ -44,13 +44,12 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireRole(['ADMIN'], req);
-    const { id } = params;
+    const { id } = await params;
 
-    // Soft delete / anonymisation par défaut pour préserver l'intégrité comptable
     const updated = await prisma.user.update({
       where: { id },
       data: {

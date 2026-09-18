@@ -12,18 +12,18 @@ const POLICY_TITLES: Record<string, string> = {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const slug = params.slug.toLowerCase().trim();
-    const key = `policy_${slug}`;
+    const { slug } = await params;
+    const cleanSlug = slug.toLowerCase().trim();
+    const key = `policy_${cleanSlug}`;
 
     let setting = await prisma.systemSettings.findUnique({
       where: { key },
     });
 
     if (!setting) {
-      // Si la base n'était pas initialisée, lancer le seed
       await runSeed();
       setting = await prisma.systemSettings.findUnique({
         where: { key },
@@ -38,8 +38,8 @@ export async function GET(
     }
 
     return NextResponse.json({
-      slug,
-      title: POLICY_TITLES[slug] || 'Document Légal',
+      slug: cleanSlug,
+      title: POLICY_TITLES[cleanSlug] || 'Document Légal',
       content: setting.value,
       updatedAt: setting.updatedAt,
     });

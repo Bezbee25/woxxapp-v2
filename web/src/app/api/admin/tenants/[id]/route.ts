@@ -5,11 +5,11 @@ import { TenantStatus } from '@prisma/client';
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireRole(['ADMIN'], req);
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const { status, customCommissionPercent, modules, customDomain } = body;
 
@@ -44,11 +44,11 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireRole(['ADMIN'], req);
-    const { id } = params;
+    const { id } = await params;
 
     await prisma.tenant.delete({
       where: { id },
