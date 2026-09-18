@@ -4,16 +4,37 @@ CREATE DATABASE woxxapp OWNER woxxapp;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+CREATE TYPE user_role AS ENUM ('admin', 'charge_daffaire', 'client');
 CREATE TYPE tenant_status AS ENUM ('pending', 'active', 'suspended');
 CREATE TYPE billing_cycle AS ENUM ('monthly', 'yearly');
 CREATE TYPE subscription_status AS ENUM ('active', 'canceled', 'past_due', 'trialing');
 CREATE TYPE provisioning_status AS ENUM ('pending', 'running', 'success', 'failed');
 CREATE TYPE setup_status AS ENUM ('pending', 'quoted', 'in_progress', 'done');
 
-CREATE TABLE tenants (
+CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
+    password_hash TEXT,
+    full_name TEXT,
+    role user_role NOT NULL DEFAULT 'client',
+    google_id TEXT UNIQUE,
+    assigned_sales_rep_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE system_settings (
+    key TEXT PRIMARY KEY,
+    value JSONB NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE tenants (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    email TEXT UNIQUE NOT NULL,
     commerce_name TEXT NOT NULL,
     subdomain TEXT UNIQUE NOT NULL,
     custom_domain TEXT,
@@ -76,6 +97,8 @@ CREATE TABLE provisioning_jobs (
 );
 
 -- Indexes
+CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_users_sales_rep ON users(assigned_sales_rep_id);
 CREATE INDEX idx_entitlements_tenant ON entitlements(tenant_id);
 CREATE INDEX idx_subscriptions_tenant ON subscriptions(tenant_id);
 CREATE INDEX idx_provisioning_tenant ON provisioning_jobs(tenant_id);
@@ -84,6 +107,7 @@ CREATE INDEX idx_provisioning_tenant ON provisioning_jobs(tenant_id);
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$ BEGIN NEW.updated_at = now(); RETURN NEW; END; $$ LANGUAGE plpgsql;
 
+CREATE TRIGGER users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER tenants_updated_at BEFORE UPDATE ON tenants FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER provisioning_updated_at BEFORE UPDATE ON provisioning_jobs FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 

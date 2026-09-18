@@ -22,6 +22,16 @@ class Settings(BaseSettings):
     
     WOXXAPP_K8S_NAMESPACE_PREFIX: str = "tenant-"
     K8S_NAMESPACE_PREFIX: str = "tenant-"
+    
+    # OAuth & Frontend URL
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    FRONTEND_URL: str = "http://localhost:3000"
+    WOXXAPP_MAIN_DOMAIN: str = "localhost"
+
+    # Initial Admin Seed
+    ADMIN_INITIAL_EMAIL: str = "admin@woxxapp.de"
+    ADMIN_INITIAL_PASSWORD: str = "WoxxAdminSecure2026!"
 
     @property
     def db_url(self) -> str:
