@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "../lib/auth-context";
 import { AuthModal } from "../components/auth/AuthModal";
+import CookieConsentBanner from "../components/legal/CookieConsentBanner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,6 +23,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <AuthModal />
+          <CookieConsentBanner />
         </AuthProvider>
       </body>
     </html>

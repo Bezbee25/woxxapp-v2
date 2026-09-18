@@ -1,0 +1,124 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+enum Role {
+  ADMIN
+  CHARGE_DAFFAIRE
+  CLIENT
+}
+
+enum TenantStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+model User {
+  id                   String       @id @default(uuid())
+  email                String       @unique
+  password             String?
+  fullName             String?
+  role                 Role         @default(CLIENT)
+  googleId             String?      @unique
+  assignedSalesRepId   String?
+  isActive             Boolean      @default(true)
+  anonymizedAt         DateTime?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  assignedSalesRep     User?        @relation("SalesRepClients", fields: [assignedSalesRepId], references: [id], onDelete: SetNull)
+  clients              User[]       @relation("SalesRepClients")
+  tenants              Tenant[]
+  subscriptions        Subscription[]
+  invoices             Invoice[]
+
+  @@index([role])
+  @@index([assignedSalesRepId])
+}
+
+model Tenant {
+  id                      String       @id @default(uuid())
+  userId                  String
+  email                   String       @unique
+  commerceName            String
+  subdomain               String       @unique
+  customDomain            String?
+  status                  TenantStatus @default(PENDING)
+  customCommissionPercent Float?
+  modules                 String       @default("[]")
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+
+  user                    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([subdomain])
+}
+
+model Subscription {
+  id                 String       @id @default(uuid())
+  userId             String
+  woxxpayCustomerId  String?
+  woxxpaySubId       String?
+  billingCycle       String       @default("monthly")
+  status             String       @default("active")
+  currentPeriodEnd   DateTime?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices           Invoice[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Invoice {
+  id                 String       @id @default(uuid())
+  invoiceNumber      String       @unique
+  userId             String
+  subscriptionId     String?
+  totalHt            Float
+  totalVat           Float
+  totalTtc           Float
+  vatRate            Float        @default(20.0)
+  isVatExempt        Boolean      @default(false)
+  legalNotice        String?
+  pdfUrl             String?
+  status             String       @default("PAID")
+  createdAt          DateTime     @default(now())
+
+  user               User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  subscription       Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([invoiceNumber])
+  @@index([createdAt])
+}
+
+model Coupon {
+  id                 String       @id @default(uuid())
+  code               String       @unique
+  discountPercent    Float?
+  discountAmount     Float?
+  maxUses            Int?
+  usesCount          Int          @default(0)
+  expiresAt          DateTime?
+  isActive           Boolean      @default(true)
+  createdAt          DateTime     @default(now())
+}
+
+model SystemSettings {
+  id                 String       @id @default(uuid())
+  key                String       @unique
+  value              String
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+}
