@@ -10,26 +10,6 @@ permissions:
   packages: write
 
 jobs:
-  build-push-api:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push API
-        uses: docker/build-push-action@v5
-        with:
-          context: ./api
-          push: true
-          tags: ghcr.io/bezbee25/woxxapp-api:latest
-
   build-push-web:
     runs-on: ubuntu-latest
     steps:
@@ -43,7 +23,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Web
+      - name: Build and push Unified Next.js Web App
         uses: docker/build-push-action@v5
         with:
           context: ./web
