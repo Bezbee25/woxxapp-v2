@@ -34,18 +34,10 @@ export function ProfileDropdown() {
         <button
           type="button"
           onClick={() => openAuthModal('login')}
-          className="inline-flex items-center gap-2 text-xs font-black text-slate-900 hover:text-blue-600 px-3.5 py-2 rounded-xl border-2 border-slate-900 bg-white hover:bg-slate-100 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all cursor-pointer"
+          className="inline-flex items-center gap-2 text-xs font-black text-slate-900 hover:text-blue-600 px-4 py-2 rounded-xl border-2 border-slate-900 bg-white hover:bg-amber-100 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all cursor-pointer"
         >
           <User className="w-4 h-4 text-slate-700" />
-          <span className="hidden sm:inline">Connexion</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => openAuthModal('register')}
-          className="hidden md:inline-flex items-center text-xs font-black bg-amber-400 hover:bg-amber-300 text-slate-950 px-3.5 py-2 rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal hover:-translate-y-0.5 transition-all cursor-pointer"
-        >
-          <span>Créer un compte</span>
+          <span>Connexion</span>
         </button>
       </div>
     );
