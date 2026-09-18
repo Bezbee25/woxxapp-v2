@@ -7,29 +7,15 @@ import {
   ExternalLink, 
   ShieldCheck, 
   Zap, 
-  Layers, 
   ArrowRight, 
   ArrowUp,
   Sparkles,
   Truck,
-  CreditCard,
   ShoppingBag,
   UtensilsCrossed,
-  Globe,
-  Headphones,
   ChevronDown,
   Play,
-  Clock,
-  Laptop,
-  Smartphone,
-  Star,
-  Plus,
-  HelpCircle,
-  Scissors,
-  Coffee,
   HeartHandshake,
-  Gem,
-  CalendarCheck,
   Award,
   Lock
 } from "lucide-react";
@@ -95,7 +81,7 @@ export default function LandingPage() {
   // Options du simulateur de prix interactif
   const [optEcommerce, setOptEcommerce] = useState(true);
   const [optShipping, setOptShipping] = useState(false);
-  const [optFoodDelivery, setOptFoodDelivery] = useState(false);
+  const optFoodDelivery = false;
 
   // Calcul du total en direct
   const basePrice = isAnnual ? 150 : 15;

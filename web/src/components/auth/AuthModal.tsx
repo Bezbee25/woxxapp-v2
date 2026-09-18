@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { API_BASE_URL } from '../../lib/api';
-import { X, Lock, Mail, User, AlertCircle, ArrowRight, Sparkles } from 'lucide-react';
+import { X, Lock, Mail, User, AlertCircle, ArrowRight } from 'lucide-react';
 
 export function AuthModal() {
   const { isAuthModalOpen, closeAuthModal, authModalMode, login, register } = useAuth();

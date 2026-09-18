@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../lib/auth-context';
-import { User, LogOut, Shield, Briefcase, Store, ChevronDown, Sparkles } from 'lucide-react';
+import { User, LogOut, Shield, Briefcase, Store, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 
 export function ProfileDropdown() {

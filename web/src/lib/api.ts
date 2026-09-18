@@ -17,12 +17,14 @@ export async function apiRequest<T = any>(endpoint: string, options: RequestInit
   });
 
   if (!response.ok) {
-    let errorDetail = 'Une erreur est survenue';
+    let errorDetail = response.statusText || 'Une erreur est survenue';
     try {
       const errorData = await response.json();
-      errorDetail = errorData.detail || errorData.message || JSON.stringify(errorData);
+      if (errorData?.detail || errorData?.message) {
+        errorDetail = errorData.detail || errorData.message;
+      }
     } catch {
-      errorDetail = await response.text() || response.statusText;
+      // Ignorer si la réponse n'est pas du JSON
     }
     throw new Error(errorDetail);
   }

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Users, Store, Mail, RefreshCw } from 'lucide-react';
+import { Briefcase, Mail, RefreshCw } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 
 interface SalesRepWithClients {

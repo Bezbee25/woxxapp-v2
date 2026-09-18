@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Search, UserPlus, Shield, Briefcase, RefreshCw, X } from 'lucide-react';
+import { Users, Search, UserPlus, RefreshCw, X } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 
 interface UserItem {
@@ -29,7 +29,6 @@ export function UsersTab() {
   const [newPassword, setNewPassword] = useState('');
   const [newFullName, setNewFullName] = useState('');
   const [newRole, setNewRole] = useState<'ADMIN' | 'CHARGE_DAFFAIRE' | 'CLIENT'>('CLIENT');
-  const [newSalesRepId, setNewSalesRepId] = useState('');
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -99,7 +98,6 @@ export function UsersTab() {
           password: newPassword,
           fullName: newFullName,
           role: newRole,
-          assignedSalesRepId: newSalesRepId || null,
         }),
       });
       setIsCreateOpen(false);

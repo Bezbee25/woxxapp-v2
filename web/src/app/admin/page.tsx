@@ -14,7 +14,6 @@ import { GdprAuditTab } from './tabs/GdprAuditTab';
 import { ModulesTab } from './tabs/ModulesTab';
 import { SmtpTab } from './tabs/SmtpTab';
 import { WoxxPayTab } from './tabs/WoxxPayTab';
-import { Shield, Lock, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminPage() {

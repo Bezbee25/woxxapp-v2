@@ -5,10 +5,11 @@ import { runSeed } from '@/lib/seed';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { email, password } = body;
+    const body = await req.json().catch(() => ({}));
+    const rawEmail = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : '';
+    const rawPassword = typeof body?.password === 'string' ? body.password : '';
 
-    if (!email || !password) {
+    if (!rawEmail || !rawPassword) {
       return NextResponse.json(
         { detail: 'Email et mot de passe requis' },
         { status: 400 }
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
+      where: { email: rawEmail },
     });
 
     if (!user || !user.password) {
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isMatch = await verifyPassword(password, user.password);
+    const isMatch = await verifyPassword(rawPassword, user.password);
     if (!isMatch) {
       return NextResponse.json(
         { detail: 'Identifiants invalides' },
