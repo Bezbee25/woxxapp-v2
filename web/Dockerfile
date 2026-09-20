@@ -1,5 +1,5 @@
 FROM node:20-slim AS builder
-RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get upgrade -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -14,7 +14,7 @@ ENV NODE_ENV=production
 RUN npm run build
 
 FROM node:20-slim AS runner
-RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get upgrade -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 RUN groupadd -g 1001 nextjs && useradd -u 1001 -g nextjs -s /bin/sh -m nextjs
 WORKDIR /app
 ENV NODE_ENV=production
