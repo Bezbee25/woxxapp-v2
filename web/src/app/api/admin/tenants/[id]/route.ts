@@ -40,7 +40,7 @@ export async function PATCH(
     const { StoreManagerClient } = await import('@/lib/store-manager-client');
 
     if (modules !== undefined) {
-      await StoreManagerClient.updateModules(updated.id, parsedModules);
+      await StoreManagerClient.updateModules(updated.subdomain || updated.id, parsedModules);
     }
 
     if (redeploy || imageTag !== undefined) {

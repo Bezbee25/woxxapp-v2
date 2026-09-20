@@ -144,7 +144,15 @@ export function EditModulesModal({
 
   useEffect(() => {
     if (isOpen) {
-      const list = [...(initialModules || [])];
+      const aliasMap: Record<string, string> = {
+        loyalty: 'loyalty_coupons',
+        stripe: 'woxxpay',
+        sendcloud: 'woxxship',
+        telegram: 'notifications',
+        table_ordering: 'click_and_collect',
+        advanced_analytics: 'analytics',
+      };
+      const list = (initialModules || []).map((m) => aliasMap[m] || m);
       // Toujours inclure site_web
       if (!list.includes('site_web')) list.push('site_web');
       // Si ecommerce est coché, auto-inclure facturation & paiement
@@ -152,7 +160,7 @@ export function EditModulesModal({
         if (!list.includes('accounting')) list.push('accounting');
         if (!list.includes('woxxpay')) list.push('woxxpay');
       }
-      setSelectedModules(list);
+      setSelectedModules(Array.from(new Set(list)));
     }
   }, [isOpen, initialModules]);
 
