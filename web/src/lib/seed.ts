@@ -74,21 +74,90 @@ export async function runSeed() {
   }
   console.log('✅ Paramètres système et CMS initialisés et actualisés.');
 
-  // 3. Initialiser les Coupons par défaut
-  const defaultCoupons = [
-    { code: 'BIENVENUE10', discountPercent: 10, isActive: true },
-    { code: 'LANCEMENT50', discountAmount: 50, isActive: true },
-  ];
+  // 4. Initialiser les Boutiques Système & Démo (Zorea, Démo Mode, Démo Pizza)
+  const adminUser = await prisma.user.findFirst({
+    where: { role: 'ADMIN' },
+  });
 
-  for (const c of defaultCoupons) {
-    const exists = await prisma.coupon.findUnique({
-      where: { code: c.code },
-    });
-    if (!exists) {
-      await prisma.coupon.create({
-        data: c,
+  if (adminUser) {
+    const defaultTenants = [
+      {
+        commerceName: 'Zorea',
+        subdomain: 'zorea',
+        customDomain: 'zorea.fr',
+        email: 'contact@zorea.fr',
+        status: 'ACTIVE' as const,
+        k8sNamespace: 'zorea',
+        k8sStatus: 'ACTIVE',
+        imageTag: 'ghcr.io/bezbee25/boutique-global:20260920-165745-arm64',
+        modules: JSON.stringify([
+          'pos',
+          'ecommerce',
+          'inventory',
+          'loyalty',
+          'analytics',
+          'marketing',
+          'table_ordering',
+          'multi_store',
+        ]),
+      },
+      {
+        commerceName: 'Démo Mode & Vêtements',
+        subdomain: 'demo-mode',
+        customDomain: null,
+        email: 'demo-mode@woxxapp.de',
+        status: 'ACTIVE' as const,
+        k8sNamespace: 'demo-stores',
+        k8sStatus: 'ACTIVE',
+        imageTag: 'ghcr.io/bezbee25/boutique-global:20260920-165745-arm64',
+        modules: JSON.stringify([
+          'pos',
+          'ecommerce',
+          'inventory',
+          'loyalty',
+          'analytics',
+          'marketing',
+          'table_ordering',
+          'multi_store',
+        ]),
+      },
+      {
+        commerceName: 'Démo Restaurant Pizza',
+        subdomain: 'demo-pizza',
+        customDomain: null,
+        email: 'demo-pizza@woxxapp.de',
+        status: 'ACTIVE' as const,
+        k8sNamespace: 'demo-stores',
+        k8sStatus: 'ACTIVE',
+        imageTag: 'ghcr.io/bezbee25/boutique-global:20260920-165745-arm64',
+        modules: JSON.stringify([
+          'pos',
+          'ecommerce',
+          'inventory',
+          'loyalty',
+          'analytics',
+          'marketing',
+          'table_ordering',
+          'multi_store',
+        ]),
+      },
+    ];
+
+    for (const t of defaultTenants) {
+      const exists = await prisma.tenant.findUnique({
+        where: { subdomain: t.subdomain },
       });
+      if (!exists) {
+        await prisma.tenant.create({
+          data: {
+            ...t,
+            userId: adminUser.id,
+          },
+        });
+        console.log(`✅ Boutique enregistrée : ${t.commerceName} (${t.subdomain})`);
+      }
     }
   }
-  console.log('✅ Coupons de test initialisés.');
+
+  console.log('✅ Initialisation complète terminée.');
 }
