@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { StoreManagerClient } from '@/lib/store-manager-client';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { tenantId: string } }
 ) {
   try {
+    const user = await getAuthenticatedUser(req);
+    if (!user) {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    }
+
     const { tenantId } = params;
     const body = await req.json();
     const { modules } = body;
@@ -21,6 +27,10 @@ export async function POST(
 
     if (!tenant) {
       return NextResponse.json({ error: 'Boutique introuvable' }, { status: 404 });
+    }
+
+    if (user.role !== 'ADMIN' && tenant.userId !== user.id) {
+      return NextResponse.json({ error: 'Accès non autorisé à cette boutique' }, { status: 403 });
     }
 
     // 1. Mise à jour dans la base WoxxAPP
