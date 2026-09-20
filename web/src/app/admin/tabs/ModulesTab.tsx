@@ -1,22 +1,125 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Layers, Save, CheckCircle2 } from 'lucide-react';
+import { Layers, Save, CheckCircle2, ShieldCheck, Sparkles, ShoppingBag, Truck, Utensils, FileText, Gift, BarChart3, Bell, Globe } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 
-const MODULES_INFO = [
-  { slug: 'vitrine', name: 'Site Vitrine & Présentation', desc: 'Pages d’accueil, à propos, contact, galerie et formulaire.' },
-  { slug: 'ecommerce', name: 'Boutique E-commerce & Catalogue', desc: 'Gestion de produits, panier d’achat, déclinaisons et commandes.' },
-  { slug: 'payment', name: 'Passerelle WoxxPay / Stripe', desc: 'Paiement sécurisé par CB pour les commandes de la boutique.' },
-  { slug: 'shipping', name: 'Gestion des Livraisons & Frais de Port', desc: 'Calcul des frais de port par zone et expéditions.' },
-  { slug: 'booking', name: 'Réservations & Rendez-vous', desc: 'Calendrier interactif pour artisans, coiffeurs et praticiens.' },
-  { slug: 'food_delivery', name: 'Click & Collect / Restauration', desc: 'Commandes en ligne express avec heure de retrait.' },
-  { slug: 'custom_domain', name: 'Nom de Domaine Personnalisé', desc: 'Raccordement de son propre domaine .fr / .com avec SSL automatique.' },
+export interface ModulePricingItem {
+  code: string;
+  name: string;
+  desc: string;
+  category: 'vitrine' | 'ecommerce' | 'logistique' | 'restauration' | 'finance' | 'marketing' | 'analytics' | 'notifications';
+  priceMonthly: number;
+  priceYearly: number;
+  costPriceMonthly: number;
+  isActive: boolean;
+  isCore: boolean;
+}
+
+export const DEFAULT_MODULE_CATALOG: ModulePricingItem[] = [
+  {
+    code: 'site_web',
+    name: 'Site Web Classique (Vitrine)',
+    desc: 'Pages d’accueil, présentation, contact, devis, CMS, SEO & analytics.',
+    category: 'vitrine',
+    priceMonthly: 15.0,
+    priceYearly: 150.0,
+    costPriceMonthly: 2.0,
+    isActive: true,
+    isCore: true,
+  },
+  {
+    code: 'ecommerce',
+    name: 'Boutique E-commerce & Stocks',
+    desc: 'Catalogue produits, variantes (tailles/couleurs), panier & alertes stock.',
+    category: 'ecommerce',
+    priceMonthly: 15.0,
+    priceYearly: 150.0,
+    costPriceMonthly: 3.0,
+    isActive: true,
+    isCore: false,
+  },
+  {
+    code: 'woxxpay',
+    name: 'Paiements WoxxPay / Stripe',
+    desc: 'Encaissement CB sécurisé, espèces, chèque et virement bancaire.',
+    category: 'finance',
+    priceMonthly: 0.0,
+    priceYearly: 0.0,
+    costPriceMonthly: 0.0,
+    isActive: true,
+    isCore: false,
+  },
+  {
+    code: 'woxxship',
+    name: 'Transport & Expéditions WoxxShip',
+    desc: 'Passerelle transporteurs, étiquettes Colissimo/Mondial Relay & frais de port.',
+    category: 'logistique',
+    priceMonthly: 10.0,
+    priceYearly: 100.0,
+    costPriceMonthly: 1.5,
+    isActive: true,
+    isCore: false,
+  },
+  {
+    code: 'click_and_collect',
+    name: 'Click & Collect / Table / Restauration',
+    desc: 'Retrait sur créneau horaire, commande à table (lien Deliveroo/Uber Eats en dev).',
+    category: 'restauration',
+    priceMonthly: 15.0,
+    priceYearly: 150.0,
+    costPriceMonthly: 2.0,
+    isActive: true,
+    isCore: false,
+  },
+  {
+    code: 'accounting',
+    name: 'Facturation Légale & Comptabilité',
+    desc: 'Factures conformes, avoirs, décomposition TVA et export comptable.',
+    category: 'finance',
+    priceMonthly: 10.0,
+    priceYearly: 100.0,
+    costPriceMonthly: 1.0,
+    isActive: true,
+    isCore: false,
+  },
+  {
+    code: 'loyalty_coupons',
+    name: 'Fidélité, Cartes Cadeaux & Codes Promo',
+    desc: 'Cartes cadeaux, avoirs clients, codes promotionnels et remises panier.',
+    category: 'marketing',
+    priceMonthly: 10.0,
+    priceYearly: 100.0,
+    costPriceMonthly: 1.0,
+    isActive: true,
+    isCore: false,
+  },
+  {
+    code: 'analytics',
+    name: 'Statistiques Avancées & Reporting',
+    desc: 'Tableaux de bord approfondis du chiffre d’affaires, panier moyen et top ventes.',
+    category: 'analytics',
+    priceMonthly: 10.0,
+    priceYearly: 100.0,
+    costPriceMonthly: 1.0,
+    isActive: true,
+    isCore: false,
+  },
+  {
+    code: 'notifications',
+    name: 'Alertes Telegram en Direct',
+    desc: 'Notification instantanée de chaque commande sur un canal Telegram privé.',
+    category: 'notifications',
+    priceMonthly: 5.0,
+    priceYearly: 50.0,
+    costPriceMonthly: 0.5,
+    isActive: true,
+    isCore: false,
+  },
 ];
 
 export function ModulesTab() {
-  const [priceMonthly, setPriceMonthly] = useState('15');
-  const [priceYearly, setPriceYearly] = useState('150');
+  const [catalog, setCatalog] = useState<ModulePricingItem[]>(DEFAULT_MODULE_CATALOG);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -24,14 +127,28 @@ export function ModulesTab() {
   useEffect(() => {
     apiRequest<Record<string, string>>('/admin/settings')
       .then((settings) => {
-        if (settings) {
-          if (settings.plan_price_monthly) setPriceMonthly(settings.plan_price_monthly);
-          if (settings.plan_price_yearly) setPriceYearly(settings.plan_price_yearly);
+        if (settings?.module_pricing_catalog) {
+          try {
+            const parsed = JSON.parse(settings.module_pricing_catalog);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setCatalog(parsed);
+            }
+          } catch {
+            // Utiliser le catalogue par défaut
+          }
         }
       })
       .catch((err) => console.error('Erreur chargement settings modules:', err))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleUpdateItem = (index: number, field: keyof ModulePricingItem, value: any) => {
+    setCatalog((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,14 +158,13 @@ export function ModulesTab() {
       await apiRequest('/admin/settings', {
         method: 'POST',
         body: JSON.stringify({
-          plan_price_monthly: priceMonthly,
-          plan_price_yearly: priceYearly,
+          module_pricing_catalog: JSON.stringify(catalog),
         }),
       });
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
     } catch (err: any) {
-      alert(err.message || 'Erreur enregistrement tarifs');
+      alert(err.message || 'Erreur enregistrement tarifs modules');
     } finally {
       setSaving(false);
     }
@@ -58,90 +174,170 @@ export function ModulesTab() {
     return <div className="p-8 text-slate-500 font-bold">Chargement des modules...</div>;
   }
 
+  // Calculs formules clés
+  const siteWeb = catalog.find((m) => m.code === 'site_web');
+  const ecommerce = catalog.find((m) => m.code === 'ecommerce');
+  const baseShowcasePrice = siteWeb ? siteWeb.priceMonthly : 15;
+  const baseShowcaseYearly = siteWeb ? siteWeb.priceYearly : 150;
+  const fullShopPrice = baseShowcasePrice + (ecommerce ? ecommerce.priceMonthly : 15);
+  const fullShopYearly = baseShowcaseYearly + (ecommerce ? ecommerce.priceYearly : 150);
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-white p-6 rounded-3xl border-2 border-slate-900 shadow-brutal">
         <h2 className="text-xl font-black text-slate-950 flex items-center gap-2">
-          <Layers className="w-6 h-6 text-amber-500" /> Modules Applicatifs & Grille Tarifaire
+          <Layers className="w-6 h-6 text-amber-500" /> Grille Tarifaire & Modules Applicatifs
         </h2>
         <p className="text-xs text-slate-600 font-medium mt-1">
-          Définissez les prix de base des abonnements WoxxApp V2 et visualisez les modules disponibles.
+          Définissez les prix de chaque module unitaire. Le commerçant compose son forfait ou choisit une formule recommandée.
         </p>
       </div>
 
+      {/* Résumé des Formules Clés */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white border-2 border-slate-900 rounded-3xl p-5 shadow-brutal flex items-start gap-4">
+          <div className="p-3 bg-blue-100 border-2 border-slate-900 rounded-2xl shadow-brutal-xs text-blue-700 shrink-0">
+            <Globe className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-black text-slate-950">Formule Site Web (Vitrine Seule)</span>
+              <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-900 font-black text-[10px] border border-slate-900">
+                Base
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 font-medium mt-1">
+              Site de présentation, pages CMS, contact, devis, galerie & SEO sans e-commerce.
+            </p>
+            <div className="mt-2 text-sm font-black text-slate-950">
+              {baseShowcasePrice} € HT / mois <span className="text-xs text-slate-500 font-bold">({baseShowcaseYearly} € HT / an)</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border-2 border-slate-900 rounded-3xl p-5 shadow-brutal flex items-start gap-4">
+          <div className="p-3 bg-amber-100 border-2 border-slate-900 rounded-2xl shadow-brutal-xs text-amber-700 shrink-0">
+            <ShoppingBag className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-black text-slate-950">Pack Boutique E-commerce</span>
+              <span className="px-2 py-0.5 rounded-md bg-amber-200 text-slate-950 font-black text-[10px] border border-slate-900">
+                Populaire
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 font-medium mt-1">
+              Site Web + Catalogue Produits + Panier + Paiements WoxxPay / CB sécurisés.
+            </p>
+            <div className="mt-2 text-sm font-black text-slate-950">
+              {fullShopPrice} € HT / mois <span className="text-xs text-slate-500 font-bold">({fullShopYearly} € HT / an)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tableau de Tarification par Module */}
       <form onSubmit={handleSave} className="space-y-6">
-        {/* Tarification de l'abonnement SaaS */}
-        <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 space-y-4 shadow-brutal">
-          <h3 className="text-xs uppercase font-black text-slate-500 tracking-wider">
-            1. Tarifs de l'Abonnement SaaS
-          </h3>
+        <div className="bg-white border-2 border-slate-900 rounded-3xl overflow-hidden shadow-brutal">
+          <div className="p-5 bg-slate-50 border-b-2 border-slate-900 flex items-center justify-between">
+            <h3 className="text-xs uppercase font-black text-slate-700 tracking-wider">
+              Catalogue & Tarification des Modules à la Carte
+            </h3>
+            <span className="text-[11px] font-bold text-slate-500">
+              {catalog.length} modules disponibles
+            </span>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1.5">
-                Formule Mensuelle (€ HT / mois)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                required
-                value={priceMonthly}
-                onChange={(e) => setPriceMonthly(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-50 border-2 border-slate-900 rounded-xl text-sm font-bold text-slate-950 focus:outline-none focus:bg-amber-50/50 shadow-brutal-xs transition"
-              />
-              <span className="text-[11px] text-slate-500 font-medium mt-1.5 block">Prix recommandé : 15.00 € HT</span>
-            </div>
-
-            <div>
-              <label className="block text-xs font-black uppercase tracking-wider text-slate-700 mb-1.5">
-                Formule Annuelle (€ HT / an)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                required
-                value={priceYearly}
-                onChange={(e) => setPriceYearly(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-50 border-2 border-slate-900 rounded-xl text-sm font-bold text-slate-950 focus:outline-none focus:bg-amber-50/50 shadow-brutal-xs transition"
-              />
-              <span className="text-[11px] text-slate-500 font-medium mt-1.5 block">Prix recommandé : 150.00 € HT (2 mois offerts)</span>
-            </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="bg-white text-slate-700 uppercase font-black border-b-2 border-slate-900">
+                <tr>
+                  <th className="px-5 py-3.5">Module & Description</th>
+                  <th className="px-5 py-3.5">Code Technique</th>
+                  <th className="px-5 py-3.5 w-36">Prix Mensuel (€ HT)</th>
+                  <th className="px-5 py-3.5 w-36">Prix Annuel (€ HT)</th>
+                  <th className="px-5 py-3.5 w-32">Coût Revient (€)</th>
+                  <th className="px-5 py-3.5 text-center w-24">Actif</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y-2 divide-slate-100 font-bold text-slate-900">
+                {catalog.map((m, idx) => (
+                  <tr key={m.code} className="hover:bg-slate-50/80 transition">
+                    <td className="px-5 py-3.5">
+                      <div className="font-black text-slate-950 text-sm flex items-center gap-2">
+                        {m.name}
+                        {m.isCore && (
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-900 rounded text-[9px] font-black border border-blue-300 uppercase">
+                            Socle
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-slate-500 font-medium mt-0.5">{m.desc}</div>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className="px-2.5 py-1 bg-slate-100 rounded-lg text-[10px] font-mono font-bold text-slate-800 border border-slate-300">
+                        {m.code}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          step="0.5"
+                          min="0"
+                          value={m.priceMonthly}
+                          onChange={(e) => handleUpdateItem(idx, 'priceMonthly', parseFloat(e.target.value) || 0)}
+                          className="w-20 px-2.5 py-1.5 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-black text-slate-950 focus:outline-none focus:bg-white"
+                        />
+                        <span className="text-[11px] font-bold text-slate-600">/ mois</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          step="1"
+                          min="0"
+                          value={m.priceYearly}
+                          onChange={(e) => handleUpdateItem(idx, 'priceYearly', parseFloat(e.target.value) || 0)}
+                          className="w-20 px-2.5 py-1.5 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-black text-slate-950 focus:outline-none focus:bg-white"
+                        />
+                        <span className="text-[11px] font-bold text-slate-600">/ an</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        value={m.costPriceMonthly}
+                        onChange={(e) => handleUpdateItem(idx, 'costPriceMonthly', parseFloat(e.target.value) || 0)}
+                        className="w-16 px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:bg-white"
+                      />
+                    </td>
+                    <td className="px-5 py-3.5 text-center">
+                      <input
+                        type="checkbox"
+                        checked={m.isActive}
+                        disabled={m.isCore}
+                        onChange={(e) => handleUpdateItem(idx, 'isActive', e.target.checked)}
+                        className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 
-        {/* Modules du Catalogue */}
-        <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 space-y-4 shadow-brutal">
-          <h3 className="text-xs uppercase font-black text-slate-500 tracking-wider">
-            2. Catalogue des Modules Disponibles
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {MODULES_INFO.map((m) => (
-              <div
-                key={m.slug}
-                className="p-4 bg-slate-50 border-2 border-slate-900 rounded-2xl flex items-start justify-between gap-4 shadow-brutal-xs hover:bg-amber-50/30 transition"
-              >
-                <div>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="font-black text-sm text-slate-950">{m.name}</span>
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-200 text-slate-950 border border-slate-900">
-                      {m.slug}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-600 font-medium leading-relaxed">{m.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Submit */}
+        {/* Footer & Enregistrement */}
         <div className="flex items-center justify-between bg-white p-5 rounded-3xl border-2 border-slate-900 shadow-brutal">
           <div>
             {savedSuccess && (
               <span className="text-xs text-emerald-700 font-black flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Tarifs enregistrés avec succès !
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Grille tarifaire enregistrée avec succès !
               </span>
             )}
           </div>
@@ -151,10 +347,11 @@ export function ModulesTab() {
             disabled={saving}
             className="px-6 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl text-xs flex items-center gap-2 border-2 border-slate-900 shadow-brutal-xs hover:translate-x-0.5 hover:translate-y-0.5 transition active:shadow-none disabled:opacity-50"
           >
-            <Save className="w-4 h-4" /> {saving ? 'Enregistrement...' : 'Enregistrer les Tarifs'}
+            <Save className="w-4 h-4" /> {saving ? 'Enregistrement...' : 'Enregistrer la Grille Tarifaire'}
           </button>
         </div>
       </form>
     </div>
   );
 }
+
