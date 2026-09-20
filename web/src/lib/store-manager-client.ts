@@ -44,7 +44,7 @@ export interface K8sStoreStatus {
 }
 
 export class StoreManagerClient {
-  private static apiUrl = process.env.STORE_MANAGER_INTERNAL_URL || 'http://localhost:8000';
+  private static apiUrl = process.env.STORE_MANAGER_INTERNAL_URL || 'http://store-manager.store-system.svc.cluster.local:8000';
   private static internalApiKey = process.env.STORE_MANAGER_INTERNAL_KEY || 'woxx-internal-cluster-key-2026';
 
   private static getHeaders() {
