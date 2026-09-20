@@ -5,7 +5,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { tenantId: string } }
+  { params }: { params: Promise<{ tenantId: string }> }
 ) {
   try {
     const user = await getAuthenticatedUser(req);
@@ -13,7 +13,7 @@ export async function POST(
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const { tenantId } = params;
+    const { tenantId } = await params;
     const body = await req.json();
     const { modules } = body;
 
