@@ -1,0 +1,15 @@
+name: "CodeQL Custom Security Config"
+
+paths-ignore:
+  - '.next'
+  - 'out'
+  - 'dist'
+  - 'node_modules'
+  - 'coverage'
+  - 'public'
+  - '**/tests/**'
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+
+queries:
+  - uses: security-extended
