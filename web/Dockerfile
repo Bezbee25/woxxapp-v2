@@ -5,6 +5,12 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 RUN npx prisma generate
+
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/woxxapp"
+ENV JWT_SECRET="build-secret-jwt-key-32-chars-minimum"
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
 RUN npm run build
 
 FROM node:20-slim AS runner
