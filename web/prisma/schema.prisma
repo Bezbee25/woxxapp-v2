@@ -53,6 +53,9 @@ model Tenant {
   status                  TenantStatus @default(PENDING)
   customCommissionPercent Float?
   modules                 String       @default("[]")
+  tenantApiKey            String       @default(uuid())
+  k8sNamespace            String?
+  k8sStatus               String       @default("NOT_DEPLOYED")
   createdAt               DateTime     @default(now())
   updatedAt               DateTime     @updatedAt
 
@@ -112,7 +115,24 @@ model Coupon {
   usesCount          Int          @default(0)
   expiresAt          DateTime?
   isActive           Boolean      @default(true)
+  assignedSalesRepId String?
+  targetUserId       String?
   createdAt          DateTime     @default(now())
+}
+
+model ModuleCatalog {
+  id               String   @id @default(uuid())
+  code             String   @unique
+  name             String
+  description      String
+  category         String   @default("general")
+  priceMonthly     Float    @default(0.0)
+  priceYearly      Float    @default(0.0)
+  costPriceMonthly Float    @default(0.0)
+  isActive         Boolean  @default(true)
+  isCore           Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model SystemSettings {
