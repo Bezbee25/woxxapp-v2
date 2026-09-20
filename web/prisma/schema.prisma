@@ -56,6 +56,7 @@ model Tenant {
   tenantApiKey            String       @default(uuid())
   k8sNamespace            String?
   k8sStatus               String       @default("NOT_DEPLOYED")
+  imageTag                String?      @default("ghcr.io/bezbee25/boutique-global:latest")
   createdAt               DateTime     @default(now())
   updatedAt               DateTime     @updatedAt
 

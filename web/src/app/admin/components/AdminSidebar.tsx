@@ -30,6 +30,7 @@ export type AdminTab =
   | 'legal-cms'
   | 'gdpr-audit'
   | 'modules'
+  | 'versions'
   | 'smtp'
   | 'woxxpay';
 
@@ -77,7 +78,8 @@ export function AdminSidebar({
     {
       title: 'Configuration Système',
       items: [
-        { id: 'modules' as AdminTab, label: 'Modules & Tarifs', icon: Layers },
+        { id: 'versions' as AdminTab, label: 'Versions Boutiques (K8s)', icon: Layers },
+        { id: 'modules' as AdminTab, label: 'Modules & Tarifs', icon: Tag },
         { id: 'smtp' as AdminTab, label: 'Serveur SMTP', icon: Mail },
         { id: 'woxxpay' as AdminTab, label: 'WoxxPay Direct API', icon: Zap },
       ],

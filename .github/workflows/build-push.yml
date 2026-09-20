@@ -24,12 +24,25 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/bezbee25/woxxapp-web
+          tags: |
+            type=raw,value={{date 'YYYYMMDD-HHmmss'}}
+            type=sha,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
       - name: Build and push Unified Next.js Web App
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./web
           push: true
-          tags: ghcr.io/bezbee25/woxxapp-web:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Run Trivy vulnerability scanner on woxxapp image
         uses: aquasecurity/trivy-action@master

@@ -12,6 +12,7 @@ import { CompanyTaxTab } from './tabs/CompanyTaxTab';
 import { LegalCmsTab } from './tabs/LegalCmsTab';
 import { GdprAuditTab } from './tabs/GdprAuditTab';
 import { ModulesTab } from './tabs/ModulesTab';
+import { BoutiqueVersionsTab } from './tabs/BoutiqueVersionsTab';
 import { SmtpTab } from './tabs/SmtpTab';
 import { WoxxPayTab } from './tabs/WoxxPayTab';
 import Link from 'next/link';
@@ -91,6 +92,8 @@ export default function AdminPage() {
         return <GdprAuditTab />;
       case 'modules':
         return <ModulesTab />;
+      case 'versions':
+        return <BoutiqueVersionsTab />;
       case 'smtp':
         return <SmtpTab />;
       case 'woxxpay':
