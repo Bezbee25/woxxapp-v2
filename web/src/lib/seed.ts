@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { prisma } from './prisma';
 import { hashPassword } from './auth';
 import { DEFAULT_LEGAL_POLICIES } from './policies-data';
@@ -7,7 +8,7 @@ export async function runSeed() {
 
   // 1. Initialiser le Super-Administrateur
   const adminEmail = process.env.ADMIN_INITIAL_EMAIL || 'admin@woxxapp.de';
-  const adminPassword = process.env.ADMIN_INITIAL_PASSWORD || 'AdminPassword2026!';
+  const adminPassword = process.env.ADMIN_INITIAL_PASSWORD || crypto.randomBytes(16).toString('hex');
 
   const existingAdmin = await prisma.user.findUnique({
     where: { email: adminEmail },
@@ -40,10 +41,10 @@ export async function runSeed() {
     { key: 'company_address', value: '10 Rue de la Paix, 75001 Paris, France' },
     { key: 'company_email', value: 'contact@woxxapp.de' },
     
-    // WoxxPay Clé isolée
-    { key: 'woxxpay_api_key', value: 'woxx_live_appv2_secret_key' },
-    { key: 'woxxpay_merchant_id', value: 'merch_woxxapp_v2' },
-    { key: 'woxxpay_webhook_secret', value: 'whsec_woxxapp_v2_default' },
+    // WoxxPay Configuration
+    { key: 'woxxpay_api_key', value: process.env.WOXXPAY_API_KEY || '' },
+    { key: 'woxxpay_merchant_id', value: process.env.WOXXPAY_MERCHANT_ID || '' },
+    { key: 'woxxpay_webhook_secret', value: process.env.WOXXPAY_WEBHOOK_SECRET || '' },
     
     // Google Analytics
     { key: 'google_analytics_id', value: 'G-XXXXXXXXXX' },

@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
   packages: write
+  security-events: write
 
 jobs:
   build-push-web:
@@ -29,3 +30,18 @@ jobs:
           context: ./web
           push: true
           tags: ghcr.io/bezbee25/woxxapp-web:latest
+
+      - name: Run Trivy vulnerability scanner on woxxapp image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/bezbee25/woxxapp-web:latest
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+        continue-on-error: true
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true

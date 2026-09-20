@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
@@ -5,7 +6,16 @@ import { NextRequest } from 'next/server';
 import { prisma } from './prisma';
 import { Role, User } from '@prisma/client';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'woxxapp-v2-super-secret-jwt-key-2026';
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (secret) return secret;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('FATAL: Variable d’environnement JWT_SECRET manquante en production.');
+  }
+  return crypto.randomBytes(32).toString('hex');
+}
+
+const JWT_SECRET = getJwtSecret();
 const JWT_EXPIRES_IN = '7d';
 
 export interface JwtPayload {
