@@ -35,6 +35,21 @@ export async function POST(req: NextRequest) {
 
     await prisma.$transaction(updates);
 
+    // Synchronisation en direct de la grille tarifaire avec le Store Manager
+    if (body.module_pricing_catalog) {
+      try {
+        const { StoreManagerClient } = await import('@/lib/store-manager-client');
+        const catalog = typeof body.module_pricing_catalog === 'string'
+          ? JSON.parse(body.module_pricing_catalog)
+          : body.module_pricing_catalog;
+        if (Array.isArray(catalog)) {
+          await StoreManagerClient.syncPricingCatalog(catalog);
+        }
+      } catch (syncErr) {
+        console.error('Erreur synchronisation grille tarifaire Store Manager:', syncErr);
+      }
+    }
+
     return NextResponse.json({ message: 'Paramètres mis à jour avec succès' });
   } catch (error: any) {
     const status = error.message === 'UNAUTHORIZED' ? 401 : error.message === 'FORBIDDEN' ? 403 : 500;
