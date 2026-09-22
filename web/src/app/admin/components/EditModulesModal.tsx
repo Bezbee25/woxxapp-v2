@@ -86,6 +86,11 @@ export const MODULE_PROGRESSION_STEPS: ModuleStepDefinition[] = [
         code: 'click_and_collect',
         label: 'Click & Collect / Table',
         desc: 'Retrait en boutique sur créneau horaire dédié et commande à table/comptoir.'
+      },
+      {
+        code: 'reservations',
+        label: 'Prise de Rendez-Vous & Tables',
+        desc: 'Gestion universelle des rendez-vous (santé, dentiste, médecin, massage, esthétique) et réservations de tables/cabines.'
       }
     ]
   },
