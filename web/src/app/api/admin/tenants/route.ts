@@ -58,7 +58,18 @@ export async function POST(req: NextRequest) {
     const user = await requireRole(['ADMIN'], req);
 
     const body = await req.json();
-    const { commerceName, subdomain, email, fullName, modules = [], customDomain, imageTag } = body;
+    const {
+      commerceName,
+      subdomain,
+      email,
+      fullName,
+      modules = [],
+      customDomain,
+      imageTag,
+      adminPassword,
+      managerPassword,
+      assignedSalesRepId,
+    } = body;
 
     if (!commerceName || !subdomain || !email) {
       return NextResponse.json(
@@ -91,7 +102,13 @@ export async function POST(req: NextRequest) {
           email: email.trim().toLowerCase(),
           fullName: fullName?.trim() || commerceName,
           role: 'CLIENT',
+          assignedSalesRepId: assignedSalesRepId || null,
         },
+      });
+    } else if (assignedSalesRepId !== undefined) {
+      targetUser = await prisma.user.update({
+        where: { id: targetUser.id },
+        data: { assignedSalesRepId: assignedSalesRepId || null },
       });
     }
 
@@ -131,6 +148,16 @@ export async function POST(req: NextRequest) {
       customDomain: tenant.customDomain || undefined,
       image: effectiveImage,
     });
+
+    // Synchronisation des mots de passe initiaux si fournis
+    if (adminPassword || managerPassword) {
+      await StoreManagerClient.updateStoreCredentials(tenant.subdomain, {
+        adminEmail: `admin@${cleanSubdomain}.local`,
+        adminPassword: adminPassword || undefined,
+        managerEmail: targetUser.email,
+        managerPassword: managerPassword || undefined,
+      });
+    }
 
     // Mettre à jour l'état du déploiement
     const updatedTenant = await prisma.tenant.update({

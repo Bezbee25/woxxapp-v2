@@ -8,16 +8,17 @@ import {
   ShieldCheck,
   AlertTriangle,
   RefreshCw,
-  Check,
   Edit2,
   PlusCircle,
   X,
   Layers,
-  Sparkles,
-  Server,
+  Key,
+  Lock,
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
-import { EditModulesModal, REAL_BOUTIQUE_MODULES } from '../components/EditModulesModal';
+import { EditModulesModal } from '../components/EditModulesModal';
+import { CreateTenantModal } from '../components/CreateTenantModal';
+import { ManageCredentialsModal } from '../components/ManageCredentialsModal';
 
 interface Tenant {
   id: string;
@@ -31,11 +32,12 @@ interface Tenant {
   imageTag?: string;
   k8sStatus?: string;
   createdAt: string;
+  assignedSalesRepId?: string | null;
   user?: {
     id: string;
     email: string;
     fullName?: string;
-    assignedSalesRep?: { fullName?: string; email: string };
+    assignedSalesRep?: { id?: string; fullName?: string; email: string };
   };
 }
 
@@ -44,10 +46,6 @@ export function TenantsTab() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
-  
-  // États d'édition commission
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editCommission, setEditCommission] = useState<string>('');
 
   // États de mise à jour d'image / redéploiement
   const [upgradeTenant, setUpgradeTenant] = useState<Tenant | null>(null);
@@ -57,32 +55,10 @@ export function TenantsTab() {
   // États de gestion des modules par boutique
   const [editingModulesTenant, setEditingModulesTenant] = useState<Tenant | null>(null);
 
-  // États de création admin gratuite
+  // Modaux Création & Gestion Accès
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [newCommerceName, setNewCommerceName] = useState('');
-  const [newSubdomain, setNewSubdomain] = useState('');
-  const [newEmail, setNewEmail] = useState('');
-  const [newFullName, setNewFullName] = useState('');
-  const [newImageTag, setNewImageTag] = useState('');
-  const [selectedModules, setSelectedModules] = useState<string[]>(
-    REAL_BOUTIQUE_MODULES.map((m) => m.code)
-  );
-  const [creating, setCreating] = useState(false);
-
-  const availableModules = REAL_BOUTIQUE_MODULES;
-
-  const handleSaveModules = async (newModules: string[]) => {
-    if (!editingModulesTenant) return;
-    try {
-      await apiRequest(`/admin/tenants/${editingModulesTenant.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ modules: newModules }),
-      });
-      fetchTenants();
-    } catch (err: any) {
-      alert(err.message || 'Erreur lors de la mise à jour des modules');
-    }
-  };
+  const [credentialsTenant, setCredentialsTenant] = useState<Tenant | null>(null);
+  const [ssoLoadingId, setSsoLoadingId] = useState<string | null>(null);
 
   const fetchTenants = async () => {
     setLoading(true);
@@ -115,17 +91,16 @@ export function TenantsTab() {
     }
   };
 
-  const handleSaveCommission = async (id: string) => {
+  const handleSaveModules = async (newModules: string[]) => {
+    if (!editingModulesTenant) return;
     try {
-      const val = editCommission.trim() === '' ? null : parseFloat(editCommission);
-      await apiRequest(`/admin/tenants/${id}`, {
+      await apiRequest(`/admin/tenants/${editingModulesTenant.id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ customCommissionPercent: val }),
+        body: JSON.stringify({ modules: newModules }),
       });
-      setEditingId(null);
       fetchTenants();
     } catch (err: any) {
-      alert(err.message || 'Erreur enregistrement commission');
+      alert(err.message || 'Erreur lors de la mise à jour des modules');
     }
   };
 
@@ -149,39 +124,24 @@ export function TenantsTab() {
     }
   };
 
-  const handleCreateTenant = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setCreating(true);
+  const handleOpenSso = async (tenantId: string) => {
+    setSsoLoadingId(tenantId);
     try {
-      await apiRequest('/admin/tenants', {
+      const res = await fetch(`/api/admin/tenants/${tenantId}/sso`, {
         method: 'POST',
-        body: JSON.stringify({
-          commerceName: newCommerceName,
-          subdomain: newSubdomain,
-          email: newEmail,
-          fullName: newFullName,
-          modules: selectedModules,
-          imageTag: newImageTag || undefined,
-        }),
       });
-      setIsCreateOpen(false);
-      setNewCommerceName('');
-      setNewSubdomain('');
-      setNewEmail('');
-      setNewFullName('');
-      setNewImageTag('');
-      fetchTenants();
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Erreur lors de la génération du token SSO');
+      }
+      if (data.ssoUrl) {
+        window.open(data.ssoUrl, '_blank');
+      }
     } catch (err: any) {
-      alert(err.message || 'Erreur lors de la création de la boutique');
+      alert(err.message || 'Erreur SSO');
     } finally {
-      setCreating(false);
+      setSsoLoadingId(null);
     }
-  };
-
-  const toggleModule = (code: string) => {
-    setSelectedModules((prev) =>
-      prev.includes(code) ? prev.filter((m) => m !== code) : [...prev, code]
-    );
   };
 
   return (
@@ -193,7 +153,7 @@ export function TenantsTab() {
             <Store className="w-6 h-6 text-blue-600" /> Boutiques & Clients ({tenants.length})
           </h2>
           <p className="text-xs text-slate-600 font-medium mt-1">
-            Supervision des boutiques clientes, versions de conteneur déployées et statut Kubernetes.
+            Supervision des boutiques, accès SSO 1-clic direct, gestion des identifiants et statut Kubernetes.
           </p>
         </div>
 
@@ -249,7 +209,7 @@ export function TenantsTab() {
                 <th className="px-5 py-4">Version d'Image (Tag)</th>
                 <th className="px-5 py-4">Modules</th>
                 <th className="px-5 py-4">Statut K8s</th>
-                <th className="px-5 py-4 text-right">Actions</th>
+                <th className="px-5 py-4 text-right">Actions & Accès</th>
               </tr>
             </thead>
             <tbody className="divide-y-2 divide-slate-100 font-bold text-slate-900">
@@ -272,6 +232,11 @@ export function TenantsTab() {
                   <td className="px-5 py-4">
                     <div className="text-slate-950 font-black">{t.user?.fullName || 'Client'}</div>
                     <div className="text-slate-500 font-normal text-[11px]">{t.email}</div>
+                    {t.user?.assignedSalesRep && (
+                      <div className="text-[10px] text-indigo-600 font-medium mt-0.5">
+                        Délégué: {t.user.assignedSalesRep.fullName || t.user.assignedSalesRep.email}
+                      </div>
+                    )}
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
@@ -327,6 +292,30 @@ export function TenantsTab() {
                   </td>
                   <td className="px-5 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      {/* Bouton SSO 1-clic direct */}
+                      <button
+                        onClick={() => handleOpenSso(t.id)}
+                        disabled={ssoLoadingId === t.id}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black border-2 border-slate-900 shadow-brutal-xs transition disabled:opacity-50"
+                        title="Accès direct au Backoffice Admin via SSO sécurisé"
+                      >
+                        {ssoLoadingId === t.id ? (
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Key className="w-3.5 h-3.5" />
+                        )}
+                        <span>Admin 🚀</span>
+                      </button>
+
+                      {/* Bouton Gestion des accès / mots de passe */}
+                      <button
+                        onClick={() => setCredentialsTenant(t)}
+                        className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl border-2 border-slate-900 shadow-brutal-xs transition"
+                        title="Gérer les mots de passe et le chargé d'affaires associé"
+                      >
+                        <Lock className="w-4 h-4 text-slate-700" />
+                      </button>
+
                       {t.status !== 'ACTIVE' && (
                         <button
                           onClick={() => handleUpdateStatus(t.id, 'ACTIVE')}
@@ -359,128 +348,30 @@ export function TenantsTab() {
         </div>
       </div>
 
-      {/* Modal Création Boutique Admin */}
-      {isCreateOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 max-w-lg w-full shadow-brutal-lg space-y-5">
-            <div className="flex items-center justify-between border-b-2 border-slate-900 pb-3">
-              <h3 className="font-black text-slate-950 text-base flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-amber-500" /> Créer une boutique (Admin Gratuit)
-              </h3>
-              <button onClick={() => setIsCreateOpen(false)} className="p-1 text-slate-500 hover:text-slate-900">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {/* Modal Création de boutique modulaire */}
+      <CreateTenantModal
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onSuccess={fetchTenants}
+      />
 
-            <form onSubmit={handleCreateTenant} className="space-y-4">
-              <div>
-                <label className="text-[11px] font-black uppercase text-slate-700">Nom Commercial</label>
-                <input
-                  type="text"
-                  required
-                  value={newCommerceName}
-                  onChange={(e) => {
-                    setNewCommerceName(e.target.value);
-                    if (!newSubdomain) {
-                      setNewSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''));
-                    }
-                  }}
-                  placeholder="Ex: Atelier Céramique"
-                  className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-black uppercase text-slate-700">Sous-domaine (*.woxxapp.de)</label>
-                  <input
-                    type="text"
-                    required
-                    value={newSubdomain}
-                    onChange={(e) => setNewSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                    placeholder="atelier"
-                    className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-black uppercase text-slate-700">Email Client</label>
-                  <input
-                    type="email"
-                    required
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    placeholder="client@domaine.com"
-                    className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[11px] font-black uppercase text-slate-700">Nom du Propriétaire (Optionnel)</label>
-                <input
-                  type="text"
-                  value={newFullName}
-                  onChange={(e) => setNewFullName(e.target.value)}
-                  placeholder="Jean Dupont"
-                  className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
-                />
-              </div>
-
-              <div>
-                <label className="text-[11px] font-black uppercase text-slate-700">Version d'Image (Optionnel)</label>
-                <input
-                  type="text"
-                  value={newImageTag}
-                  onChange={(e) => setNewImageTag(e.target.value)}
-                  placeholder="Défaut configuré"
-                  className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:bg-white"
-                />
-              </div>
-
-              <div>
-                <label className="text-[11px] font-black uppercase text-slate-700 mb-1.5 block">Modules Activés</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {availableModules.map((m) => (
-                    <label
-                      key={m.code}
-                      className={`flex items-center gap-2 p-2 rounded-xl border text-xs font-bold cursor-pointer transition ${
-                        selectedModules.includes(m.code)
-                          ? 'bg-amber-100 border-slate-900 text-slate-950'
-                          : 'bg-slate-50 border-slate-200 text-slate-600'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedModules.includes(m.code)}
-                        onChange={() => toggleModule(m.code)}
-                        className="rounded"
-                      />
-                      <span>{m.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsCreateOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl text-xs font-black border-2 border-slate-900"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={creating}
-                  className="px-5 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-black border-2 border-slate-900 shadow-brutal-xs"
-                >
-                  {creating ? 'Création & Provisioning...' : 'Créer & Déployer sur K8s'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Modal Gestion des accès et identifiants */}
+      <ManageCredentialsModal
+        isOpen={!!credentialsTenant}
+        tenant={
+          credentialsTenant
+            ? {
+                id: credentialsTenant.id,
+                name: credentialsTenant.commerceName,
+                slug: credentialsTenant.subdomain,
+                domain: credentialsTenant.customDomain,
+                assignedSalesRepId: (credentialsTenant.user as any)?.assignedSalesRep?.id || credentialsTenant.assignedSalesRepId,
+              }
+            : null
+        }
+        onClose={() => setCredentialsTenant(null)}
+        onSuccess={fetchTenants}
+      />
 
       {/* Modal Changement Version d'Image & Redéploiement */}
       {upgradeTenant && (

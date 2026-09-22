@@ -129,11 +129,74 @@ export class StoreManagerClient {
   }
 
   /**
-   * Synchronise la grille tarifaire des modules avec le Store Manager.
+   * Génère un jeton temporaire d'impersonation SSO (valable 60s, usage unique).
+   */
+  public static async generateSsoToken(
+    storeId: string,
+    role: 'ADMIN' | 'MANAGER' = 'ADMIN',
+    operatorEmail = 'admin@woxx.local',
+    targetEmail?: string
+  ): Promise<{ token: string; local_sso_url: string; cloud_sso_url: string } | null> {
+    try {
+      const res = await fetch(`${this.apiUrl}/api/v1/stores/${encodeURIComponent(storeId)}/sso-token`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify({
+          role,
+          operator: operatorEmail,
+          target_email: targetEmail,
+        }),
+      });
+
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (err) {
+      console.error('[StoreManagerClient] Erreur generateSsoToken:', err);
+      return null;
+    }
+  }
+
+  /**
+   * Met à jour les mots de passe Admin / Gérant ou réinitialise le MFA d'une boutique.
+   */
+  public static async updateStoreCredentials(
+    storeId: string,
+    payload: {
+      adminEmail?: string;
+      adminPassword?: string;
+      managerEmail?: string;
+      managerPassword?: string;
+      resetTotp?: boolean;
+    }
+  ): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+      const res = await fetch(`${this.apiUrl}/api/v1/stores/${encodeURIComponent(storeId)}/credentials`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      return {
+        success: Boolean(data.success),
+        message: data.message || 'Identifiants transmis',
+        error: data.error || data.detail,
+      };
+    } catch (err: any) {
+      console.error('[StoreManagerClient] Erreur updateStoreCredentials:', err);
+      return {
+        success: false,
+        error: err.message || 'Impossible de joindre le Store Manager',
+      };
+    }
+  }
+
+  /**
+   * Synchronise le catalogue de tarification des modules avec le Store Manager.
    */
   public static async syncPricingCatalog(catalog: any[]): Promise<boolean> {
     try {
-      const res = await fetch(`${this.apiUrl}/api/v1/pricing/catalog`, {
+      const res = await fetch(`${this.apiUrl}/api/v1/pricing/sync`, {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify({ catalog }),
@@ -145,4 +208,5 @@ export class StoreManagerClient {
     }
   }
 }
+
 
