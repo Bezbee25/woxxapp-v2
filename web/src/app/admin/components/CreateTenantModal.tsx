@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Store, X, Key, ShieldCheck, UserCheck, Shuffle, Sparkles, Check } from 'lucide-react';
+import { Store, X, Key, ShieldCheck, UserCheck, Shuffle, Sparkles, Check, Layers } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import { REAL_BOUTIQUE_MODULES } from './EditModulesModal';
+import { BoutiqueImageVersion } from './UpgradeImageModal';
 
 interface SalesRep {
   id: string;
@@ -29,12 +30,18 @@ export function CreateTenantModal({ isOpen, onClose, onSuccess }: CreateTenantMo
   const [selectedModules, setSelectedModules] = useState<string[]>(
     REAL_BOUTIQUE_MODULES.map((m) => m.code)
   );
+
+  // Versions d'images disponibles
+  const [availableVersions, setAvailableVersions] = useState<BoutiqueImageVersion[]>([]);
+  const [selectedImageTag, setSelectedImageTag] = useState<string>('');
+
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       fetchSalesReps();
+      fetchImageVersions();
       generateRandomPasswords();
     }
   }, [isOpen]);
@@ -45,6 +52,18 @@ export function CreateTenantModal({ isOpen, onClose, onSuccess }: CreateTenantMo
       setSalesReps(data || []);
     } catch {
       // Ignorer
+    }
+  };
+
+  const fetchImageVersions = async () => {
+    try {
+      const data = await apiRequest<{ defaultTag: string; versions: BoutiqueImageVersion[] }>('/admin/store-versions');
+      if (data) {
+        setAvailableVersions(data.versions || []);
+        setSelectedImageTag(data.defaultTag || (data.versions?.[0]?.tag ?? 'ghcr.io/bezbee25/boutique-global:sha-745d530-arm64'));
+      }
+    } catch {
+      // Fallback
     }
   };
 
@@ -92,6 +111,7 @@ export function CreateTenantModal({ isOpen, onClose, onSuccess }: CreateTenantMo
           managerPassword,
           assignedSalesRepId: assignedSalesRepId || undefined,
           modules: selectedModules,
+          imageTag: selectedImageTag || undefined,
         }),
       });
 
@@ -191,11 +211,29 @@ export function CreateTenantModal({ isOpen, onClose, onSuccess }: CreateTenantMo
             </div>
           </div>
 
-          {/* Section 2 : Mots de Passe & Accès */}
+          {/* Section 2 : Version de l'image Docker / K8s */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-black uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-blue-600" /> 2. Version d'Image Conteneur K8s
+            </h4>
+            <select
+              value={selectedImageTag}
+              onChange={(e) => setSelectedImageTag(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:bg-white"
+            >
+              {availableVersions.map((v) => (
+                <option key={v.tag} value={v.tag}>
+                  {v.name} ({v.tag.split(':')?.[1] || v.tag}) {v.isRecommended ? '★ Recommandée' : ''} {v.isDefault ? '(Défaut)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Section 3 : Mots de Passe & Accès */}
           <div className="space-y-3 p-4 bg-amber-50/50 border-2 border-amber-300 rounded-2xl">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-black uppercase text-amber-900 tracking-wider flex items-center gap-1.5">
-                <Key className="w-3.5 h-3.5" /> 2. Mots de Passe & Sécurité
+                <Key className="w-3.5 h-3.5" /> 3. Mots de Passe & Sécurité
               </h4>
               <button
                 type="button"
@@ -237,10 +275,10 @@ export function CreateTenantModal({ isOpen, onClose, onSuccess }: CreateTenantMo
             </div>
           </div>
 
-          {/* Section 3 : Affectation Chargé d'Affaires */}
+          {/* Section 4 : Affectation Chargé d'Affaires */}
           <div className="space-y-2">
             <h4 className="text-xs font-black uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
-              <UserCheck className="w-3.5 h-3.5" /> 3. Chargé d'Affaires Assigné
+              <UserCheck className="w-3.5 h-3.5" /> 4. Chargé d'Affaires Assigné
             </h4>
             <select
               value={assignedSalesRepId}
@@ -256,10 +294,10 @@ export function CreateTenantModal({ isOpen, onClose, onSuccess }: CreateTenantMo
             </select>
           </div>
 
-          {/* Section 4 : Modules Inclus */}
+          {/* Section 5 : Modules Inclus */}
           <div className="space-y-2">
             <h4 className="text-xs font-black uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" /> 4. Modules Inclus au Démarrage ({selectedModules.length}/9)
+              <Sparkles className="w-3.5 h-3.5" /> 5. Modules Inclus au Démarrage ({selectedModules.length}/10)
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {REAL_BOUTIQUE_MODULES.map((mod) => {

@@ -1,17 +1,27 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Search, UserPlus, RefreshCw, X } from 'lucide-react';
+import { Users, Search, UserPlus, RefreshCw, X, Layers, Edit2, Store } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
+import { UpgradeImageModal } from '../components/UpgradeImageModal';
+
+interface UserTenant {
+  id: string;
+  commerceName: string;
+  subdomain: string;
+  imageTag?: string;
+  status: string;
+}
 
 interface UserItem {
   id: string;
   email: string;
-  full_name?: string;
+  fullName?: string;
   role: 'admin' | 'charge_daffaire' | 'client';
   is_active: boolean;
   assigned_sales_rep_id?: string;
   assignedSalesRep?: { id: string; fullName?: string; email: string };
+  tenants?: UserTenant[];
   stats?: { tenants: number; subscriptions: number; invoices: number; clients: number };
   created_at: string;
 }
@@ -29,6 +39,9 @@ export function UsersTab() {
   const [newPassword, setNewPassword] = useState('');
   const [newFullName, setNewFullName] = useState('');
   const [newRole, setNewRole] = useState<'ADMIN' | 'CHARGE_DAFFAIRE' | 'CLIENT'>('CLIENT');
+
+  // Modal Mise à jour d'image pour une boutique d'un client
+  const [selectedTenantForUpgrade, setSelectedTenantForUpgrade] = useState<UserTenant | null>(null);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -112,48 +125,24 @@ export function UsersTab() {
 
   return (
     <div className="space-y-6">
-      {/* Header & Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border-2 border-slate-900 shadow-brutal">
+      {/* Header */}
+      <div className="bg-white p-6 rounded-3xl border-2 border-slate-900 shadow-brutal flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-950 flex items-center gap-2">
-            <Users className="w-6 h-6 text-blue-600" /> Utilisateurs & Permissions ({users.length})
+            <Users className="w-6 h-6 text-blue-600" /> Gestion des Clients & Utilisateurs
           </h2>
           <p className="text-xs text-slate-600 font-medium mt-1">
-            Gérez les comptes, promouvez des chargés d'affaires et assignez les portefeuilles clients.
+            Gérez les comptes, les assignations de chargés d'affaires et inspectez les versions d'images des boutiques clientes.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Rechercher utilisateur..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && fetchUsers()}
-              className="pl-9 pr-4 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white w-52"
-            />
-          </div>
-
-          <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
-          >
-            <option value="ALL">Tous les rôles</option>
-            <option value="ADMIN">Administrateurs</option>
-            <option value="CHARGE_DAFFAIRE">Chargés d'Affaires</option>
-            <option value="CLIENT">Clients</option>
-          </select>
-
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl text-xs flex items-center gap-2 border-2 border-slate-900 shadow-brutal-xs transition"
+            className="flex items-center gap-2 px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-black border-2 border-slate-900 shadow-brutal-xs transition"
           >
             <UserPlus className="w-4 h-4" /> Nouvel Utilisateur
           </button>
-
           <button
             onClick={fetchUsers}
             className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl transition border-2 border-slate-900 shadow-brutal-xs"
@@ -164,26 +153,61 @@ export function UsersTab() {
         </div>
       </div>
 
-      {/* Table des Utilisateurs */}
-      <div className="bg-white border-2 border-slate-900 rounded-3xl overflow-hidden shadow-brutal">
+      {/* Barre de recherche & Filtres */}
+      <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="relative flex-1 w-full">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Rechercher par email, nom ou boutique..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && fetchUsers()}
+            className="w-full pl-9 pr-4 py-2.5 bg-white border-2 border-slate-900 rounded-2xl text-xs font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:shadow-brutal-xs"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          {['ALL', 'ADMIN', 'CHARGE_DAFFAIRE', 'CLIENT'].map((rf) => (
+            <button
+              key={rf}
+              onClick={() => setRoleFilter(rf)}
+              className={`px-3 py-2 rounded-xl text-xs font-black border-2 border-slate-900 transition shadow-brutal-xs ${
+                roleFilter === rf
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-white text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              {rf === 'ALL'
+                ? 'Tous'
+                : rf === 'CHARGE_DAFFAIRE'
+                ? 'Chargés d’Affaires'
+                : rf}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tableau des utilisateurs & Boutiques */}
+      <div className="bg-white border-2 border-slate-900 rounded-3xl shadow-brutal overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-50 text-slate-700 uppercase font-black border-b-2 border-slate-900">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-100/75 text-slate-700 font-black uppercase text-[10px] tracking-wider border-b-2 border-slate-900">
               <tr>
-                <th className="px-5 py-4">Utilisateur</th>
+                <th className="px-5 py-4">Utilisateur / Client</th>
                 <th className="px-5 py-4">Rôle</th>
-                <th className="px-5 py-4">Chargé d'Affaires Assigné</th>
-                <th className="px-5 py-4">Boutiques / Stats</th>
+                <th className="px-5 py-4">Chargé d'Affaires</th>
+                <th className="px-5 py-4">Boutique(s) & Version Image</th>
                 <th className="px-5 py-4">Statut</th>
                 <th className="px-5 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y-2 divide-slate-100 font-bold text-slate-900">
+            <tbody className="divide-y-2 divide-slate-100 font-medium">
               {users.map((u) => (
                 <tr key={u.id} className="hover:bg-slate-50/80 transition">
                   <td className="px-5 py-4">
-                    <div className="font-black text-slate-950 text-sm">{u.full_name || 'Sans nom'}</div>
-                    <div className="text-slate-500 font-mono text-[11px] font-normal">{u.email}</div>
+                    <div className="font-black text-slate-950 text-sm">{u.fullName || 'Sans nom'}</div>
+                    <div className="text-slate-500 text-[11px] font-mono">{u.email}</div>
                   </td>
                   <td className="px-5 py-4">
                     <select
@@ -212,7 +236,7 @@ export function UsersTab() {
                         <option value="">Aucun assigné</option>
                         {salesReps.map((r) => (
                           <option key={r.id} value={r.id}>
-                            {r.full_name || r.email}
+                            {r.fullName || r.email}
                           </option>
                         ))}
                       </select>
@@ -220,13 +244,33 @@ export function UsersTab() {
                       <span className="text-slate-400 text-[11px] font-normal italic">Non applicable</span>
                     )}
                   </td>
-                  <td className="px-5 py-4 font-mono font-bold text-slate-900">
-                    {u.role === 'charge_daffaire' ? (
-                      <span className="bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full border border-amber-300">
-                        {u.stats?.clients || 0} clients
-                      </span>
+                  <td className="px-5 py-4">
+                    {u.tenants && u.tenants.length > 0 ? (
+                      <div className="flex flex-col gap-1.5 items-start">
+                        {u.tenants.map((t) => (
+                          <div
+                            key={t.id}
+                            className="flex items-center gap-1.5 bg-slate-50 border border-slate-300 rounded-lg px-2 py-1"
+                          >
+                            <Store className="w-3 h-3 text-slate-600" />
+                            <span className="font-bold text-slate-900">{t.commerceName}</span>
+                            <span className="px-1.5 py-0.5 rounded bg-slate-900 text-amber-300 font-mono text-[9px] font-bold truncate max-w-[110px]" title={t.imageTag || 'latest'}>
+                              {t.imageTag?.split(':')?.[1] || 'latest'}
+                            </span>
+                            <button
+                              onClick={() => setSelectedTenantForUpgrade(t)}
+                              className="p-0.5 hover:bg-slate-200 rounded text-blue-600 hover:text-blue-900"
+                              title="Changer la version d'image de cette boutique"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     ) : (
-                      <span>{u.stats?.tenants || 0} boutique(s)</span>
+                      <span className="text-slate-400 text-[11px] font-normal italic">
+                        {u.role === 'charge_daffaire' ? `${u.stats?.clients || 0} clients suivis` : '0 boutique'}
+                      </span>
                     )}
                   </td>
                   <td className="px-5 py-4">
@@ -261,17 +305,14 @@ export function UsersTab() {
 
       {/* Modal Création Utilisateur */}
       {isCreateOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border-2 border-slate-900 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-brutal-lg">
-            <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
-              <h3 className="font-black text-slate-950 text-lg flex items-center gap-2">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border-4 border-slate-950 shadow-brutal w-full max-w-md p-6 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b-2 border-slate-900 pb-3">
+              <h3 className="font-black text-slate-950 text-base flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-blue-600" /> Nouvel Utilisateur
               </h3>
-              <button
-                onClick={() => setIsCreateOpen(false)}
-                className="text-slate-600 hover:text-slate-950 p-1 border-2 border-slate-900 rounded-lg bg-slate-100"
-              >
-                <X className="w-4 h-4" />
+              <button onClick={() => setIsCreateOpen(false)} className="p-1 text-slate-500 hover:text-slate-900">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -344,6 +385,14 @@ export function UsersTab() {
           </div>
         </div>
       )}
+
+      {/* Modal Changement Version d'Image & Redéploiement Interactif depuis l'onglet Clients */}
+      <UpgradeImageModal
+        isOpen={!!selectedTenantForUpgrade}
+        tenant={selectedTenantForUpgrade}
+        onClose={() => setSelectedTenantForUpgrade(null)}
+        onSuccess={fetchUsers}
+      />
     </div>
   );
 }

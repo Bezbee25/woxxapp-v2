@@ -28,6 +28,9 @@ export async function GET(req: NextRequest) {
         assignedSalesRep: {
           select: { id: true, email: true, fullName: true },
         },
+        tenants: {
+          select: { id: true, commerceName: true, subdomain: true, imageTag: true, status: true },
+        },
         _count: {
           select: { tenants: true, subscriptions: true, invoices: true, clients: true },
         },
@@ -39,6 +42,7 @@ export async function GET(req: NextRequest) {
       users.map(u => ({
         ...sanitizeUser(u),
         assignedSalesRep: u.assignedSalesRep,
+        tenants: u.tenants,
         stats: u._count,
       }))
     );

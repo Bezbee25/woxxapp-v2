@@ -19,6 +19,7 @@ import { apiRequest } from '@/lib/api';
 import { EditModulesModal } from '../components/EditModulesModal';
 import { CreateTenantModal } from '../components/CreateTenantModal';
 import { ManageCredentialsModal } from '../components/ManageCredentialsModal';
+import { UpgradeImageModal } from '../components/UpgradeImageModal';
 
 interface Tenant {
   id: string;
@@ -49,8 +50,6 @@ export function TenantsTab() {
 
   // États de mise à jour d'image / redéploiement
   const [upgradeTenant, setUpgradeTenant] = useState<Tenant | null>(null);
-  const [targetImage, setTargetImage] = useState<string>('');
-  const [upgrading, setUpgrading] = useState(false);
 
   // États de gestion des modules par boutique
   const [editingModulesTenant, setEditingModulesTenant] = useState<Tenant | null>(null);
@@ -101,26 +100,6 @@ export function TenantsTab() {
       fetchTenants();
     } catch (err: any) {
       alert(err.message || 'Erreur lors de la mise à jour des modules');
-    }
-  };
-
-  const handleUpgradeImage = async () => {
-    if (!upgradeTenant) return;
-    setUpgrading(true);
-    try {
-      await apiRequest(`/admin/tenants/${upgradeTenant.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          imageTag: targetImage.trim(),
-          redeploy: true,
-        }),
-      });
-      setUpgradeTenant(null);
-      fetchTenants();
-    } catch (err: any) {
-      alert(err.message || 'Erreur lors du redéploiement de l’image');
-    } finally {
-      setUpgrading(false);
     }
   };
 
@@ -244,10 +223,7 @@ export function TenantsTab() {
                         {t.imageTag?.split(':')?.[1] || 'latest'}
                       </span>
                       <button
-                        onClick={() => {
-                          setUpgradeTenant(t);
-                          setTargetImage(t.imageTag || 'ghcr.io/bezbee25/boutique-global:latest');
-                        }}
+                        onClick={() => setUpgradeTenant(t)}
                         className="p-1 hover:bg-slate-200 rounded text-slate-600 hover:text-slate-900"
                         title="Changer la version d'image"
                       >
@@ -373,56 +349,13 @@ export function TenantsTab() {
         onSuccess={fetchTenants}
       />
 
-      {/* Modal Changement Version d'Image & Redéploiement */}
-      {upgradeTenant && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 max-w-md w-full shadow-brutal-lg space-y-4">
-            <div className="flex items-center justify-between border-b-2 border-slate-900 pb-3">
-              <h3 className="font-black text-slate-950 text-base flex items-center gap-2">
-                <Layers className="w-5 h-5 text-blue-600" /> Version d'image : {upgradeTenant.commerceName}
-              </h3>
-              <button onClick={() => setUpgradeTenant(null)} className="p-1 text-slate-500 hover:text-slate-900">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <p className="text-xs text-slate-600 font-medium">
-                Définissez la version d'image Docker à exécuter pour cette boutique. Un rolling update sera déclenché sur le cluster Kubernetes.
-              </p>
-
-              <div>
-                <label className="text-[11px] font-black uppercase text-slate-700">Image OCI / Docker</label>
-                <input
-                  type="text"
-                  value={targetImage}
-                  onChange={(e) => setTargetImage(e.target.value)}
-                  placeholder="ghcr.io/bezbee25/boutique-global:YYYYMMDD-HHmmss"
-                  className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:bg-white"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-3">
-              <button
-                type="button"
-                onClick={() => setUpgradeTenant(null)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl text-xs font-black border-2 border-slate-900"
-              >
-                Annuler
-              </button>
-              <button
-                type="button"
-                onClick={handleUpgradeImage}
-                disabled={upgrading}
-                className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black border-2 border-slate-900 shadow-brutal-xs"
-              >
-                {upgrading ? 'Redéploiement K8s...' : 'Appliquer & Redéployer'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal Changement Version d'Image & Redéploiement Interactif */}
+      <UpgradeImageModal
+        isOpen={!!upgradeTenant}
+        tenant={upgradeTenant}
+        onClose={() => setUpgradeTenant(null)}
+        onSuccess={fetchTenants}
+      />
 
       {/* Modal d'édition des modules par boutique */}
       <EditModulesModal
