@@ -9,7 +9,10 @@ export async function GET(req: NextRequest) {
     const settings = await prisma.systemSettings.findMany();
     const settingsMap: Record<string, string> = {};
     for (const s of settings) {
-      settingsMap[s.key] = s.value;
+      // Masquer strictement les configurations de paiement internes
+      if (!s.key.startsWith('woxxpay_')) {
+        settingsMap[s.key] = s.value;
+      }
     }
 
     return NextResponse.json(settingsMap);
@@ -24,16 +27,20 @@ export async function POST(req: NextRequest) {
     await requireRole(['ADMIN'], req);
     const body = await req.json(); // Record<string, string>
 
-    const updates = Object.entries(body).map(([key, value]) => {
-      const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
-      return prisma.systemSettings.upsert({
-        where: { key },
-        update: { value: stringValue },
-        create: { key, value: stringValue },
+    const updates = Object.entries(body)
+      .filter(([key]) => !key.startsWith('woxxpay_')) // Rejeter toute tentative d'écriture woxxpay_*
+      .map(([key, value]) => {
+        const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
+        return prisma.systemSettings.upsert({
+          where: { key },
+          update: { value: stringValue },
+          create: { key, value: stringValue },
+        });
       });
-    });
 
-    await prisma.$transaction(updates);
+    if (updates.length > 0) {
+      await prisma.$transaction(updates);
+    }
 
     // Synchronisation en direct de la grille tarifaire avec le Store Manager
     if (body.module_pricing_catalog) {
