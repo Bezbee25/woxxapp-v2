@@ -7,7 +7,17 @@ import { prisma } from './prisma';
 import { Role, User } from '@prisma/client';
 
 function getJwtSecret(): string {
-  return process.env.JWT_SECRET || 'woxxapp-runtime-secret-key-32-chars-min';
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('CRITICAL SECURITY ERROR: JWT_SECRET environment variable is required in production!');
+    }
+    return 'woxxapp-runtime-secret-key-32-chars-min';
+  }
+  if (process.env.NODE_ENV === 'production' && secret.length < 32) {
+    throw new Error('CRITICAL SECURITY ERROR: JWT_SECRET must be at least 32 characters long in production!');
+  }
+  return secret;
 }
 
 const JWT_EXPIRES_IN = '7d';

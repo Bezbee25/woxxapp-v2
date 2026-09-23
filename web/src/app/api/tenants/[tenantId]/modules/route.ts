@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { StoreManagerClient } from '@/lib/store-manager-client';
-import { getAuthenticatedUser } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ tenantId: string }> }
 ) {
   try {
-    const user = await getAuthenticatedUser(req);
-    if (!user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
-    }
+    // Seul un ADMIN ou un flux système validé peut modifier les modules d'une boutique
+    await requireRole(['ADMIN'], req);
 
     const { tenantId } = await params;
     const body = await req.json();
@@ -27,10 +25,6 @@ export async function POST(
 
     if (!tenant) {
       return NextResponse.json({ error: 'Boutique introuvable' }, { status: 404 });
-    }
-
-    if (user.role !== 'ADMIN' && tenant.userId !== user.id) {
-      return NextResponse.json({ error: 'Accès non autorisé à cette boutique' }, { status: 403 });
     }
 
     // 1. Mise à jour dans la base WoxxAPP
@@ -50,7 +44,7 @@ export async function POST(
       tenant: updatedTenant,
     });
   } catch (error: any) {
-    console.error('Erreur mise à jour modules:', error);
-    return NextResponse.json({ error: error.message || 'Erreur serveur' }, { status: 500 });
+    const status = error.message === 'UNAUTHORIZED' ? 401 : error.message === 'FORBIDDEN' ? 403 : 500;
+    return NextResponse.json({ error: error.message || 'Erreur serveur' }, { status });
   }
 }
