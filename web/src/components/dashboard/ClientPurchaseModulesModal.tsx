@@ -340,34 +340,13 @@ export function ClientPurchaseModulesModal({
                 </div>
               </div>
 
-              {/* Moyen de Paiement & Bouton Action */}
+              {/* Moyen de Paiement Stripe Exclusif & Bouton Action */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
                 <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('WOXXPAY_CARD')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-black border transition flex items-center gap-1.5 cursor-pointer ${
-                      paymentMethod === 'WOXXPAY_CARD'
-                        ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-brutal-xs'
-                        : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
-                    }`}
-                  >
-                    <CreditCard className="w-3.5 h-3.5" />
-                    <span>Carte Bancaire</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('WOXXPAY_TRANSFER')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-black border transition flex items-center gap-1.5 cursor-pointer ${
-                      paymentMethod === 'WOXXPAY_TRANSFER'
-                        ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-brutal-xs'
-                        : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
-                    }`}
-                  >
-                    <Building2 className="w-3.5 h-3.5" />
-                    <span>Virement SEPA</span>
-                  </button>
+                  <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-slate-800 text-slate-200 border border-slate-700 inline-flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-emerald-400" />
+                    <span>Paiement sécurisé Carte Bancaire (Stripe)</span>
+                  </span>
                 </div>
 
                 <div className="flex gap-2">
@@ -383,10 +362,16 @@ export function ClientPurchaseModulesModal({
                     type="button"
                     onClick={handlePurchase}
                     disabled={loading}
-                    className="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black border-2 border-slate-900 shadow-brutal-xs transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                    className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
                   >
                     <ShieldCheck className="w-4 h-4" />
-                    <span>{loading ? 'Validation en cours...' : order.totalTtc === 0 ? 'Valider (Gratuit)' : 'Payer et Activer 🚀'}</span>
+                    <span>
+                      {loading
+                        ? 'Validation Stripe...'
+                        : order.totalTtc === 0
+                        ? 'Valider (Gratuit)'
+                        : 'Payer par Carte Bancaire (Stripe) 💳'}
+                    </span>
                   </button>
                 </div>
               </div>
