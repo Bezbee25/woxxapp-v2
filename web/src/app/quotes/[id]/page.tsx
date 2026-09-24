@@ -14,7 +14,12 @@ import {
   ExternalLink,
   RefreshCw,
   AlertCircle,
-  ArrowRight
+  ArrowRight,
+  Phone,
+  MessageSquare,
+  Calendar,
+  Mail,
+  User,
 } from 'lucide-react';
 
 interface QuoteDetail {
@@ -45,7 +50,16 @@ interface QuoteDetail {
     reference: string;
   } | null;
   client?: { fullName?: string; email: string };
-  salesRep?: { fullName?: string; email: string };
+  salesRep?: {
+    fullName?: string;
+    email: string;
+    avatarUrl?: string;
+    companyName?: string;
+    phoneNumber?: string;
+    whatsappNumber?: string;
+    calendlyUrl?: string;
+    bio?: string;
+  };
 }
 
 export default function PublicQuotePage() {
@@ -58,6 +72,8 @@ export default function PublicQuotePage() {
   const [paymentMethod, setPaymentMethod] = useState<'WOXXPAY_TRANSFER' | 'WOXXPAY_CARD'>('WOXXPAY_TRANSFER');
   const [copied, setCopied] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const cleanWhatsapp = quote?.salesRep?.whatsappNumber?.replace(/[^0-9]/g, '');
 
   const fetchQuote = async () => {
     setLoading(true);
@@ -172,23 +188,91 @@ export default function PublicQuotePage() {
 
         {/* CORPS DU DEVIS */}
         <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 sm:p-8 shadow-brutal space-y-6">
-          {/* INFORMATIONS PARTIES PRENANTES */}
+          {/* INFORMATIONS PARTIES PRENANTES & CONTACT COMMERCIAL */}
           <div className="grid sm:grid-cols-2 gap-6 pb-6 border-b-2 border-slate-100">
-            <div>
-              <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">
-                Émetteur / Contact Commercial
+            <div className="space-y-3">
+              <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
+                Votre Chargé d'Affaires Dédié
               </span>
-              <p className="font-black text-sm text-slate-950">WoxxApp SAS</p>
-              <p className="text-xs text-slate-600 font-medium">Chargé d'affaires : {quote.salesRep?.fullName || quote.salesRep?.email || 'Conseiller Woxx'}</p>
-              <p className="text-xs text-slate-600 font-medium font-mono">{quote.salesRep?.email}</p>
+
+              <div className="flex items-start gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-amber-200 border-2 border-slate-900 shadow-brutal-xs overflow-hidden flex items-center justify-center shrink-0">
+                  {quote.salesRep?.avatarUrl ? (
+                    <img
+                      src={quote.salesRep.avatarUrl}
+                      alt={quote.salesRep.fullName || 'Commercial'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-lg font-black text-slate-900">
+                      {(quote.salesRep?.fullName || 'CA').charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="font-black text-sm text-slate-950 truncate">
+                    {quote.salesRep?.fullName || 'Conseiller WoxxApp'}
+                  </p>
+                  <p className="text-xs text-purple-700 font-bold truncate">
+                    {quote.salesRep?.companyName || 'WoxxApp SAS'}
+                  </p>
+                  <p className="text-[11px] text-slate-500 font-mono truncate">{quote.salesRep?.email}</p>
+                </div>
+              </div>
+
+              {quote.salesRep?.bio && (
+                <p className="text-xs text-slate-600 font-medium italic bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                  "{quote.salesRep.bio}"
+                </p>
+              )}
+
+              {/* BOUTONS D'ÉCHANGE RAPIDE */}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                {quote.salesRep?.phoneNumber && (
+                  <a
+                    href={`tel:${quote.salesRep.phoneNumber}`}
+                    className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-900 font-black text-[11px] rounded-xl border-2 border-slate-900 shadow-brutal-xs transition flex items-center gap-1.5"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>Appeler</span>
+                  </a>
+                )}
+
+                {cleanWhatsapp && (
+                  <a
+                    href={`https://wa.me/${cleanWhatsapp}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-black text-[11px] rounded-xl border-2 border-slate-900 shadow-brutal-xs transition flex items-center gap-1.5"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>WhatsApp</span>
+                  </a>
+                )}
+
+                {quote.salesRep?.calendlyUrl && (
+                  <a
+                    href={quote.salesRep.calendlyUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-900 font-black text-[11px] rounded-xl border-2 border-slate-900 shadow-brutal-xs transition flex items-center gap-1.5"
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-purple-600" />
+                    <span>Prendre RDV</span>
+                  </a>
+                )}
+              </div>
             </div>
 
             <div>
               <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-1">
                 Client Destinataire
               </span>
-              <p className="font-black text-sm text-slate-950">{quote.client?.fullName || 'Client Professionnel'}</p>
-              <p className="text-xs text-slate-600 font-medium font-mono">{quote.client?.email}</p>
+              <div className="bg-slate-50 border-2 border-slate-900 rounded-2xl p-4 shadow-brutal-xs space-y-1">
+                <p className="font-black text-sm text-slate-950">{quote.client?.fullName || 'Client Professionnel'}</p>
+                <p className="text-xs text-slate-600 font-medium font-mono">{quote.client?.email}</p>
+              </div>
             </div>
           </div>
 

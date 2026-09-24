@@ -20,7 +20,17 @@ export async function GET(
           select: { id: true, email: true, fullName: true },
         },
         salesRep: {
-          select: { id: true, email: true, fullName: true },
+          select: {
+            id: true,
+            email: true,
+            fullName: true,
+            avatarUrl: true,
+            companyName: true,
+            phoneNumber: true,
+            whatsappNumber: true,
+            calendlyUrl: true,
+            bio: true,
+          },
         },
       },
     });

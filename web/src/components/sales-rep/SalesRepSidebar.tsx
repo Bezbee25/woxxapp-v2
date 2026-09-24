@@ -15,7 +15,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 
-export type SalesRepTab = 'clients' | 'quotes' | 'payment' | 'performance';
+export type SalesRepTab = 'clients' | 'quotes' | 'payment' | 'profile' | 'performance';
 
 interface SalesRepSidebarProps {
   activeTab: SalesRepTab;
@@ -42,6 +42,7 @@ export function SalesRepSidebar({
     { id: 'clients' as SalesRepTab, label: 'Mes Clients', icon: Users, color: 'text-blue-500' },
     { id: 'quotes' as SalesRepTab, label: 'Devis & Facturation', icon: FileText, color: 'text-amber-500' },
     { id: 'payment' as SalesRepTab, label: 'Stripe & WoxxPay', icon: CreditCard, color: 'text-emerald-500' },
+    { id: 'profile' as SalesRepTab, label: 'Mon Profil & Logo', icon: Briefcase, color: 'text-purple-500' },
   ];
 
   return (

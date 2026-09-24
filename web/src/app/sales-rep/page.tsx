@@ -5,6 +5,7 @@ import { apiRequest } from '@/lib/api';
 import { SalesRepClientsTab } from '@/components/sales-rep/SalesRepClientsTab';
 import { SalesRepQuotesTab } from '@/components/sales-rep/SalesRepQuotesTab';
 import { SalesRepPaymentTab } from '@/components/sales-rep/SalesRepPaymentTab';
+import { SalesRepProfileTab } from '@/components/sales-rep/SalesRepProfileTab';
 import { CreateQuoteModal } from '@/components/sales-rep/CreateQuoteModal';
 import { CreateClientModal } from '@/components/sales-rep/CreateClientModal';
 import { QuotePaymentModal } from '@/components/sales-rep/QuotePaymentModal';
@@ -78,6 +79,8 @@ export default function SalesRepDashboardPage() {
       )}
 
       {activeTab === 'payment' && <SalesRepPaymentTab />}
+
+      {activeTab === 'profile' && <SalesRepProfileTab />}
 
       {/* Modal Création Client */}
       <CreateClientModal

@@ -53,6 +53,14 @@ model User {
   defaultCommissionRate Float?      @default(10.0)
   woxxpayLiveMode      Boolean      @default(false)
 
+  // Identité & Coordonnées Commerciales (Logo, Agence, WhatsApp, Prise de RDV)
+  avatarUrl            String?      // URL ou image en base64 du logo / photo
+  companyName          String?      // Nom de l'agence ou raison sociale commerciale
+  phoneNumber          String?      // Numéro de téléphone direct
+  whatsappNumber       String?      // Numéro WhatsApp direct
+  calendlyUrl          String?      // Lien de prise de RDV (Calendly / Meet / Cal.com)
+  bio                  String?      // Message d'accueil / Bio pour les clients
+
   @@index([role])
   @@index([assignedSalesRepId])
 }
