@@ -120,20 +120,24 @@ export function SalesRepQuotesTab({
         <div className="bg-white p-4 rounded-2xl border-2 border-slate-900 shadow-brutal-xs">
           <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">Total Devis Émis</span>
           <span className="text-2xl font-black text-slate-950">{totalQuotesCount}</span>
+          <span className="text-[10px] text-slate-500 font-bold block mt-1">
+            Conversion : {totalQuotesCount > 0 ? Math.round((paidQuotes.length / totalQuotesCount) * 100) : 0}%
+          </span>
         </div>
         <div className="bg-emerald-50 p-4 rounded-2xl border-2 border-emerald-600 shadow-brutal-xs">
-          <span className="text-[10px] font-black uppercase text-emerald-900 block mb-1">CA Encaissé TTC</span>
+          <span className="text-[10px] font-black uppercase text-emerald-900 block mb-1">CA Total Encaissé</span>
           <span className="text-2xl font-black text-emerald-950">{totalPaidRevenue.toFixed(2)} €</span>
+          <span className="text-[10px] text-emerald-700 font-bold block mt-1">Volume brut TTC</span>
+        </div>
+        <div className="bg-purple-50 p-4 rounded-2xl border-2 border-purple-600 shadow-brutal-xs">
+          <span className="text-[10px] font-black uppercase text-purple-900 block mb-1">Votre Net Perçu (80%)</span>
+          <span className="text-2xl font-black text-purple-950">{(totalPaidRevenue * 0.80).toFixed(2)} €</span>
+          <span className="text-[10px] text-purple-700 font-bold block mt-1">Stripe Connect & IBAN</span>
         </div>
         <div className="bg-amber-50 p-4 rounded-2xl border-2 border-amber-600 shadow-brutal-xs">
-          <span className="text-[10px] font-black uppercase text-amber-900 block mb-1">En Cours de Paiement</span>
-          <span className="text-2xl font-black text-amber-950">{totalPendingRevenue.toFixed(2)} €</span>
-        </div>
-        <div className="bg-blue-50 p-4 rounded-2xl border-2 border-blue-600 shadow-brutal-xs">
-          <span className="text-[10px] font-black uppercase text-blue-900 block mb-1">Taux Conversion</span>
-          <span className="text-2xl font-black text-blue-950">
-            {totalQuotesCount > 0 ? Math.round((paidQuotes.length / totalQuotesCount) * 100) : 0}%
-          </span>
+          <span className="text-[10px] font-black uppercase text-amber-900 block mb-1">Commission Plateforme (20%)</span>
+          <span className="text-2xl font-black text-amber-950">{(totalPaidRevenue * 0.20).toFixed(2)} €</span>
+          <span className="text-[10px] text-amber-700 font-bold block mt-1">Frais WoxxApp SAS</span>
         </div>
       </div>
 

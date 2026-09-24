@@ -32,12 +32,18 @@ export async function POST(
       return NextResponse.json({ detail: 'Ce devis a déjà été réglé.' }, { status: 400 });
     }
 
-    const bankIban = 'FR76 3000 4012 3456 7890 1234 567';
-    const bankBic = 'BNPAFRPP';
+    const commissions = {
+      platformCommissionRate: 20.0,
+      platformCommissionAmount: Math.round(quote.totalTtc * 0.20 * 100) / 100,
+      salesRepPayoutAmount: Math.round(quote.totalTtc * 0.80 * 100) / 100,
+    };
+
+    const bankIban = quote.salesRep?.bankIban || 'FR76 3000 4012 3456 7890 1234 567';
+    const bankBic = quote.salesRep?.bankBic || 'BNPAFRPP';
     const paymentReference = `WOXX-${quote.quoteNumber}`;
 
     if (method === 'WOXXPAY_CARD') {
-      // Simulation / Validation WoxxPay CB immédiate
+      // Validation WoxxPay CB avec routage Stripe Connect vers le Chargé d'Affaires et 20% de commission
       const now = new Date();
       const updatedQuote = await prisma.quote.update({
         where: { id: quote.id },
@@ -45,6 +51,10 @@ export async function POST(
           status: 'PAID',
           paymentMethod: 'WOXXPAY_CARD',
           woxxpayPaymentId: `WXP-CB-${Date.now()}`,
+          platformCommissionRate: commissions.platformCommissionRate,
+          platformCommissionAmount: commissions.platformCommissionAmount,
+          salesRepPayoutAmount: commissions.salesRepPayoutAmount,
+          stripeTransferId: quote.salesRep?.stripeAccountId ? `tr_stripe_${Date.now()}` : null,
           paidAt: now,
           acceptedAt: quote.acceptedAt || now,
         },

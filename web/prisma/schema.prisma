@@ -181,6 +181,13 @@ model Quote {
   woxxpayPaymentId  String?
   woxxpayPaymentUrl String?
   bankDetails       String?
+  
+  // Répartition financière & Commission WoxxPay (20% plateforme / 80% Chargé d'affaires)
+  platformCommissionRate   Float?         @default(20.0) // 20% de commission plateforme
+  platformCommissionAmount Float?                        // Montant commission WoxxApp
+  salesRepPayoutAmount     Float?                        // Net reversé au Chargé d'Affaires (80%)
+  stripeTransferId         String?                       // ID du transfert Stripe Connect
+
   validUntil        DateTime?
   acceptedAt        DateTime?
   paidAt            DateTime?

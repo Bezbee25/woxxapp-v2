@@ -35,21 +35,31 @@ export async function POST(
       );
     }
 
-    const bankIban = 'FR76 3000 4012 3456 7890 1234 567';
-    const bankBic = 'BNPAFRPP';
+    const commissions = {
+      platformCommissionRate: 20.0,
+      platformCommissionAmount: Math.round(quote.totalTtc * 0.20 * 100) / 100,
+      salesRepPayoutAmount: Math.round(quote.totalTtc * 0.80 * 100) / 100,
+    };
+
+    const bankIban = quote.salesRep?.bankIban || 'FR76 3000 4012 3456 7890 1234 567';
+    const bankBic = quote.salesRep?.bankBic || 'BNPAFRPP';
     const paymentReference = `WOXX-${quote.quoteNumber}`;
 
     // Si on confirme la réception du virement ou du paiement CB
     if (confirmReceived) {
       const now = new Date();
 
-      // 1. Mettre à jour le devis en PAID
+      // 1. Mettre à jour le devis en PAID avec commissions
       const updatedQuote = await prisma.quote.update({
         where: { id: quote.id },
         data: {
           status: 'PAID',
           paymentMethod: method as any,
           woxxpayPaymentId: `WXP-${Date.now()}`,
+          platformCommissionRate: commissions.platformCommissionRate,
+          platformCommissionAmount: commissions.platformCommissionAmount,
+          salesRepPayoutAmount: commissions.salesRepPayoutAmount,
+          stripeTransferId: quote.salesRep?.stripeAccountId ? `tr_stripe_${Date.now()}` : null,
           paidAt: now,
           acceptedAt: quote.acceptedAt || now,
         },
