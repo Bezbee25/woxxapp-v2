@@ -19,14 +19,15 @@ export const DEFAULT_PRICING_CATALOG: Record<string, ModulePricingItem> = {
     category: 'Socle de Base',
     priceMonthly: 15.0,
     priceYearly: 150.0,
+    isCoreWithEcommerce: true,
   },
   ecommerce: {
     code: 'ecommerce',
     label: 'Boutique E-commerce & Stocks',
     desc: 'Panier d’achat, variantes (tailles/couleurs), gestion de stocks et commandes en ligne.',
     category: 'Vente en Ligne',
-    priceMonthly: 35.0,
-    priceYearly: 300.0,
+    priceMonthly: 15.0,
+    priceYearly: 150.0,
   },
   accounting: {
     code: 'accounting',
@@ -51,48 +52,48 @@ export const DEFAULT_PRICING_CATALOG: Record<string, ModulePricingItem> = {
     label: 'Livraisons & Transport WoxxShip',
     desc: 'Génération d’étiquettes Colissimo, Mondial Relay, Chronopost et suivi colis.',
     category: 'Logistique',
-    priceMonthly: 35.0,
-    priceYearly: 300.0,
+    priceMonthly: 10.0,
+    priceYearly: 100.0,
   },
   click_and_collect: {
     code: 'click_and_collect',
     label: 'Click & Collect / Commande à Table',
     desc: 'Retrait en boutique sur créneau horaire dédié et commande à table/comptoir avec KDS cuisine.',
     category: 'Logistique & Restauration',
-    priceMonthly: 30.0,
-    priceYearly: 300.0,
+    priceMonthly: 10.0,
+    priceYearly: 100.0,
   },
   reservations: {
     code: 'reservations',
     label: 'Réservations & Prise de RDV',
     desc: 'Planning universel de rendez-vous (santé, beauté, bien-être) et réservation de tables.',
     category: 'Services & RDV',
-    priceMonthly: 25.0,
-    priceYearly: 250.0,
+    priceMonthly: 10.0,
+    priceYearly: 100.0,
   },
   analytics: {
     code: 'analytics',
     label: 'Statistiques & CA Avancés',
     desc: 'Tableaux de bord d’analyse du chiffre d’affaires, panier moyen et top ventes.',
     category: 'Pilotage',
-    priceMonthly: 30.0,
-    priceYearly: 300.0,
+    priceMonthly: 10.0,
+    priceYearly: 100.0,
   },
   notifications: {
     code: 'notifications',
     label: 'Alertes Telegram & Email',
     desc: 'Notification instantanée sur smartphone de chaque commande via Bot Telegram.',
     category: 'Communication',
-    priceMonthly: 10.0,
-    priceYearly: 100.0,
+    priceMonthly: 5.0,
+    priceYearly: 50.0,
   },
   loyalty_coupons: {
     code: 'loyalty_coupons',
     label: 'Fidélité & Codes Promo',
     desc: 'Cartes cadeaux, avoirs clients, remises panier et codes promotionnels.',
     category: 'Marketing',
-    priceMonthly: 10.0,
-    priceYearly: 100.0,
+    priceMonthly: 5.0,
+    priceYearly: 50.0,
   },
 };
 
@@ -178,7 +179,7 @@ export const MODULE_PROGRESSION_STEPS: ModuleStepDefinition[] = [
       {
         code: 'reservations',
         label: 'Prise de Rendez-Vous & Tables',
-        desc: 'Gestion universelle des rendez-vous (santé, dentiste, médecin, massage, esthétique) et réservations de tables/cabines.'
+        desc: 'Gestion universelle des rendez-vous (santé, dentiste, esthétique) et réservations de tables/cabines.'
       }
     ]
   },
@@ -215,6 +216,38 @@ export const MODULE_PROGRESSION_STEPS: ModuleStepDefinition[] = [
   }
 ];
 
+export function parseTenantModules(rawModules: any): {
+  activeModules: string[];
+  unrenewedModules: string[];
+} {
+  try {
+    if (Array.isArray(rawModules)) {
+      return {
+        activeModules: Array.from(new Set(['site_web', ...rawModules])),
+        unrenewedModules: [],
+      };
+    }
+    if (typeof rawModules === 'string') {
+      const parsed = JSON.parse(rawModules || '[]');
+      if (Array.isArray(parsed)) {
+        return {
+          activeModules: Array.from(new Set(['site_web', ...parsed])),
+          unrenewedModules: [],
+        };
+      }
+      if (parsed && typeof parsed === 'object') {
+        const active = Array.isArray(parsed.active) ? parsed.active : [];
+        const unrenewed = Array.isArray(parsed.unrenewed) ? parsed.unrenewed : [];
+        return {
+          activeModules: Array.from(new Set(['site_web', ...active])),
+          unrenewedModules: Array.from(new Set(unrenewed)),
+        };
+      }
+    }
+  } catch {}
+  return { activeModules: ['site_web'], unrenewedModules: [] };
+}
+
 export async function getSystemPricingAndTaxSettings(): Promise<{
   pricingMap: Record<string, ModulePricingItem>;
   taxSettings: TaxSettings;
@@ -226,7 +259,6 @@ export async function getSystemPricingAndTaxSettings(): Promise<{
       settingsMap[s.key] = s.value;
     }
 
-    // Extraction des prix configurés
     const pricingMap: Record<string, ModulePricingItem> = { ...DEFAULT_PRICING_CATALOG };
     if (settingsMap.module_pricing_catalog) {
       try {
@@ -251,7 +283,6 @@ export async function getSystemPricingAndTaxSettings(): Promise<{
       }
     }
 
-    // Extraction de la fiscalité (Micro-entreprise vs TVA)
     const taxType = (settingsMap.company_tax_type as any) || 'MICRO_ENTERPRISE';
     const isMicro = taxType === 'MICRO_ENTERPRISE';
     const vatRate = isMicro ? 0.0 : parseFloat(settingsMap.company_vat_rate || '20.0') || 20.0;
@@ -290,7 +321,6 @@ export function calculateModulesOrder(
 ) {
   let totalHt = 0;
   const items: Array<{ code: string; label: string; priceHt: number }> = [];
-
   const uniqueModules = Array.from(new Set(selectedModules));
 
   for (const modCode of uniqueModules) {
@@ -324,3 +354,79 @@ export function calculateModulesOrder(
     totalTtc,
   };
 }
+
+export interface ProrataItem {
+  code: string;
+  label: string;
+  basePrice: number;
+  prorataPrice: number;
+  isNew: boolean;
+}
+
+export function calculateProrataOrder(
+  newlyAddedModules: string[],
+  billingCycle: 'monthly' | 'yearly',
+  currentPeriodEnd: Date | string | null,
+  pricingMap: Record<string, ModulePricingItem> = DEFAULT_PRICING_CATALOG,
+  taxSettings?: TaxSettings
+) {
+  const isYearly = billingCycle === 'yearly';
+  let daysRemaining = 30;
+  const totalDays = isYearly ? 365 : 30;
+
+  if (currentPeriodEnd) {
+    const endDate = new Date(currentPeriodEnd).getTime();
+    const now = Date.now();
+    const diffMs = endDate - now;
+    if (diffMs > 0) {
+      daysRemaining = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+    } else {
+      daysRemaining = 1;
+    }
+  }
+
+  // Ratio au prorata (borné entre 0.01 et 1)
+  const ratio = isYearly ? Math.min(1, Math.max(0.01, daysRemaining / 365)) : 1;
+
+  let totalHt = 0;
+  const items: ProrataItem[] = [];
+
+  for (const modCode of newlyAddedModules) {
+    const item = pricingMap[modCode] || DEFAULT_PRICING_CATALOG[modCode];
+    if (item) {
+      const basePrice = isYearly ? item.priceYearly : item.priceMonthly;
+      const prorataPrice = isYearly ? Math.round(basePrice * ratio * 100) / 100 : basePrice;
+
+      if (prorataPrice > 0) {
+        totalHt += prorataPrice;
+        items.push({
+          code: item.code,
+          label: item.label,
+          basePrice,
+          prorataPrice,
+          isNew: true,
+        });
+      }
+    }
+  }
+
+  const isVatExempt = taxSettings ? taxSettings.isVatExempt : true;
+  const vatRate = isVatExempt ? 0.0 : taxSettings?.vatRate || 0.0;
+  const totalVat = isVatExempt ? 0.0 : Math.round(totalHt * (vatRate / 100) * 100) / 100;
+  const totalTtc = isVatExempt ? Math.round(totalHt * 100) / 100 : Math.round((totalHt + totalVat) * 100) / 100;
+
+  return {
+    billingCycle,
+    daysRemaining,
+    totalDays,
+    ratio,
+    items,
+    totalHt: Math.round(totalHt * 100) / 100,
+    vatRate,
+    isVatExempt,
+    legalNotice: taxSettings?.legalNotice || (isVatExempt ? 'Franchise en base de TVA, art. 293 B du CGI' : 'TVA 20%'),
+    totalVat,
+    totalTtc,
+  };
+}
+

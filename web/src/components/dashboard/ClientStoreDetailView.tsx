@@ -33,7 +33,8 @@ import {
   DEFAULT_PRICING_CATALOG,
   ModulePricingItem,
   TaxSettings,
-  calculateModulesOrder
+  calculateModulesOrder,
+  parseTenantModules
 } from '@/lib/modules-catalog';
 import { ClientPurchaseModulesModal } from './ClientPurchaseModulesModal';
 
@@ -73,9 +74,12 @@ export function ClientStoreDetailView({
       .catch((err) => console.error('Erreur chargement catalogue:', err));
   }, []);
 
-  const modulesList: string[] = Array.isArray(tenant.modules) ? tenant.modules : [];
-  const orderCalc = calculateModulesOrder(modulesList, 'monthly', pricingMap, taxSettings);
-  const yearlyCalc = calculateModulesOrder(modulesList, 'yearly', pricingMap, taxSettings);
+  const parsed = parseTenantModules(tenant.modules);
+  const activeModules = parsed.activeModules;
+  const unrenewedModules = parsed.unrenewedModules;
+
+  const orderCalc = calculateModulesOrder(activeModules, 'monthly', pricingMap, taxSettings);
+  const yearlyCalc = calculateModulesOrder(activeModules, 'yearly', pricingMap, taxSettings);
 
   const handleOpenSso = async () => {
     setSsoLoading(true);
@@ -314,7 +318,7 @@ export function ClientStoreDetailView({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b-2 border-slate-100">
           <div>
             <h2 className="text-xl font-black text-slate-950 flex items-center gap-2">
-              <Layers className="w-6 h-6 text-blue-600" /> Modules & Fonctionnalités Activés ({modulesList.length})
+              <Layers className="w-6 h-6 text-blue-600" /> Modules & Fonctionnalités Activés ({activeModules.length})
             </h2>
             <p className="text-xs text-slate-600 font-medium mt-1">
               Liste des fonctionnalités actuellement déployées et opérationnelles sur votre boutique.
@@ -331,23 +335,32 @@ export function ClientStoreDetailView({
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {modulesList.map((code) => {
+          {activeModules.map((code) => {
             const pricing = pricingMap[code] || DEFAULT_PRICING_CATALOG[code];
             const label = pricing?.label || code;
             const desc = pricing?.desc || 'Fonctionnalité active sur votre instance.';
             const price = pricing?.priceMonthly || 0;
+            const isUnrenewed = unrenewedModules.includes(code);
 
             return (
               <div
                 key={code}
-                className="p-4 rounded-2xl border-2 border-slate-900 bg-slate-50/60 shadow-brutal-xs flex flex-col justify-between space-y-3"
+                className={`p-4 rounded-2xl border-2 ${
+                  isUnrenewed ? 'border-amber-400 bg-amber-50/50' : 'border-slate-900 bg-slate-50/60'
+                } shadow-brutal-xs flex flex-col justify-between space-y-3`}
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <span className="text-xs font-black text-slate-950">{label}</span>
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
-                      Actif ✅
-                    </span>
+                    {isUnrenewed ? (
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-amber-200 text-amber-900 border border-amber-400">
+                        Non reconduit ⏳
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        Actif ✅
+                      </span>
+                    )}
                   </div>
                   <p className="text-[11px] text-slate-500 font-medium mt-1 leading-snug">
                     {desc}

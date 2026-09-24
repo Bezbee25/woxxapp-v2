@@ -20,7 +20,13 @@ import {
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import { ClientStoreDetailView } from './ClientStoreDetailView';
-import { calculateModulesOrder } from '@/lib/modules-catalog';
+import {
+  DEFAULT_PRICING_CATALOG,
+  ModulePricingItem,
+  TaxSettings,
+  calculateModulesOrder,
+  parseTenantModules
+} from '@/lib/modules-catalog';
 
 export interface ClientTenant {
   id: string;
@@ -29,7 +35,7 @@ export interface ClientTenant {
   customDomain?: string;
   email: string;
   status: 'PENDING' | 'ACTIVE' | 'SUSPENDED';
-  modules: string[];
+  modules: string[] | any;
   imageTag?: string;
   k8sStatus?: string;
   createdAt: string;
@@ -52,7 +58,25 @@ export function ClientStoresList({
   const [salesRep, setSalesRep] = useState<any | null>(null);
   const [ssoLoadingId, setSsoLoadingId] = useState<string | null>(null);
 
+  // Données tarifaires dynamiques
+  const [pricingMap, setPricingMap] = useState<Record<string, ModulePricingItem>>(DEFAULT_PRICING_CATALOG);
+  const [taxSettings, setTaxSettings] = useState<TaxSettings>({
+    taxType: 'MICRO_ENTERPRISE',
+    vatRate: 0.0,
+    isVatExempt: true,
+    legalNotice: 'Franchise en base de TVA, art. 293 B du CGI',
+    companyName: 'WoxxApp SAS',
+  });
+
   useEffect(() => {
+    fetch('/api/modules/catalog')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.pricingMap) setPricingMap(data.pricingMap);
+        if (data?.taxSettings) setTaxSettings(data.taxSettings);
+      })
+      .catch((err) => console.error('Erreur chargement catalogue:', err));
+
     apiRequest<any>('/account/sales-rep')
       .then((res) => {
         if (res?.salesRep) setSalesRep(res.salesRep);
@@ -159,8 +183,9 @@ export function ClientStoresList({
       {/* Liste des boutiques sous forme de cartes d'accès riches */}
       <div className="grid md:grid-cols-2 gap-6">
         {tenants.map((t) => {
-          const modulesList: string[] = Array.isArray(t.modules) ? t.modules : [];
-          const order = calculateModulesOrder(modulesList, 'monthly');
+          const parsed = parseTenantModules(t.modules);
+          const activeList = parsed.activeModules;
+          const monthlyOrder = calculateModulesOrder(activeList, 'monthly', pricingMap, taxSettings);
 
           return (
             <div
@@ -203,14 +228,14 @@ export function ClientStoresList({
                   <div className="space-y-0.5">
                     <span className="text-[10px] font-black uppercase text-slate-400 block">Formule Active</span>
                     <span className="text-xs font-black text-slate-900">
-                      {modulesList.length} module{modulesList.length > 1 ? 's' : ''} activé{modulesList.length > 1 ? 's' : ''}
+                      {activeList.length} module{activeList.length > 1 ? 's' : ''} actif{activeList.length > 1 ? 's' : ''}
                     </span>
                   </div>
 
                   <div className="text-right">
-                    <span className="text-[10px] font-black uppercase text-slate-400 block">Abonnement</span>
+                    <span className="text-[10px] font-black uppercase text-slate-400 block">Coût mensuel</span>
                     <span className="text-sm font-black text-slate-950 font-mono">
-                      {order.totalTtc.toFixed(2)} € <span className="text-[10px] font-normal text-slate-500">/mois</span>
+                      {monthlyOrder.totalTtc.toFixed(2)} € <span className="text-[10px] font-normal text-slate-500">/mois</span>
                     </span>
                   </div>
                 </div>

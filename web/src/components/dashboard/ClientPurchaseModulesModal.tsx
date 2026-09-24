@@ -18,14 +18,19 @@ import {
   ShieldCheck,
   Info,
   Calendar,
-  Receipt
+  Receipt,
+  AlertTriangle,
+  RotateCcw,
+  Clock
 } from 'lucide-react';
 import {
   MODULE_PROGRESSION_STEPS,
   DEFAULT_PRICING_CATALOG,
   ModulePricingItem,
   TaxSettings,
-  calculateModulesOrder
+  calculateModulesOrder,
+  calculateProrataOrder,
+  parseTenantModules
 } from '@/lib/modules-catalog';
 
 interface ClientPurchaseModulesModalProps {
@@ -34,7 +39,7 @@ interface ClientPurchaseModulesModalProps {
     id: string;
     commerceName: string;
     subdomain: string;
-    modules: string[];
+    modules: any;
   } | null;
   onClose: () => void;
   onSuccess: () => void;
@@ -47,10 +52,15 @@ export function ClientPurchaseModulesModal({
   onSuccess,
 }: ClientPurchaseModulesModalProps) {
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
+  const [activeOriginalModules, setActiveOriginalModules] = useState<string[]>([]);
+  const [unrenewedModules, setUnrenewedModules] = useState<string[]>([]);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-  const [paymentMethod, setPaymentMethod] = useState<'WOXXPAY_CARD' | 'WOXXPAY_TRANSFER'>('WOXXPAY_CARD');
+  const [subscription, setSubscription] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [successInvoice, setSuccessInvoice] = useState<any | null>(null);
+
+  // Modale de confirmation pour non-reconduction d'un module déjà payé
+  const [confirmCancelModule, setConfirmCancelModule] = useState<ModulePricingItem | null>(null);
 
   // Données dynamiques de configuration
   const [pricingMap, setPricingMap] = useState<Record<string, ModulePricingItem>>(DEFAULT_PRICING_CATALOG);
@@ -70,41 +80,104 @@ export function ClientPurchaseModulesModal({
         if (data?.taxSettings) setTaxSettings(data.taxSettings);
       })
       .catch((err) => console.error('Erreur chargement catalogue:', err));
+
+    fetch('/api/admin/subscriptions')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data?.subscriptions) && data.subscriptions.length > 0) {
+          const sub = data.subscriptions[0];
+          setSubscription(sub);
+          if (sub.billingCycle === 'yearly') {
+            setBillingCycle('yearly');
+          }
+        }
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
     if (isOpen && tenant) {
-      const list = Array.isArray(tenant.modules) ? [...tenant.modules] : [];
+      const parsed = parseTenantModules(tenant.modules);
+      const list = parsed.activeModules;
       if (!list.includes('site_web')) list.push('site_web');
       if (list.includes('ecommerce')) {
         if (!list.includes('accounting')) list.push('accounting');
         if (!list.includes('woxxpay')) list.push('woxxpay');
       }
+      setActiveOriginalModules(list);
       setSelectedModules(Array.from(new Set(list)));
+      setUnrenewedModules(parsed.unrenewedModules);
       setSuccessInvoice(null);
+      setConfirmCancelModule(null);
     }
   }, [isOpen, tenant]);
 
   if (!isOpen || !tenant) return null;
 
-  const toggleModule = (code: string) => {
+  // Gestion du clic sur un module
+  const handleModuleClick = (code: string) => {
     if (code === 'site_web') return; // Socle de base permanent
 
-    setSelectedModules((prev) => {
-      const exists = prev.includes(code);
-      if (exists) {
-        return prev.filter((c) => c !== code);
+    const pricing = pricingMap[code] || DEFAULT_PRICING_CATALOG[code];
+    const isCurrentlyActive = activeOriginalModules.includes(code);
+
+    if (isCurrentlyActive) {
+      // Le module est déjà actif et payé pour la période
+      if (!unrenewedModules.includes(code)) {
+        // Demande de non-reconduction -> ouvrir la modale de confirmation
+        setConfirmCancelModule(pricing || {
+          code,
+          label: code,
+          desc: '',
+          category: '',
+          priceMonthly: 0,
+          priceYearly: 0,
+        });
       } else {
-        if (code === 'ecommerce') {
-          return Array.from(new Set([...prev, 'ecommerce', 'accounting', 'woxxpay']));
-        }
-        return [...prev, code];
+        // Déjà marqué pour non-reconduction -> annuler la résiliation
+        setUnrenewedModules((prev) => prev.filter((c) => c !== code));
       }
-    });
+    } else {
+      // C'est un nouveau module pas encore actif
+      setSelectedModules((prev) => {
+        const exists = prev.includes(code);
+        if (exists) {
+          return prev.filter((c) => c !== code);
+        } else {
+          if (code === 'ecommerce') {
+            return Array.from(new Set([...prev, 'ecommerce', 'accounting', 'woxxpay']));
+          }
+          return [...prev, code];
+        }
+      });
+    }
+  };
+
+  const handleConfirmCancellation = () => {
+    if (confirmCancelModule) {
+      setUnrenewedModules((prev) => Array.from(new Set([...prev, confirmCancelModule.code])));
+      setConfirmCancelModule(null);
+    }
   };
 
   const hasEcommerce = selectedModules.includes('ecommerce');
-  const order = calculateModulesOrder(selectedModules, billingCycle, pricingMap, taxSettings);
+
+  // Nouveaux modules ajoutés qui nécessitent un paiement
+  const newlyAddedModules = selectedModules.filter((m) => !activeOriginalModules.includes(m));
+
+  // Calcul du coût : Prorata si annuel, ou mensuel si mensuel
+  const isExistingYearly = subscription?.billingCycle === 'yearly' || billingCycle === 'yearly';
+  const prorataCalculation = calculateProrataOrder(
+    newlyAddedModules,
+    isExistingYearly ? 'yearly' : 'monthly',
+    subscription?.currentPeriodEnd || null,
+    pricingMap,
+    taxSettings
+  );
+
+  // Si première souscription (aucun module actif originellement)
+  const fullOrder = calculateModulesOrder(selectedModules, billingCycle, pricingMap, taxSettings);
+  const activeOrder = activeOriginalModules.length > 1 ? prorataCalculation : fullOrder;
 
   const handlePurchase = async () => {
     setLoading(true);
@@ -114,16 +187,22 @@ export function ClientPurchaseModulesModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           modules: selectedModules,
+          unrenewedModules,
           billingCycle,
-          paymentMethod,
+          paymentMethod: 'STRIPE_CARD',
         }),
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Erreur lors du paiement');
+        throw new Error(data.error || 'Erreur lors du traitement');
       }
-      setSuccessInvoice(data.invoice);
-      onSuccess();
+
+      if (data.invoice) {
+        setSuccessInvoice(data.invoice);
+      } else {
+        // Enregistrement sans frais
+        onSuccess();
+      }
     } catch (err: any) {
       alert(err.message || 'Erreur lors de la validation');
     } finally {
@@ -133,7 +212,7 @@ export function ClientPurchaseModulesModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 animate-in fade-in">
-      <div className="bg-white rounded-3xl border-2 border-slate-900 shadow-brutal w-full max-w-3xl p-6 space-y-5 max-h-[92vh] flex flex-col">
+      <div className="bg-white rounded-3xl border-2 border-slate-900 shadow-brutal w-full max-w-3xl p-6 space-y-5 max-h-[92vh] flex flex-col relative">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b-2 border-slate-100 shrink-0">
           <div className="flex items-center gap-3">
@@ -142,7 +221,7 @@ export function ClientPurchaseModulesModal({
             </div>
             <div>
               <h3 className="text-base font-black text-slate-950">
-                Catalogue & Activation de Modules SaaS
+                Catalogue & Gestion des Modules
               </h3>
               <p className="text-xs text-slate-500 font-medium">
                 {tenant.commerceName} ({tenant.subdomain}.woxxapp.de)
@@ -166,55 +245,66 @@ export function ClientPurchaseModulesModal({
               Paiement Confirmé & Modules Activés !
             </h3>
             <p className="text-xs text-slate-600 font-medium max-w-md mx-auto">
-              Votre commande a été validée avec succès. Vos modules sont immédiatement synchronisés sur votre boutique en ligne et votre facture n° <span className="font-mono font-black text-slate-900">{successInvoice.invoiceNumber}</span> est disponible dans votre espace comptabilité.
+              Vos nouveaux modules sont immédiatement synchronisés sur votre boutique. Votre facture officielle n° <span className="font-mono font-black text-slate-900">{successInvoice.invoiceNumber}</span> est disponible dans votre espace comptabilité.
             </p>
             <div className="pt-3">
               <button
-                onClick={onClose}
-                className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-amber-300 font-black text-xs rounded-xl border-2 border-slate-900 shadow-brutal transition cursor-pointer"
+                onClick={() => {
+                  onClose();
+                  onSuccess();
+                }}
+                className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl border-2 border-slate-900 shadow-brutal transition cursor-pointer"
               >
-                Accéder à ma boutique
+                Retour à ma boutique 🏪
               </button>
             </div>
           </div>
         ) : (
           <>
-            {/* Sélecteur de Fréquence & Info */}
+            {/* Info Abonnement & Cycle */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200 shrink-0">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-slate-700">Formule d’engagement :</span>
-                <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-300">
-                  <button
-                    type="button"
-                    onClick={() => setBillingCycle('monthly')}
-                    className={`px-3 py-1 rounded-lg text-xs font-black transition cursor-pointer ${
-                      billingCycle === 'monthly'
-                        ? 'bg-slate-900 text-white'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    Mensuel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setBillingCycle('yearly')}
-                    className={`px-3 py-1 rounded-lg text-xs font-black transition flex items-center gap-1 cursor-pointer ${
-                      billingCycle === 'yearly'
-                        ? 'bg-amber-400 text-slate-950 font-black'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    <span>Annuel</span>
-                    <span className="px-1.5 py-0.2 bg-emerald-600 text-white text-[9px] font-black rounded">
-                      -2 mois
-                    </span>
-                  </button>
-                </div>
+                <span className="text-xs font-black text-slate-700">Formule :</span>
+                {subscription ? (
+                  <span className="px-2.5 py-1 bg-slate-900 text-amber-300 font-black text-xs rounded-xl font-mono">
+                    {subscription.billingCycle === 'yearly' ? 'Abonnement Annuel' : 'Abonnement Mensuel'}
+                  </span>
+                ) : (
+                  <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-300">
+                    <button
+                      type="button"
+                      onClick={() => setBillingCycle('monthly')}
+                      className={`px-3 py-1 rounded-lg text-xs font-black transition cursor-pointer ${
+                        billingCycle === 'monthly'
+                          ? 'bg-slate-900 text-white'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Mensuel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBillingCycle('yearly')}
+                      className={`px-3 py-1 rounded-lg text-xs font-black transition flex items-center gap-1 cursor-pointer ${
+                        billingCycle === 'yearly'
+                          ? 'bg-amber-400 text-slate-950 font-black'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <span>Annuel</span>
+                      <span className="px-1.5 py-0.2 bg-emerald-600 text-white text-[9px] font-black rounded">
+                        -2 mois
+                      </span>
+                    </button>
+                  </div>
+                )}
               </div>
 
-              <span className="text-xs font-bold text-slate-500">
-                {selectedModules.length} module{selectedModules.length > 1 ? 's' : ''} sélectionné{selectedModules.length > 1 ? 's' : ''}
-              </span>
+              {isExistingYearly && newlyAddedModules.length > 0 && (
+                <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
+                  ⚡ Prorata appliqué ({prorataCalculation.daysRemaining} jours restants)
+                </span>
+              )}
             </div>
 
             {/* Liste des Modules par Étapes */}
@@ -246,19 +336,24 @@ export function ClientPurchaseModulesModal({
                       {step.modules.map((mod) => {
                         const pricing = pricingMap[mod.code] || DEFAULT_PRICING_CATALOG[mod.code];
                         const price = billingCycle === 'yearly' ? pricing?.priceYearly : pricing?.priceMonthly;
-                        const isChecked = selectedModules.includes(mod.code);
                         const isMandatory = mod.code === 'site_web';
                         const isLockedByEcommerce = hasEcommerce && mod.isCoreWithEcommerce;
+
+                        const isCurrentlyActive = activeOriginalModules.includes(mod.code);
+                        const isChecked = selectedModules.includes(mod.code);
+                        const isUnrenewed = unrenewedModules.includes(mod.code);
 
                         return (
                           <div
                             key={mod.code}
-                            onClick={() => !isMandatory && toggleModule(mod.code)}
+                            onClick={() => !isMandatory && handleModuleClick(mod.code)}
                             className={`p-3 rounded-xl border-2 transition flex flex-col justify-between ${
                               isMandatory
                                 ? 'bg-slate-100 border-slate-300 cursor-not-allowed opacity-85'
+                                : isUnrenewed
+                                ? 'bg-amber-50 border-amber-400 shadow-brutal-xs cursor-pointer'
                                 : isChecked
-                                ? 'bg-amber-50/90 border-slate-900 shadow-brutal-xs cursor-pointer'
+                                ? 'bg-emerald-50/90 border-slate-900 shadow-brutal-xs cursor-pointer'
                                 : 'bg-white border-slate-200 hover:border-slate-400 opacity-70 cursor-pointer'
                             }`}
                           >
@@ -271,8 +366,23 @@ export function ClientPurchaseModulesModal({
                                       Inclus
                                     </span>
                                   )}
+                                  {isCurrentlyActive && !isUnrenewed && (
+                                    <span className="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 text-[9px] font-black rounded">
+                                      Payé & Actif
+                                    </span>
+                                  )}
+                                  {isUnrenewed && (
+                                    <span className="px-1.5 py-0.2 bg-amber-200 text-amber-900 text-[9px] font-black rounded border border-amber-400">
+                                      Non reconduit
+                                    </span>
+                                  )}
                                 </div>
-                                {isChecked ? (
+
+                                {isUnrenewed ? (
+                                  <span title="Cliquer pour annuler la non-reconduction">
+                                    <RotateCcw className="w-4 h-4 text-amber-700 shrink-0" />
+                                  </span>
+                                ) : isChecked ? (
                                   <CheckSquare className="w-4 h-4 text-slate-950 shrink-0" />
                                 ) : (
                                   <Square className="w-4 h-4 text-slate-400 shrink-0" />
@@ -307,13 +417,16 @@ export function ClientPurchaseModulesModal({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
                 <div className="space-y-0.5">
                   <div className="text-[10px] font-black uppercase text-amber-300 flex items-center gap-1">
-                    <Receipt className="w-3.5 h-3.5" /> Récapitulatif de votre commande
+                    <Receipt className="w-3.5 h-3.5" />
+                    {newlyAddedModules.length > 0
+                      ? 'Nouveaux modules à activer'
+                      : 'Modifications de votre formule'}
                   </div>
                   <div className="text-xs text-slate-300 font-medium">
-                    {order.isVatExempt ? (
-                      <span className="text-emerald-400 font-bold">{order.legalNotice}</span>
+                    {activeOrder.isVatExempt ? (
+                      <span className="text-emerald-400 font-bold">{activeOrder.legalNotice}</span>
                     ) : (
-                      <span>Facturation avec TVA légale {order.vatRate}%</span>
+                      <span>Facturation avec TVA légale {activeOrder.vatRate}%</span>
                     )}
                   </div>
                 </div>
@@ -321,20 +434,20 @@ export function ClientPurchaseModulesModal({
                 <div className="flex items-center gap-4 text-right">
                   <div>
                     <span className="text-[10px] text-slate-400 block font-bold">Total HT</span>
-                    <span className="font-mono text-xs font-bold text-slate-200">{order.totalHt.toFixed(2)} €</span>
+                    <span className="font-mono text-xs font-bold text-slate-200">{activeOrder.totalHt.toFixed(2)} €</span>
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-400 block font-bold">
-                      {order.isVatExempt ? 'TVA (0%)' : `TVA (${order.vatRate}%)`}
+                      {activeOrder.isVatExempt ? 'TVA (0%)' : `TVA (${activeOrder.vatRate}%)`}
                     </span>
-                    <span className="font-mono text-xs font-bold text-slate-200">{order.totalVat.toFixed(2)} €</span>
+                    <span className="font-mono text-xs font-bold text-slate-200">{activeOrder.totalVat.toFixed(2)} €</span>
                   </div>
                   <div className="pl-3 border-l border-slate-800">
                     <span className="text-[10px] text-amber-300 block font-black uppercase">
-                      {order.isVatExempt ? 'Net à Payer' : 'Total TTC'}
+                      {activeOrder.isVatExempt ? 'Net à Payer' : 'Total TTC'}
                     </span>
                     <span className="font-mono text-lg font-black text-amber-400">
-                      {order.totalTtc.toFixed(2)} €
+                      {activeOrder.totalTtc.toFixed(2)} €
                     </span>
                   </div>
                 </div>
@@ -367,16 +480,53 @@ export function ClientPurchaseModulesModal({
                     <ShieldCheck className="w-4 h-4" />
                     <span>
                       {loading
-                        ? 'Validation Stripe...'
-                        : order.totalTtc === 0
-                        ? 'Valider (Gratuit)'
-                        : 'Payer par Carte Bancaire (Stripe) 💳'}
+                        ? 'Traitement en cours...'
+                        : activeOrder.totalTtc === 0
+                        ? 'Enregistrer les modifications'
+                        : `Payer ${activeOrder.totalTtc.toFixed(2)} € par CB 💳`}
                     </span>
                   </button>
                 </div>
               </div>
             </div>
           </>
+        )}
+
+        {/* DIALOGUE DE CONFIRMATION DE NON-RECONDUCTION */}
+        {confirmCancelModule && (
+          <div className="absolute inset-0 z-50 bg-slate-950/70 backdrop-blur-sm rounded-3xl p-6 flex items-center justify-center animate-in fade-in">
+            <div className="bg-white rounded-3xl border-2 border-slate-900 shadow-brutal max-w-md p-6 space-y-4 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 border-2 border-slate-900 flex items-center justify-center mx-auto text-2xl">
+                ⚠️
+              </div>
+              <h4 className="text-base font-black text-slate-950">
+                Programmer la non-reconduction du module ?
+              </h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Le module <span className="font-bold text-slate-900">{confirmCancelModule.label}</span> a déjà été payé pour la période en cours.
+              </p>
+              <div className="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-[11px] text-amber-900 text-left space-y-1">
+                <p>• <strong>Il reste actif</strong> sur votre boutique sans coupure jusqu’à votre prochaine date d’échéance.</p>
+                <p>• <strong>Il ne sera pas renouvelé</strong> ni facturé lors du prochain prélèvement.</p>
+              </div>
+              <div className="flex justify-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmCancelModule(null)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs font-black rounded-xl border border-slate-900 cursor-pointer"
+                >
+                  Garder le module
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmCancellation}
+                  className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black rounded-xl border-2 border-slate-900 shadow-brutal-xs cursor-pointer"
+                >
+                  Confirmer la non-reconduction
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
