@@ -1,18 +1,19 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { ProfileDropdown } from '../auth/ProfileDropdown';
 import { useAuth } from '@/lib/auth-context';
 
 export function LandingNavbar() {
-  const { openAuthModal } = useAuth();
+  const { user, openAuthModal } = useAuth();
 
   return (
     <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b-2 border-slate-900 shadow-brutal-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
         {/* LOGO NEO-BRUTALIST */}
         <div className="flex items-center gap-3">
-          <a href="#" className="flex items-center gap-2.5 group">
+          <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-10 h-10 rounded-2xl bg-amber-400 border-2 border-slate-900 shadow-brutal-xs flex items-center justify-center text-xl font-black group-hover:rotate-6 transition-transform">
               🏪
             </div>
@@ -24,7 +25,7 @@ export function LandingNavbar() {
                 Plateforme SaaS Commerçants
               </span>
             </div>
-          </a>
+          </Link>
         </div>
 
         {/* LIENS DE NAVIGATION */}
@@ -73,12 +74,33 @@ export function LandingNavbar() {
         {/* ACTIONS NAVBAR */}
         <div className="flex items-center gap-3">
           <ProfileDropdown />
-          <button
-            onClick={() => openAuthModal('register')}
-            className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black px-4 sm:px-5 py-2.5 rounded-xl border-2 border-slate-900 shadow-brutal hover:shadow-brutal-lg hover:-translate-x-0.5 hover:-translate-y-0.5 transition active:translate-x-0 active:translate-y-0 cursor-pointer"
-          >
-            Créer ma boutique →
-          </button>
+          {user ? (
+            <Link
+              href={
+                user.role === 'admin'
+                  ? '/admin'
+                  : user.role === 'charge_daffaire'
+                  ? '/sales-rep'
+                  : '/dashboard'
+              }
+              className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black px-4 sm:px-5 py-2.5 rounded-xl border-2 border-slate-900 shadow-brutal hover:shadow-brutal-lg hover:-translate-x-0.5 hover:-translate-y-0.5 transition active:translate-x-0 active:translate-y-0 cursor-pointer inline-flex items-center gap-1.5"
+            >
+              <span>
+                {user.role === 'admin'
+                  ? 'Panneau Admin →'
+                  : user.role === 'charge_daffaire'
+                  ? 'Espace Chargé d’Affaires →'
+                  : 'Mon Espace Client →'}
+              </span>
+            </Link>
+          ) : (
+            <button
+              onClick={() => openAuthModal('register')}
+              className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black px-4 sm:px-5 py-2.5 rounded-xl border-2 border-slate-900 shadow-brutal hover:shadow-brutal-lg hover:-translate-x-0.5 hover:-translate-y-0.5 transition active:translate-x-0 active:translate-y-0 cursor-pointer"
+            >
+              Créer ma boutique →
+            </button>
+          )}
         </div>
       </div>
     </nav>

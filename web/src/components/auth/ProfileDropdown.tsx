@@ -116,7 +116,7 @@ export function ProfileDropdown() {
 
           {/* Liens d'accès selon le rôle */}
           <div className="p-2 space-y-1">
-            {(user.role === 'admin' || user.role === 'charge_daffaire') && (
+            {user.role === 'admin' && (
               <Link
                 href="/admin"
                 onClick={() => setIsOpen(false)}
@@ -127,14 +127,25 @@ export function ProfileDropdown() {
               </Link>
             )}
 
+            {user.role === 'charge_daffaire' && (
+              <Link
+                href="/sales-rep"
+                onClick={() => setIsOpen(false)}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-black text-slate-900 hover:bg-blue-100 transition-colors"
+              >
+                <Briefcase className="w-4 h-4 text-blue-700" />
+                <span>Espace Chargé d'Affaires</span>
+              </Link>
+            )}
+
             {user.role === 'client' && (
               <Link
-                href="#showroom"
+                href="/dashboard"
                 onClick={() => setIsOpen(false)}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-black text-slate-900 hover:bg-slate-100 transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-black text-slate-900 hover:bg-emerald-50 hover:text-emerald-950 transition-colors"
               >
                 <Store className="w-4 h-4 text-emerald-600" />
-                <span>Mes Boutiques & Démos</span>
+                <span>Mon Espace Client & Boutiques</span>
               </Link>
             )}
 

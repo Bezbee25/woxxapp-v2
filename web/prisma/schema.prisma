@@ -38,6 +38,8 @@ model User {
   tenants              Tenant[]
   subscriptions        Subscription[]
   invoices             Invoice[]
+  quotesAsSalesRep     Quote[]      @relation("SalesRepQuotes")
+  quotesAsClient       Quote[]      @relation("ClientQuotes")
 
   @@index([role])
   @@index([assignedSalesRepId])
@@ -134,6 +136,53 @@ model ModuleCatalog {
   isCore           Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  PAID
+  REJECTED
+}
+
+enum PaymentMethod {
+  WOXXPAY_CARD
+  WOXXPAY_TRANSFER
+  MANUAL_TRANSFER
+}
+
+model Quote {
+  id                String         @id @default(uuid())
+  quoteNumber       String         @unique
+  title             String
+  description       String?
+  salesRepId        String
+  clientId          String
+  tenantId          String?
+  items             String         @default("[]")
+  totalHt           Float
+  totalVat          Float
+  totalTtc          Float
+  status            QuoteStatus    @default(DRAFT)
+  paymentMethod     PaymentMethod?
+  woxxpayPaymentId  String?
+  woxxpayPaymentUrl String?
+  bankDetails       String?
+  validUntil        DateTime?
+  acceptedAt        DateTime?
+  paidAt            DateTime?
+  pdfUrl            String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  salesRep          User           @relation("SalesRepQuotes", fields: [salesRepId], references: [id], onDelete: Restrict)
+  client            User           @relation("ClientQuotes", fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([salesRepId])
+  @@index([clientId])
+  @@index([status])
+  @@index([quoteNumber])
 }
 
 model SystemSettings {

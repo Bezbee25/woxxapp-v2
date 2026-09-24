@@ -1,12 +1,13 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Sparkles, ArrowRight, Play, Lock, ShieldCheck, Zap, HeartHandshake } from 'lucide-react';
 import { SectionMediaBackground } from './SectionMediaBackground';
 import { useAuth } from '@/lib/auth-context';
 
 export function HeroSection() {
-  const { openAuthModal } = useAuth();
+  const { user, openAuthModal } = useAuth();
 
   return (
     <section className="relative w-full py-20 sm:py-28 border-b-2 border-slate-900 overflow-hidden">
@@ -36,13 +37,23 @@ export function HeroSection() {
         </p>
 
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-16">
-          <button
-            onClick={() => openAuthModal('register')}
-            className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-base sm:text-lg font-black px-8 py-4 rounded-2xl border-2 border-slate-900 shadow-brutal hover:shadow-brutal-lg hover:-translate-x-0.5 hover:-translate-y-0.5 transition active:translate-x-0 active:translate-y-0 flex items-center justify-center gap-3 cursor-pointer"
-          >
-            <span>Lancer ma boutique</span>
-            <ArrowRight className="w-5 h-5" />
-          </button>
+          {user ? (
+            <Link
+              href={user.role === 'admin' || user.role === 'charge_daffaire' ? '/admin' : '/dashboard'}
+              className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-base sm:text-lg font-black px-8 py-4 rounded-2xl border-2 border-slate-900 shadow-brutal hover:shadow-brutal-lg hover:-translate-x-0.5 hover:-translate-y-0.5 transition active:translate-x-0 active:translate-y-0 flex items-center justify-center gap-3 cursor-pointer"
+            >
+              <span>{user.role === 'admin' || user.role === 'charge_daffaire' ? 'Accéder à l’Administration' : 'Gérer / Créer mes boutiques'}</span>
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          ) : (
+            <button
+              onClick={() => openAuthModal('register')}
+              className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-base sm:text-lg font-black px-8 py-4 rounded-2xl border-2 border-slate-900 shadow-brutal hover:shadow-brutal-lg hover:-translate-x-0.5 hover:-translate-y-0.5 transition active:translate-x-0 active:translate-y-0 flex items-center justify-center gap-3 cursor-pointer"
+            >
+              <span>Lancer ma boutique</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          )}
           <a
             href="#showroom"
             className="w-full sm:w-auto bg-white hover:bg-slate-100 text-slate-900 text-base sm:text-lg font-bold px-8 py-4 rounded-2xl border-2 border-slate-900 shadow-brutal-sm hover:shadow-brutal hover:-translate-x-0.5 hover:-translate-y-0.5 transition flex items-center justify-center gap-2"

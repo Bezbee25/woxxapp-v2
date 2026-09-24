@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../lib/auth-context';
 import { API_BASE_URL } from '../../lib/api';
 import { X, Lock, Mail, User, AlertCircle, ArrowRight } from 'lucide-react';
 
 export function AuthModal() {
+  const router = useRouter();
   const { isAuthModalOpen, closeAuthModal, authModalMode, login, register } = useAuth();
   const [tab, setTab] = useState<'login' | 'register'>(authModalMode);
   
@@ -37,6 +39,21 @@ export function AuthModal() {
       setEmail('');
       setPassword('');
       setFullName('');
+      closeAuthModal();
+
+      try {
+        const meRes = await fetch('/api/auth/me');
+        const meData = await meRes.json();
+        if (meData?.role === 'admin') {
+          router.push('/admin');
+        } else if (meData?.role === 'charge_daffaire') {
+          router.push('/sales-rep');
+        } else {
+          router.push('/dashboard');
+        }
+      } catch {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue lors de la connexion.');
     } finally {

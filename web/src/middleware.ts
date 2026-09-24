@@ -14,9 +14,9 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // 2. Si déjà connecté, rediriger la page login vers dashboard/admin
+  // 2. Si déjà connecté, rediriger la page login vers dashboard
   if ((pathname === '/login' || pathname === '/register') && token) {
-    return NextResponse.redirect(new URL('/admin', request.url));
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   const response = NextResponse.next();
