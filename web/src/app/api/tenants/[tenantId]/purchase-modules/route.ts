@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { StoreManagerClient } from '@/lib/store-manager-client';
-import { calculateModulesOrder } from '@/lib/modules-catalog';
+import { calculateModulesOrder, getSystemPricingAndTaxSettings } from '@/lib/modules-catalog';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,15 +45,22 @@ export async function POST(
       if (!cleanModules.includes('woxxpay')) cleanModules.push('woxxpay');
     }
 
+    // Récupération de la fiscalité et des prix configurés par l'Admin
+    const { pricingMap, taxSettings } = await getSystemPricingAndTaxSettings();
+
     // Calcul de la commande
-    const orderCalc = calculateModulesOrder(cleanModules, billingCycle);
+    const orderCalc = calculateModulesOrder(cleanModules, billingCycle, pricingMap, taxSettings);
 
     // Génération du numéro de facture
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const randSuffix = Math.floor(1000 + Math.random() * 9000);
     const invoiceNumber = `FAC-${dateStr}-${randSuffix}`;
 
-    // 1. Création de la facture acquittée
+    const invoiceLegalNotice = taxSettings.isVatExempt
+      ? `${taxSettings.legalNotice}. Abonnement SaaS WoxxApp (${billingCycle === 'yearly' ? 'Annuel' : 'Mensuel'}) pour la boutique ${tenant.commerceName} (${tenant.subdomain}). Règlement validé par ${paymentMethod}.`
+      : `${taxSettings.legalNotice} (TVA ${taxSettings.vatRate}%). Abonnement SaaS WoxxApp (${billingCycle === 'yearly' ? 'Annuel' : 'Mensuel'}) pour la boutique ${tenant.commerceName} (${tenant.subdomain}). Règlement validé par ${paymentMethod}.`;
+
+    // 1. Création de la facture acquittée avec statut TVA exact
     const invoice = await prisma.invoice.create({
       data: {
         invoiceNumber,
@@ -62,9 +69,9 @@ export async function POST(
         totalVat: orderCalc.totalVat,
         totalTtc: orderCalc.totalTtc,
         vatRate: orderCalc.vatRate,
-        isVatExempt: false,
+        isVatExempt: orderCalc.isVatExempt,
         status: 'PAID',
-        legalNotice: `Abonnement modules SaaS WoxxApp (${billingCycle === 'yearly' ? 'Annuel' : 'Mensuel'}) pour la boutique ${tenant.commerceName} (${tenant.subdomain}). Règlement validé par ${paymentMethod}.`,
+        legalNotice: invoiceLegalNotice,
       },
     });
 

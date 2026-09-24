@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   Store,
@@ -29,7 +29,12 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { ClientTenant } from './ClientStoresList';
-import { MODULES_PRICING_CATALOG, calculateModulesOrder } from '@/lib/modules-catalog';
+import {
+  DEFAULT_PRICING_CATALOG,
+  ModulePricingItem,
+  TaxSettings,
+  calculateModulesOrder
+} from '@/lib/modules-catalog';
 import { ClientPurchaseModulesModal } from './ClientPurchaseModulesModal';
 
 interface ClientStoreDetailViewProps {
@@ -48,9 +53,29 @@ export function ClientStoreDetailView({
   const [ssoLoading, setSsoLoading] = useState(false);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
 
+  // Données dynamiques de configuration
+  const [pricingMap, setPricingMap] = useState<Record<string, ModulePricingItem>>(DEFAULT_PRICING_CATALOG);
+  const [taxSettings, setTaxSettings] = useState<TaxSettings>({
+    taxType: 'MICRO_ENTERPRISE',
+    vatRate: 0.0,
+    isVatExempt: true,
+    legalNotice: 'Franchise en base de TVA, art. 293 B du CGI',
+    companyName: 'WoxxApp SAS',
+  });
+
+  useEffect(() => {
+    fetch('/api/modules/catalog')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.pricingMap) setPricingMap(data.pricingMap);
+        if (data?.taxSettings) setTaxSettings(data.taxSettings);
+      })
+      .catch((err) => console.error('Erreur chargement catalogue:', err));
+  }, []);
+
   const modulesList: string[] = Array.isArray(tenant.modules) ? tenant.modules : [];
-  const orderCalc = calculateModulesOrder(modulesList, 'monthly');
-  const yearlyCalc = calculateModulesOrder(modulesList, 'yearly');
+  const orderCalc = calculateModulesOrder(modulesList, 'monthly', pricingMap, taxSettings);
+  const yearlyCalc = calculateModulesOrder(modulesList, 'yearly', pricingMap, taxSettings);
 
   const handleOpenSso = async () => {
     setSsoLoading(true);
@@ -174,14 +199,20 @@ export function ClientStoreDetailView({
                 {orderCalc.totalTtc.toFixed(2)} € <span className="text-sm font-normal text-slate-300">/ mois</span>
               </div>
               <div className="text-xs text-slate-400 font-mono mt-0.5">
-                Soit {orderCalc.totalHt.toFixed(2)} € HT/mois (+ {orderCalc.totalVat.toFixed(2)} € TVA 20%)
+                {orderCalc.isVatExempt ? (
+                  <span>{orderCalc.legalNotice}</span>
+                ) : (
+                  <span>Soit {orderCalc.totalHt.toFixed(2)} € HT/mois (+ {orderCalc.totalVat.toFixed(2)} € TVA {orderCalc.vatRate}%)</span>
+                )}
               </div>
             </div>
 
             <div className="p-3 bg-slate-800/80 rounded-2xl border border-slate-700 text-xs space-y-1">
               <div className="flex justify-between text-slate-300">
                 <span>Option Annuelle :</span>
-                <span className="font-bold text-amber-300 font-mono">{yearlyCalc.totalTtc.toFixed(2)} € TTC/an</span>
+                <span className="font-bold text-amber-300 font-mono">
+                  {yearlyCalc.totalTtc.toFixed(2)} € {orderCalc.isVatExempt ? 'Net' : 'TTC'}/an
+                </span>
               </div>
               <p className="text-[10px] text-slate-400 italic">
                 Économisez 2 mois d'abonnement en optant pour la facturation annuelle.
@@ -301,7 +332,7 @@ export function ClientStoreDetailView({
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {modulesList.map((code) => {
-            const pricing = MODULES_PRICING_CATALOG[code];
+            const pricing = pricingMap[code] || DEFAULT_PRICING_CATALOG[code];
             const label = pricing?.label || code;
             const desc = pricing?.desc || 'Fonctionnalité active sur votre instance.';
             const price = pricing?.priceMonthly || 0;

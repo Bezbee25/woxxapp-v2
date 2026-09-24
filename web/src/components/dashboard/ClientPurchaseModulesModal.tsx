@@ -20,7 +20,13 @@ import {
   Calendar,
   Receipt
 } from 'lucide-react';
-import { MODULE_PROGRESSION_STEPS, MODULES_PRICING_CATALOG, calculateModulesOrder } from '@/lib/modules-catalog';
+import {
+  MODULE_PROGRESSION_STEPS,
+  DEFAULT_PRICING_CATALOG,
+  ModulePricingItem,
+  TaxSettings,
+  calculateModulesOrder
+} from '@/lib/modules-catalog';
 
 interface ClientPurchaseModulesModalProps {
   isOpen: boolean;
@@ -45,6 +51,26 @@ export function ClientPurchaseModulesModal({
   const [paymentMethod, setPaymentMethod] = useState<'WOXXPAY_CARD' | 'WOXXPAY_TRANSFER'>('WOXXPAY_CARD');
   const [loading, setLoading] = useState(false);
   const [successInvoice, setSuccessInvoice] = useState<any | null>(null);
+
+  // Données dynamiques de configuration
+  const [pricingMap, setPricingMap] = useState<Record<string, ModulePricingItem>>(DEFAULT_PRICING_CATALOG);
+  const [taxSettings, setTaxSettings] = useState<TaxSettings>({
+    taxType: 'MICRO_ENTERPRISE',
+    vatRate: 0.0,
+    isVatExempt: true,
+    legalNotice: 'Franchise en base de TVA, art. 293 B du CGI',
+    companyName: 'WoxxApp SAS',
+  });
+
+  useEffect(() => {
+    fetch('/api/modules/catalog')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.pricingMap) setPricingMap(data.pricingMap);
+        if (data?.taxSettings) setTaxSettings(data.taxSettings);
+      })
+      .catch((err) => console.error('Erreur chargement catalogue:', err));
+  }, []);
 
   useEffect(() => {
     if (isOpen && tenant) {
@@ -78,7 +104,7 @@ export function ClientPurchaseModulesModal({
   };
 
   const hasEcommerce = selectedModules.includes('ecommerce');
-  const order = calculateModulesOrder(selectedModules, billingCycle);
+  const order = calculateModulesOrder(selectedModules, billingCycle, pricingMap, taxSettings);
 
   const handlePurchase = async () => {
     setLoading(true);
@@ -161,7 +187,7 @@ export function ClientPurchaseModulesModal({
                   <button
                     type="button"
                     onClick={() => setBillingCycle('monthly')}
-                    className={`px-3 py-1 rounded-lg text-xs font-black transition ${
+                    className={`px-3 py-1 rounded-lg text-xs font-black transition cursor-pointer ${
                       billingCycle === 'monthly'
                         ? 'bg-slate-900 text-white'
                         : 'text-slate-600 hover:text-slate-900'
@@ -172,7 +198,7 @@ export function ClientPurchaseModulesModal({
                   <button
                     type="button"
                     onClick={() => setBillingCycle('yearly')}
-                    className={`px-3 py-1 rounded-lg text-xs font-black transition flex items-center gap-1 ${
+                    className={`px-3 py-1 rounded-lg text-xs font-black transition flex items-center gap-1 cursor-pointer ${
                       billingCycle === 'yearly'
                         ? 'bg-amber-400 text-slate-950 font-black'
                         : 'text-slate-600 hover:text-slate-900'
@@ -218,7 +244,7 @@ export function ClientPurchaseModulesModal({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pl-8">
                       {step.modules.map((mod) => {
-                        const pricing = MODULES_PRICING_CATALOG[mod.code];
+                        const pricing = pricingMap[mod.code] || DEFAULT_PRICING_CATALOG[mod.code];
                         const price = billingCycle === 'yearly' ? pricing?.priceYearly : pricing?.priceMonthly;
                         const isChecked = selectedModules.includes(mod.code);
                         const isMandatory = mod.code === 'site_web';
@@ -239,7 +265,7 @@ export function ClientPurchaseModulesModal({
                             <div>
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="text-xs font-black text-slate-950">{mod.label}</span>
+                                  <span className="text-xs font-black text-slate-950">{pricing?.label || mod.label}</span>
                                   {isLockedByEcommerce && (
                                     <span className="px-1.5 py-0.2 bg-emerald-100 text-emerald-900 text-[9px] font-black rounded border border-emerald-300">
                                       Inclus
@@ -253,13 +279,13 @@ export function ClientPurchaseModulesModal({
                                 )}
                               </div>
                               <p className="text-[10px] text-slate-500 font-medium mt-1 leading-snug">
-                                {mod.desc}
+                                {pricing?.desc || mod.desc}
                               </p>
                             </div>
 
                             <div className="pt-2 mt-2 border-t border-slate-200/60 flex items-center justify-between text-xs font-black">
                               <span className="text-[10px] uppercase font-bold text-slate-400">Tarif</span>
-                              <span className="text-slate-950">
+                              <span className="text-slate-950 font-mono">
                                 {price === 0 || isLockedByEcommerce ? (
                                   <span className="text-emerald-700 font-black">Inclus</span>
                                 ) : (
@@ -284,7 +310,11 @@ export function ClientPurchaseModulesModal({
                     <Receipt className="w-3.5 h-3.5" /> Récapitulatif de votre commande
                   </div>
                   <div className="text-xs text-slate-300 font-medium">
-                    Facturation {billingCycle === 'yearly' ? 'annuelle' : 'mensuelle'} immédiate avec TVA conforme 20%.
+                    {order.isVatExempt ? (
+                      <span className="text-emerald-400 font-bold">{order.legalNotice}</span>
+                    ) : (
+                      <span>Facturation avec TVA légale {order.vatRate}%</span>
+                    )}
                   </div>
                 </div>
 
@@ -294,11 +324,15 @@ export function ClientPurchaseModulesModal({
                     <span className="font-mono text-xs font-bold text-slate-200">{order.totalHt.toFixed(2)} €</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 block font-bold">TVA (20%)</span>
+                    <span className="text-[10px] text-slate-400 block font-bold">
+                      {order.isVatExempt ? 'TVA (0%)' : `TVA (${order.vatRate}%)`}
+                    </span>
                     <span className="font-mono text-xs font-bold text-slate-200">{order.totalVat.toFixed(2)} €</span>
                   </div>
                   <div className="pl-3 border-l border-slate-800">
-                    <span className="text-[10px] text-amber-300 block font-black uppercase">Total TTC</span>
+                    <span className="text-[10px] text-amber-300 block font-black uppercase">
+                      {order.isVatExempt ? 'Net à Payer' : 'Total TTC'}
+                    </span>
                     <span className="font-mono text-lg font-black text-amber-400">
                       {order.totalTtc.toFixed(2)} €
                     </span>
