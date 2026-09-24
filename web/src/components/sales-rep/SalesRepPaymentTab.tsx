@@ -3,34 +3,22 @@
 import React, { useState, useEffect } from 'react';
 import {
   CreditCard,
-  Shield,
-  Key,
-  Building2,
+  ShieldCheck,
+  Zap,
   CheckCircle2,
   AlertCircle,
   RefreshCw,
   ExternalLink,
-  Zap,
   Lock,
+  ArrowRight,
+  TrendingUp,
   Percent,
-  Check,
-  Eye,
-  EyeOff,
-  Radio,
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 
 interface PaymentSettings {
   stripeAccountId: string;
-  stripePublishableKey: string;
-  hasStripeSecretKey: boolean;
-  maskedStripeSecretKey: string;
-  hasStripeWebhookSecret: boolean;
-  maskedStripeWebhookSecret: string;
   stripeConnectStatus: 'NOT_CONNECTED' | 'PENDING' | 'CONNECTED' | 'RESTRICTED';
-  bankIban: string;
-  bankBic: string;
-  bankAccountHolder: string;
   defaultCommissionRate: number;
   woxxpayLiveMode: boolean;
 }
@@ -40,27 +28,14 @@ export function SalesRepPaymentTab() {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [saveSuccessMessage, setSaveSuccessMessage] = useState('');
 
   const [settings, setSettings] = useState<PaymentSettings>({
     stripeAccountId: '',
-    stripePublishableKey: '',
-    hasStripeSecretKey: false,
-    maskedStripeSecretKey: '',
-    hasStripeWebhookSecret: false,
-    maskedStripeWebhookSecret: '',
     stripeConnectStatus: 'NOT_CONNECTED',
-    bankIban: '',
-    bankBic: '',
-    bankAccountHolder: '',
-    defaultCommissionRate: 10.0,
+    defaultCommissionRate: 20.0,
     woxxpayLiveMode: false,
   });
-
-  const [stripeSecretKeyInput, setStripeSecretKeyInput] = useState('');
-  const [stripeWebhookSecretInput, setStripeWebhookSecretInput] = useState('');
-  const [showSecretKey, setShowSecretKey] = useState(false);
-  const [showWebhookSecret, setShowWebhookSecret] = useState(false);
-  const [saveSuccessMessage, setSaveSuccessMessage] = useState('');
 
   const fetchSettings = async () => {
     setLoading(true);
@@ -80,51 +55,9 @@ export function SalesRepPaymentTab() {
     fetchSettings();
   }, []);
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setSaveSuccessMessage('');
-    setTestResult(null);
-
-    try {
-      const payload: any = {
-        stripeAccountId: settings.stripeAccountId,
-        stripePublishableKey: settings.stripePublishableKey,
-        stripeConnectStatus: settings.stripeConnectStatus,
-        bankIban: settings.bankIban,
-        bankBic: settings.bankBic,
-        bankAccountHolder: settings.bankAccountHolder,
-        defaultCommissionRate: settings.defaultCommissionRate,
-        woxxpayLiveMode: settings.woxxpayLiveMode,
-        hasExistingSecret: settings.hasStripeSecretKey,
-      };
-
-      if (stripeSecretKeyInput.trim()) {
-        payload.stripeSecretKey = stripeSecretKeyInput.trim();
-      }
-      if (stripeWebhookSecretInput.trim()) {
-        payload.stripeWebhookSecret = stripeWebhookSecretInput.trim();
-      }
-
-      const res = await apiRequest<any>('/sales-rep/payment-settings', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-
-      setSaveSuccessMessage(res.message || 'Paramètres sauvegardés avec succès !');
-      setStripeSecretKeyInput('');
-      setStripeWebhookSecretInput('');
-      await fetchSettings();
-      setTimeout(() => setSaveSuccessMessage(''), 4000);
-    } catch (err: any) {
-      alert(err.message || 'Erreur lors de la sauvegarde');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleConnectStripe = async () => {
     setSaving(true);
+    setSaveSuccessMessage('');
     try {
       const res = await apiRequest<any>('/sales-rep/stripe-connect', {
         method: 'POST',
@@ -136,18 +69,20 @@ export function SalesRepPaymentTab() {
           stripeConnectStatus: res.stripeConnectStatus,
           stripeAccountId: res.accountId || prev.stripeAccountId,
         }));
-        setSaveSuccessMessage('Compte Stripe Connect configuré avec succès !');
+        setSaveSuccessMessage('Votre compte Stripe a été connecté avec succès à la plateforme WoxxPay !');
         setTimeout(() => setSaveSuccessMessage(''), 4000);
       }
     } catch (err: any) {
-      alert(err.message || 'Erreur connexion Stripe Connect');
+      alert(err.message || 'Erreur lors de la connexion Stripe Connect');
     } finally {
       setSaving(false);
     }
   };
 
   const handleDisconnectStripe = async () => {
-    if (!confirm('Êtes-vous sûr de vouloir déconnecter ce compte Stripe ?')) return;
+    if (!confirm('Êtes-vous sûr de vouloir dissocier votre compte Stripe de la plateforme ? Vos prochains règlements ne pourront plus être versés automatiquement.')) {
+      return;
+    }
     setSaving(true);
     try {
       await apiRequest('/sales-rep/stripe-connect', {
@@ -155,8 +90,30 @@ export function SalesRepPaymentTab() {
         body: JSON.stringify({ action: 'disconnect' }),
       });
       await fetchSettings();
+      setSaveSuccessMessage('Compte Stripe déconnecté.');
+      setTimeout(() => setSaveSuccessMessage(''), 4000);
     } catch (err: any) {
       alert(err.message || 'Erreur lors de la déconnexion');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleToggleLiveMode = async (live: boolean) => {
+    setSaving(true);
+    try {
+      await apiRequest('/sales-rep/payment-settings', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...settings,
+          woxxpayLiveMode: live,
+        }),
+      });
+      setSettings((prev) => ({ ...prev, woxxpayLiveMode: live }));
+      setSaveSuccessMessage(live ? 'Mode Production Live activé !' : 'Mode Test / Sandbox activé.');
+      setTimeout(() => setSaveSuccessMessage(''), 4000);
+    } catch (err: any) {
+      alert(err.message || 'Erreur lors de la mise à jour du mode');
     } finally {
       setSaving(false);
     }
@@ -172,12 +129,12 @@ export function SalesRepPaymentTab() {
       });
       setTestResult({
         success: true,
-        message: `${res.message} (Mode: ${res.details?.mode})`,
+        message: `${res.message} (Environnement: ${res.details?.mode})`,
       });
     } catch (err: any) {
       setTestResult({
         success: false,
-        message: err.message || 'Échec du test de connexion Stripe / WoxxPay',
+        message: err.message || 'Échec du test de synchronisation Stripe / WoxxPay',
       });
     } finally {
       setTesting(false);
@@ -193,22 +150,22 @@ export function SalesRepPaymentTab() {
     );
   }
 
-  const isConnected = settings.stripeConnectStatus === 'CONNECTED' || (!!settings.stripePublishableKey && settings.hasStripeSecretKey);
+  const isConnected = settings.stripeConnectStatus === 'CONNECTED';
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6 max-w-4xl">
       {/* BANNIÈRE D'EN-TÊTE */}
       <div className="bg-white p-6 rounded-3xl border-2 border-slate-900 shadow-brutal flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-950 flex items-center gap-2.5">
-            <CreditCard className="w-6 h-6 text-emerald-600" /> Passerelle Stripe & WoxxPay
+            <CreditCard className="w-6 h-6 text-emerald-600" /> Règlements & Stripe Connect WoxxPay
           </h2>
           <p className="text-xs text-slate-600 font-medium mt-1">
-            Configurez votre compte Stripe et vos paramètres de versement des commissions WoxxPay.
+            Connectez votre compte Stripe directement à la plateforme WoxxPay pour percevoir automatiquement vos 80% nets sur chaque devis réglé.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        {isConnected && (
           <button
             type="button"
             onClick={handleTestConnection}
@@ -216,14 +173,14 @@ export function SalesRepPaymentTab() {
             className="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-950 border-2 border-slate-900 rounded-xl font-black text-xs shadow-brutal-xs flex items-center gap-2 cursor-pointer transition disabled:opacity-50"
           >
             <Zap className={`w-4 h-4 ${testing ? 'animate-bounce text-amber-600' : 'text-amber-700'}`} />
-            <span>{testing ? 'Test en cours...' : 'Tester la connexion'}</span>
+            <span>{testing ? 'Vérification...' : 'Tester le flux'}</span>
           </button>
-        </div>
+        )}
       </div>
 
-      {/* MESSAGES D'ALERTE / FEEDBACK */}
+      {/* FEEDBACK MESSAGES */}
       {saveSuccessMessage && (
-        <div className="bg-emerald-50 border-2 border-emerald-900 p-4 rounded-2xl shadow-brutal-xs flex items-center gap-3 text-xs font-black text-emerald-900">
+        <div className="bg-emerald-50 border-2 border-emerald-900 p-4 rounded-2xl shadow-brutal-xs flex items-center gap-3 text-xs font-black text-emerald-900 animate-in fade-in">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
           <span>{saveSuccessMessage}</span>
         </div>
@@ -231,7 +188,7 @@ export function SalesRepPaymentTab() {
 
       {testResult && (
         <div
-          className={`p-4 rounded-2xl border-2 shadow-brutal-xs flex items-center gap-3 text-xs font-black ${
+          className={`p-4 rounded-2xl border-2 shadow-brutal-xs flex items-center gap-3 text-xs font-black animate-in fade-in ${
             testResult.success
               ? 'bg-emerald-50 border-emerald-900 text-emerald-950'
               : 'bg-rose-50 border-rose-900 text-rose-950'
@@ -246,242 +203,127 @@ export function SalesRepPaymentTab() {
         </div>
       )}
 
-      {/* STATUT STRIPE CONNECT */}
-      <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 shadow-brutal">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b-2 border-slate-100">
-          <div className="flex items-center gap-3">
+      {/* PANNEAU PRINCIPAL DE CONNEXION STRIPE CONNECT */}
+      <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 sm:p-8 shadow-brutal space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b-2 border-slate-100">
+          <div className="flex items-center gap-4">
             <div
-              className={`w-12 h-12 rounded-2xl border-2 border-slate-900 shadow-brutal-xs flex items-center justify-center text-xl font-black shrink-0 ${
+              className={`w-14 h-14 rounded-2xl border-2 border-slate-900 shadow-brutal-xs flex items-center justify-center text-2xl font-black shrink-0 ${
                 isConnected ? 'bg-emerald-400' : 'bg-slate-200'
               }`}
             >
-              {isConnected ? '⚡' : '🔌'}
+              {isConnected ? '⚡' : '🔗'}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-black text-slate-950">Stripe Connect WoxxPay</h3>
+                <h3 className="text-base font-black text-slate-950">Liaison de Compte Stripe Connect</h3>
                 <span
-                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border ${
+                  className={`px-3 py-1 rounded-full text-xs font-black uppercase border ${
                     isConnected
                       ? 'bg-emerald-100 text-emerald-900 border-emerald-400'
                       : 'bg-amber-100 text-amber-900 border-amber-400'
                   }`}
                 >
-                  {isConnected ? 'Compte Connecté' : 'Non Connecté'}
+                  {isConnected ? 'Compte Connecté & Actif' : 'Non Connecté'}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-bold mt-0.5">
+              <p className="text-xs text-slate-600 font-medium mt-1">
                 {isConnected
-                  ? `Identifiant : ${settings.stripeAccountId || 'Mode clés API personnalisées'}`
-                  : 'Liez votre compte Stripe pour encaisser les règlements et commissions directement.'}
+                  ? `Compte Stripe associé : ${settings.stripeAccountId} (Paiements et virements automatiques activés)`
+                  : 'Associez votre compte Stripe existant en 1 clic pour recevoir vos virements sans aucune saisie de clés API ni d’IBAN.'}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div>
             {isConnected ? (
               <button
                 type="button"
                 onClick={handleDisconnectStripe}
                 disabled={saving}
-                className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-900 border-2 border-slate-900 rounded-xl text-xs font-black shadow-brutal-xs transition cursor-pointer"
+                className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-900 border-2 border-slate-900 rounded-xl text-xs font-black shadow-brutal-xs transition cursor-pointer disabled:opacity-50"
               >
-                Déconnecter
+                Dissocier le compte
               </button>
             ) : (
               <button
                 type="button"
                 onClick={handleConnectStripe}
                 disabled={saving}
-                className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white border-2 border-slate-900 rounded-xl text-xs font-black shadow-brutal-xs flex items-center gap-2 transition cursor-pointer"
+                className="px-6 py-3.5 bg-purple-600 hover:bg-purple-700 text-white border-2 border-slate-900 rounded-2xl text-xs font-black shadow-brutal hover:shadow-brutal-lg transition flex items-center gap-2.5 cursor-pointer disabled:opacity-50"
               >
                 <Zap className="w-4 h-4 text-amber-300" />
-                <span>Connecter avec Stripe Connect</span>
+                <span>Connecter mon compte Stripe à WoxxPay</span>
               </button>
             )}
           </div>
         </div>
-      </div>
 
-      {/* FORMULAIRE DE CONFIGURATION DÉTAILLÉ */}
-      <form onSubmit={handleSave} className="space-y-6">
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* SECTION CLÉS API STRIPE */}
-          <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 shadow-brutal space-y-4">
-            <h3 className="text-sm font-black text-slate-950 flex items-center gap-2">
-              <Key className="w-4 h-4 text-purple-600" /> Clés API Stripe (Marchand / Développeur)
-            </h3>
-            <p className="text-xs text-slate-600 font-medium">
-              Renseignez vos clés API Stripe pour une configuration manuelle ou un environnement dédié.
-            </p>
+        {/* EXPLICATION DU FONCTIONNEMENT STRIPE CONNECT & REVERSEMENT */}
+        <div className="space-y-4">
+          <h4 className="text-xs uppercase font-black text-slate-500 tracking-wider">
+            Fonctionnement des flux financiers WoxxPay :
+          </h4>
 
-            <div className="space-y-3 pt-2">
-              <div>
-                <label className="block text-[11px] font-extrabold uppercase text-slate-600 mb-1">
-                  Clé Publique Stripe (Publishable Key)
-                </label>
-                <input
-                  type="text"
-                  placeholder="pk_test_51..."
-                  value={settings.stripePublishableKey}
-                  onChange={(e) => setSettings({ ...settings, stripePublishableKey: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border-2 border-slate-900 rounded-xl font-mono text-xs font-bold text-slate-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
-                />
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div className="bg-slate-50 p-4 rounded-2xl border-2 border-slate-200 space-y-2">
+              <div className="w-8 h-8 rounded-xl bg-blue-100 border border-blue-400 flex items-center justify-center font-black text-blue-900 text-sm">
+                1
               </div>
-
-              <div>
-                <label className="block text-[11px] font-extrabold uppercase text-slate-600 mb-1">
-                  Clé Secrète Stripe (Secret Key)
-                </label>
-                <div className="relative">
-                  <input
-                    type={showSecretKey ? 'text' : 'password'}
-                    placeholder={settings.hasStripeSecretKey ? settings.maskedStripeSecretKey : 'sk_test_51...'}
-                    value={stripeSecretKeyInput}
-                    onChange={(e) => setStripeSecretKeyInput(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border-2 border-slate-900 rounded-xl font-mono text-xs font-bold text-slate-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 transition pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowSecretKey(!showSecretKey)}
-                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700"
-                  >
-                    {showSecretKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                {settings.hasStripeSecretKey && !stripeSecretKeyInput && (
-                  <p className="text-[10px] text-emerald-700 font-bold mt-1">
-                    ✓ Clé secrète actuellement enregistrée et protégée.
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-extrabold uppercase text-slate-600 mb-1">
-                  Webhook Signing Secret (Optionnel)
-                </label>
-                <div className="relative">
-                  <input
-                    type={showWebhookSecret ? 'text' : 'password'}
-                    placeholder={settings.hasStripeWebhookSecret ? settings.maskedStripeWebhookSecret : 'whsec_...'}
-                    value={stripeWebhookSecretInput}
-                    onChange={(e) => setStripeWebhookSecretInput(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border-2 border-slate-900 rounded-xl font-mono text-xs font-bold text-slate-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 transition pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowWebhookSecret(!showWebhookSecret)}
-                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700"
-                  >
-                    {showWebhookSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
+              <h5 className="font-black text-xs text-slate-950">Règlement Client</h5>
+              <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
+                Votre client règle votre devis en ligne par CB ou Virement sur la passerelle sécurisée WoxxPay.
+              </p>
             </div>
-          </div>
 
-          {/* SECTION VIREMENT COMMISSION & IBAN */}
-          <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 shadow-brutal space-y-4">
-            <h3 className="text-sm font-black text-slate-950 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-blue-600" /> Coordonnées Bancaires (Versements WoxxPay)
-            </h3>
-            <p className="text-xs text-slate-600 font-medium">
-              Coordonnées utilisées pour le virement de vos commissions et les paiements directs.
-            </p>
-
-            <div className="space-y-3 pt-2">
-              <div>
-                <label className="block text-[11px] font-extrabold uppercase text-slate-600 mb-1">
-                  Titulaire du Compte (Bénéficiaire)
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ex: Jean Dupont ou Agence Conseil SAS"
-                  value={settings.bankAccountHolder}
-                  onChange={(e) => setSettings({ ...settings, bankAccountHolder: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                />
+            <div className="bg-purple-50 p-4 rounded-2xl border-2 border-purple-200 space-y-2">
+              <div className="w-8 h-8 rounded-xl bg-purple-200 border border-purple-400 flex items-center justify-center font-black text-purple-900 text-sm">
+                2
               </div>
+              <h5 className="font-black text-xs text-purple-950">Frais Plateforme (20%)</h5>
+              <p className="text-[11px] text-purple-800 leading-relaxed font-medium">
+                20% de commission sont automatiquement alloués à la plateforme WoxxApp pour l'infrastructure et l'hébergement.
+              </p>
+            </div>
 
-              <div>
-                <label className="block text-[11px] font-extrabold uppercase text-slate-600 mb-1">
-                  IBAN (Numéro de Compte International)
-                </label>
-                <input
-                  type="text"
-                  placeholder="FR76 3000 6000 0112 3456 7890 189"
-                  value={settings.bankIban}
-                  onChange={(e) => setSettings({ ...settings, bankIban: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border-2 border-slate-900 rounded-xl font-mono text-xs font-bold text-slate-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition uppercase"
-                />
+            <div className="bg-emerald-50 p-4 rounded-2xl border-2 border-emerald-300 space-y-2">
+              <div className="w-8 h-8 rounded-xl bg-emerald-200 border border-emerald-500 flex items-center justify-center font-black text-emerald-950 text-sm">
+                3
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-extrabold uppercase text-slate-600 mb-1">
-                    BIC / SWIFT
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="BNPAFR2X"
-                    value={settings.bankBic}
-                    onChange={(e) => setSettings({ ...settings, bankBic: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border-2 border-slate-900 rounded-xl font-mono text-xs font-bold text-slate-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition uppercase"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-extrabold uppercase text-slate-600 mb-1">
-                    Commission (%)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="100"
-                      value={settings.defaultCommissionRate}
-                      onChange={(e) =>
-                        setSettings({ ...settings, defaultCommissionRate: parseFloat(e.target.value) || 0 })
-                      }
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border-2 border-slate-900 rounded-xl text-xs font-bold text-slate-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition pr-8"
-                    />
-                    <Percent className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-3" />
-                  </div>
-                </div>
-              </div>
+              <h5 className="font-black text-xs text-emerald-950">Virement Net (80%)</h5>
+              <p className="text-[11px] text-emerald-800 leading-relaxed font-medium">
+                <strong>80% du montant</strong> sont automatiquement transférés sur votre compte Stripe Connect et versés sur votre banque.
+              </p>
             </div>
           </div>
         </div>
 
-        {/* SECTION ENVIRONNEMENT & VALIDATION */}
-        <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 shadow-brutal flex flex-col sm:flex-row items-center justify-between gap-4">
+        {/* SÉLECTION ENVIRONNEMENT TEST VS LIVE */}
+        <div className="pt-4 border-t-2 border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <input
               type="checkbox"
-              id="liveMode"
+              id="liveModeToggle"
               checked={settings.woxxpayLiveMode}
-              onChange={(e) => setSettings({ ...settings, woxxpayLiveMode: e.target.checked })}
+              onChange={(e) => handleToggleLiveMode(e.target.checked)}
+              disabled={saving}
               className="w-5 h-5 rounded border-2 border-slate-900 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
             />
-            <label htmlFor="liveMode" className="text-xs font-bold text-slate-900 cursor-pointer">
-              <span className="font-black block">Activer le mode Production Live (Transactions réelles)</span>
+            <label htmlFor="liveModeToggle" className="text-xs font-bold text-slate-900 cursor-pointer">
+              <span className="font-black block">Activer le mode Production Live (Paiements Réels)</span>
               <span className="text-[11px] text-slate-500 font-normal">
-                Décochez pour conserver le mode Test / Sandbox (cartes de test autorisées).
+                Si désactivé, le système fonctionne en mode Test Sandbox avec cartes bancaires d'essai.
               </span>
             </label>
           </div>
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full sm:w-auto px-6 py-3 bg-emerald-400 hover:bg-emerald-500 text-slate-950 border-2 border-slate-900 rounded-2xl font-black text-xs shadow-brutal-xs hover:shadow-brutal transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-          >
-            {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-            <span>{saving ? 'Enregistrement...' : 'Enregistrer la configuration'}</span>
-          </button>
+          <div className="text-[11px] font-bold text-slate-500 flex items-center gap-1.5 self-start sm:self-auto">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>Sécurité certifiée PCI-DSS & RGPD</span>
+          </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 }
+
