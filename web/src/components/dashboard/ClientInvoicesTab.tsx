@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, CheckCircle, Clock, ShieldCheck, RefreshCw, AlertCircle } from 'lucide-react';
+import { FileText, Download, CheckCircle, Clock, ShieldCheck, RefreshCw, Eye, X, Printer } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 
 interface Invoice {
@@ -10,22 +10,26 @@ interface Invoice {
   totalHt: number;
   totalVat: number;
   totalTtc: number;
+  vatRate?: number;
+  legalNotice?: string;
   status: string;
   pdfUrl?: string;
   createdAt: string;
+  user?: { email: string; fullName?: string; companyName?: string };
 }
 
 export function ClientInvoicesTab() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
   const fetchInvoices = async () => {
     setLoading(true);
     try {
-      const data = await apiRequest<Invoice[]>('/admin/subscriptions');
-      // Pour les clients, afficher la liste
-      setInvoices(Array.isArray(data) ? data : []);
-    } catch {
+      const data = await apiRequest<{ invoices: Invoice[] }>('/invoices');
+      setInvoices(Array.isArray(data?.invoices) ? data.invoices : []);
+    } catch (err) {
+      console.error('Erreur chargement factures:', err);
       setInvoices([]);
     } finally {
       setLoading(false);
@@ -41,16 +45,16 @@ export function ClientInvoicesTab() {
       <div className="bg-white p-6 rounded-3xl border-2 border-slate-900 shadow-brutal flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-950 flex items-center gap-2">
-            <FileText className="w-6 h-6 text-blue-600" /> Factures & Comptabilité
+            <FileText className="w-6 h-6 text-blue-600" /> Factures & Comptabilité ({invoices.length})
           </h2>
           <p className="text-xs text-slate-600 font-medium mt-1">
-            Téléchargez vos factures d'abonnement et de modules en PDF certifié conforme.
+            Consultez et téléchargez vos factures d'abonnements, modules SaaS et prestations.
           </p>
         </div>
 
         <button
           onClick={fetchInvoices}
-          className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl border-2 border-slate-900 shadow-brutal-xs transition self-start sm:self-auto"
+          className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl border-2 border-slate-900 shadow-brutal-xs transition self-start sm:self-auto cursor-pointer"
           title="Rafraîchir"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -70,7 +74,7 @@ export function ClientInvoicesTab() {
             </div>
             <p className="text-xs font-black text-slate-900">Aucune facture émise pour le moment.</p>
             <p className="text-[11px] text-slate-500 font-medium max-w-sm mx-auto">
-              Vos prochaines factures d'abonnement apparaîtront ici avec possibilité de téléchargement instantané.
+              Vos factures d'abonnement et d'achats de modules apparaîtront ici avec justificatif conforme.
             </p>
           </div>
         ) : (
@@ -81,39 +85,35 @@ export function ClientInvoicesTab() {
                   <th className="px-4 py-3">Numéro Facture</th>
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Total HT</th>
+                  <th className="px-4 py-3">TVA (20%)</th>
                   <th className="px-4 py-3">Total TTC</th>
                   <th className="px-4 py-3">Statut</th>
-                  <th className="px-4 py-3 text-right">Action</th>
+                  <th className="px-4 py-3 text-right">Détails & Reçu</th>
                 </tr>
               </thead>
               <tbody className="divide-y-2 divide-slate-100 font-bold text-slate-900">
                 {invoices.map((inv) => (
                   <tr key={inv.id} className="hover:bg-slate-50 transition">
-                    <td className="px-4 py-3 font-mono">{inv.invoiceNumber}</td>
+                    <td className="px-4 py-3 font-mono font-black text-blue-600">{inv.invoiceNumber}</td>
                     <td className="px-4 py-3 text-slate-600 font-medium">
                       {new Date(inv.createdAt).toLocaleDateString('fr-FR')}
                     </td>
                     <td className="px-4 py-3">{inv.totalHt.toFixed(2)} €</td>
-                    <td className="px-4 py-3 font-black">{inv.totalTtc.toFixed(2)} €</td>
+                    <td className="px-4 py-3 text-slate-500">{inv.totalVat.toFixed(2)} €</td>
+                    <td className="px-4 py-3 font-black text-slate-950">{inv.totalTtc.toFixed(2)} €</td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
                         <CheckCircle className="w-3 h-3" /> Payée
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {inv.pdfUrl ? (
-                        <a
-                          href={inv.pdfUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 rounded-xl text-xs font-black inline-flex items-center gap-1"
-                        >
-                          <Download className="w-3 h-3" />
-                          <span>PDF</span>
-                        </a>
-                      ) : (
-                        <span className="text-slate-400 text-[11px] font-normal">Disponible sous peu</span>
-                      )}
+                      <button
+                        onClick={() => setSelectedInvoice(inv)}
+                        className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 rounded-xl text-xs font-black inline-flex items-center gap-1.5 shadow-brutal-xs cursor-pointer"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Consulter</span>
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -122,6 +122,86 @@ export function ClientInvoicesTab() {
           </div>
         )}
       </div>
+
+      {/* Modal Détail Facture / Reçu */}
+      {selectedInvoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl border-2 border-slate-900 shadow-brutal w-full max-w-lg p-6 space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b-2 border-slate-100">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-600" />
+                <h3 className="text-base font-black text-slate-950">
+                  Facture {selectedInvoice.invoiceNumber}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedInvoice(null)}
+                className="p-1 hover:bg-slate-100 rounded-xl text-slate-500 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs bg-slate-50 p-4 rounded-2xl border border-slate-200">
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-medium">Date d'émission :</span>
+                <span className="font-bold text-slate-900">
+                  {new Date(selectedInvoice.createdAt).toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-medium">Émetteur :</span>
+                <span className="font-bold text-slate-900">WoxxApp SAS (RCS Paris)</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-medium">Statut :</span>
+                <span className="font-black text-emerald-700">ACQUITTÉE ✅</span>
+              </div>
+              {selectedInvoice.legalNotice && (
+                <div className="pt-2 border-t border-slate-200 text-slate-600 italic text-[11px]">
+                  {selectedInvoice.legalNotice}
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 bg-slate-900 text-white rounded-2xl space-y-2 font-mono">
+              <div className="flex justify-between text-xs text-slate-300">
+                <span>Total HT :</span>
+                <span>{selectedInvoice.totalHt.toFixed(2)} €</span>
+              </div>
+              <div className="flex justify-between text-xs text-slate-300">
+                <span>TVA (20%) :</span>
+                <span>{selectedInvoice.totalVat.toFixed(2)} €</span>
+              </div>
+              <div className="flex justify-between text-base font-black text-amber-300 pt-2 border-t border-slate-700">
+                <span>Total TTC :</span>
+                <span>{selectedInvoice.totalTtc.toFixed(2)} €</span>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={() => window.print()}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl text-xs font-black border-2 border-slate-900 inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Imprimer</span>
+              </button>
+              <button
+                onClick={() => setSelectedInvoice(null)}
+                className="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black border-2 border-slate-900 shadow-brutal-xs cursor-pointer"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

@@ -17,7 +17,7 @@ import {
   Edit2
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
-import { EditModulesModal } from '@/app/admin/components/EditModulesModal';
+import { ClientPurchaseModulesModal } from './ClientPurchaseModulesModal';
 
 export interface ClientTenant {
   id: string;
@@ -46,7 +46,7 @@ export function ClientStoresList({
   onOpenCreate,
 }: ClientStoresListProps) {
   const [ssoLoadingId, setSsoLoadingId] = useState<string | null>(null);
-  const [editingModulesTenant, setEditingModulesTenant] = useState<ClientTenant | null>(null);
+  const [purchasingModulesTenant, setPurchasingModulesTenant] = useState<ClientTenant | null>(null);
 
   const handleOpenSso = async (tenantId: string) => {
     setSsoLoadingId(tenantId);
@@ -65,19 +65,6 @@ export function ClientStoresList({
       alert(err.message || 'Erreur lors de l’accès à la boutique');
     } finally {
       setSsoLoadingId(null);
-    }
-  };
-
-  const handleSaveModules = async (newModules: string[]) => {
-    if (!editingModulesTenant) return;
-    try {
-      await apiRequest(`/tenants/${editingModulesTenant.id}/modules`, {
-        method: 'PATCH',
-        body: JSON.stringify({ modules: newModules }),
-      });
-      onRefresh();
-    } catch (err: any) {
-      alert(err.message || 'Erreur lors de la mise à jour des modules');
     }
   };
 
@@ -205,13 +192,13 @@ export function ClientStoresList({
                 <div className="mb-6 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">
-                      Modules inclus
+                      Modules inclus & Services
                     </span>
                     <button
-                      onClick={() => setEditingModulesTenant(t)}
-                      className="text-[11px] font-black text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"
+                      onClick={() => setPurchasingModulesTenant(t)}
+                      className="text-[11px] font-black text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 cursor-pointer"
                     >
-                      <Edit2 className="w-3 h-3" /> Configurer
+                      <Edit2 className="w-3 h-3" /> Ajouter / Modifier
                     </button>
                   </div>
 
@@ -224,9 +211,14 @@ export function ClientStoresList({
                         <ShoppingBag className="w-3 h-3" /> Vente CB
                       </span>
                     )}
-                    {modulesList.includes('shipping') && (
+                    {modulesList.includes('woxxship') && (
                       <span className="px-2 py-0.5 rounded-lg bg-indigo-50 border border-indigo-300 text-indigo-900 text-[10px] font-black flex items-center gap-1">
                         <Truck className="w-3 h-3" /> Transport
+                      </span>
+                    )}
+                    {modulesList.includes('reservations') && (
+                      <span className="px-2 py-0.5 rounded-lg bg-purple-50 border border-purple-300 text-purple-900 text-[10px] font-black flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> Réservations
                       </span>
                     )}
                   </div>
@@ -265,14 +257,23 @@ export function ClientStoresList({
         })}
       </div>
 
-      {/* Modal d'édition des modules */}
-      <EditModulesModal
-        isOpen={!!editingModulesTenant}
-        tenantName={editingModulesTenant?.commerceName || ''}
-        initialModules={editingModulesTenant?.modules || []}
-        onClose={() => setEditingModulesTenant(null)}
-        onSave={handleSaveModules}
+      {/* Modal d'achat et activation des modules pour le client */}
+      <ClientPurchaseModulesModal
+        isOpen={!!purchasingModulesTenant}
+        tenant={
+          purchasingModulesTenant
+            ? {
+                id: purchasingModulesTenant.id,
+                commerceName: purchasingModulesTenant.commerceName,
+                subdomain: purchasingModulesTenant.subdomain,
+                modules: purchasingModulesTenant.modules,
+              }
+            : null
+        }
+        onClose={() => setPurchasingModulesTenant(null)}
+        onSuccess={onRefresh}
       />
     </div>
   );
 }
+
