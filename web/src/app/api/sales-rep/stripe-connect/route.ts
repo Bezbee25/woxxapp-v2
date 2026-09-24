@@ -57,8 +57,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Action Onboarding Stripe Connect
-    // Génération d'un ID de compte Express/Standard si non existant
-    const accountId = currentUser.stripeAccountId || `acct_rep_${user.id.slice(0, 8)}`;
+    // Utilisation de l'accountId retourné ou génération d'un ID de sous-compte standard
+    const accountId = body.accountId
+      ? String(body.accountId).trim()
+      : currentUser.stripeAccountId || `acct_rep_${user.id.slice(0, 8)}`;
     
     await prisma.user.update({
       where: { id: user.id },
@@ -74,6 +76,7 @@ export async function POST(req: NextRequest) {
       accountId,
       message: 'Compte Stripe Connect configuré et synchronisé avec WoxxPay.',
     });
+
   } catch (error: any) {
     console.error('Erreur Stripe Connect:', error);
     return NextResponse.json(

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   CreditCard,
   ShieldCheck,
@@ -24,6 +25,7 @@ interface PaymentSettings {
 }
 
 export function SalesRepPaymentTab() {
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -54,6 +56,40 @@ export function SalesRepPaymentTab() {
   useEffect(() => {
     fetchSettings();
   }, []);
+
+  // Détection du retour Stripe Connect (comme dans Boutique Global)
+  useEffect(() => {
+    const stripeConnect = searchParams?.get('stripe_connect');
+    const returnedAccountId = searchParams?.get('stripe_account_id');
+
+    if (stripeConnect === 'success') {
+      const accountId = returnedAccountId || settings.stripeAccountId || `acct_stripe_${Date.now()}`;
+      
+      apiRequest<any>('/sales-rep/stripe-connect', {
+        method: 'POST',
+        body: JSON.stringify({ action: 'onboard', accountId }),
+      })
+        .then((res) => {
+          setSettings((prev) => ({
+            ...prev,
+            stripeConnectStatus: 'CONNECTED',
+            stripeAccountId: res.accountId || accountId,
+          }));
+          setSaveSuccessMessage('Compte Stripe Connect lié avec succès à votre compte WoxxPay !');
+          
+          // Nettoyage propre de l'URL
+          if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('stripe_connect');
+            url.searchParams.delete('stripe_account_id');
+            url.searchParams.delete('payment_account_id');
+            window.history.replaceState({}, '', url.toString());
+          }
+        })
+        .catch((err) => console.error('Erreur validation Stripe Connect callback:', err));
+    }
+  }, [searchParams]);
+
 
   const handleConnectStripe = async () => {
     setSaving(true);
