@@ -54,7 +54,9 @@ export function ClientPurchaseModulesModal({
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const [activeOriginalModules, setActiveOriginalModules] = useState<string[]>([]);
   const [unrenewedModules, setUnrenewedModules] = useState<string[]>([]);
+  const [activeCycle, setActiveCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [scheduledNextCycle, setScheduledNextCycle] = useState<'monthly' | 'yearly' | null>(null);
   const [subscription, setSubscription] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [successInvoice, setSuccessInvoice] = useState<any | null>(null);
@@ -87,9 +89,6 @@ export function ClientPurchaseModulesModal({
         if (Array.isArray(data?.subscriptions) && data.subscriptions.length > 0) {
           const sub = data.subscriptions[0];
           setSubscription(sub);
-          if (sub.billingCycle === 'yearly') {
-            setBillingCycle('yearly');
-          }
         }
       })
       .catch(() => {});
@@ -107,6 +106,10 @@ export function ClientPurchaseModulesModal({
       setActiveOriginalModules(list);
       setSelectedModules(Array.from(new Set(list)));
       setUnrenewedModules(parsed.unrenewedModules);
+      const currentC = parsed.billingCycle || 'monthly';
+      setActiveCycle(currentC);
+      setBillingCycle(parsed.nextBillingCycle || currentC);
+      setScheduledNextCycle(parsed.nextBillingCycle || null);
       setSuccessInvoice(null);
       setConfirmCancelModule(null);
     }
@@ -182,13 +185,15 @@ export function ClientPurchaseModulesModal({
   const handlePurchase = async () => {
     setLoading(true);
     try {
+      const isSwitching = billingCycle !== activeCycle;
       const res = await fetch(`/api/tenants/${tenant.id}/purchase-modules`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           modules: selectedModules,
           unrenewedModules,
-          billingCycle,
+          billingCycle: activeCycle,
+          nextBillingCycle: isSwitching ? billingCycle : null,
           paymentMethod: 'STRIPE_CARD',
         }),
       });
@@ -261,15 +266,11 @@ export function ClientPurchaseModulesModal({
           </div>
         ) : (
           <>
-            {/* Info Abonnement & Cycle */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200 shrink-0">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-slate-700">Formule :</span>
-                {subscription ? (
-                  <span className="px-2.5 py-1 bg-slate-900 text-amber-300 font-black text-xs rounded-xl font-mono">
-                    {subscription.billingCycle === 'yearly' ? 'Abonnement Annuel' : 'Abonnement Mensuel'}
-                  </span>
-                ) : (
+            {/* Info Abonnement & Sélecteur de Fréquence */}
+            <div className="space-y-2 bg-slate-50 p-3.5 rounded-2xl border border-slate-200 shrink-0">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black text-slate-700">Fréquence de facturation :</span>
                   <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-300">
                     <button
                       type="button"
@@ -297,13 +298,38 @@ export function ClientPurchaseModulesModal({
                       </span>
                     </button>
                   </div>
-                )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">
+                    Formule en cours : <strong className="text-slate-900 font-mono">{activeCycle === 'yearly' ? 'Annuelle' : 'Mensuelle'}</strong>
+                  </span>
+                </div>
               </div>
 
+              {/* Message explicatif si changement de cycle demandé */}
+              {billingCycle !== activeCycle && (
+                <div className="p-2.5 bg-amber-100/70 border border-amber-300 rounded-xl text-[11px] text-amber-950 flex items-start gap-2">
+                  <Clock className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                  <div>
+                    {activeCycle === 'yearly' && billingCycle === 'monthly' && (
+                      <span>
+                        <strong>Passage en Mensuel programmé :</strong> Votre abonnement actuel reste actif au tarif annuel jusqu’à la date anniversaire. Vous passerez automatiquement en prélèvement mensuel à cette date (aucun prélèvement aujourd’hui).
+                      </span>
+                    )}
+                    {activeCycle === 'monthly' && billingCycle === 'yearly' && (
+                      <span>
+                        <strong>Passage en Annuel programmé :</strong> Votre formule actuelle reste mensuelle jusqu’au prochain renouvellement. Le prélèvement annuel (avec 2 mois offerts) prendra effet à votre date anniversaire mensuelle.
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {isExistingYearly && newlyAddedModules.length > 0 && (
-                <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
-                  ⚡ Prorata appliqué ({prorataCalculation.daysRemaining} jours restants)
-                </span>
+                <div className="text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
+                  ⚡ Prorata appliqué sur les nouveaux modules ({prorataCalculation.daysRemaining} jours restants sur l’année en cours)
+                </div>
               )}
             </div>
 

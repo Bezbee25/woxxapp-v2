@@ -77,9 +77,14 @@ export function ClientStoreDetailView({
   const parsed = parseTenantModules(tenant.modules);
   const activeModules = parsed.activeModules;
   const unrenewedModules = parsed.unrenewedModules;
+  const activeCycle = parsed.billingCycle || 'monthly';
+  const nextCycle = parsed.nextBillingCycle;
 
   const orderCalc = calculateModulesOrder(activeModules, 'monthly', pricingMap, taxSettings);
   const yearlyCalc = calculateModulesOrder(activeModules, 'yearly', pricingMap, taxSettings);
+
+  const displayTotal = activeCycle === 'yearly' ? yearlyCalc.totalTtc : orderCalc.totalTtc;
+  const displayPeriod = activeCycle === 'yearly' ? '/ an' : '/ mois';
 
   const handleOpenSso = async () => {
     setSsoLoading(true);
@@ -194,34 +199,47 @@ export function ClientStoreDetailView({
                 <CreditCard className="w-4 h-4" /> Coût & Abonnement
               </span>
               <span className="px-2 py-0.5 rounded bg-amber-400 text-slate-950 text-[10px]">
-                Actif
+                {activeCycle === 'yearly' ? 'Annuel' : 'Mensuel'}
               </span>
             </div>
 
             <div>
               <div className="text-3xl font-black text-white font-mono">
-                {orderCalc.totalTtc.toFixed(2)} € <span className="text-sm font-normal text-slate-300">/ mois</span>
+                {displayTotal.toFixed(2)} € <span className="text-sm font-normal text-slate-300">{displayPeriod}</span>
               </div>
               <div className="text-xs text-slate-400 font-mono mt-0.5">
                 {orderCalc.isVatExempt ? (
                   <span>{orderCalc.legalNotice}</span>
                 ) : (
-                  <span>Soit {orderCalc.totalHt.toFixed(2)} € HT/mois (+ {orderCalc.totalVat.toFixed(2)} € TVA {orderCalc.vatRate}%)</span>
+                  <span>Soit {activeCycle === 'yearly' ? yearlyCalc.totalHt.toFixed(2) : orderCalc.totalHt.toFixed(2)} € HT{displayPeriod}</span>
                 )}
               </div>
             </div>
 
-            <div className="p-3 bg-slate-800/80 rounded-2xl border border-slate-700 text-xs space-y-1">
-              <div className="flex justify-between text-slate-300">
-                <span>Option Annuelle :</span>
-                <span className="font-bold text-amber-300 font-mono">
-                  {yearlyCalc.totalTtc.toFixed(2)} € {orderCalc.isVatExempt ? 'Net' : 'TTC'}/an
-                </span>
+            {nextCycle && (
+              <div className="p-3 bg-amber-500/20 rounded-2xl border border-amber-400/40 text-xs space-y-1">
+                <div className="flex items-center gap-1.5 font-bold text-amber-300 text-[11px]">
+                  <Clock className="w-3.5 h-3.5 shrink-0" />
+                  <span>Bascule programmée à date anniversaire :</span>
+                </div>
+                <p className="text-[10px] text-slate-200 leading-snug">
+                  Votre formule passera automatiquement en <strong>{nextCycle === 'yearly' ? 'Annuelle (-2 mois)' : 'Mensuelle'}</strong> lors du prochain renouvellement.
+                </p>
               </div>
-              <p className="text-[10px] text-slate-400 italic">
-                Économisez 2 mois d'abonnement en optant pour la facturation annuelle.
-              </p>
-            </div>
+            )}
+
+            {!nextCycle && (
+              <div className="p-3 bg-slate-800/80 rounded-2xl border border-slate-700 text-xs space-y-1">
+                <div className="flex justify-between text-slate-300">
+                  <span>{activeCycle === 'yearly' ? 'Équivalent mensuel :' : 'Option Annuelle :'}</span>
+                  <span className="font-bold text-amber-300 font-mono">
+                    {activeCycle === 'yearly'
+                      ? `${(yearlyCalc.totalTtc / 12).toFixed(2)} € Net/mois`
+                      : `${yearlyCalc.totalTtc.toFixed(2)} € Net/an (-2 mois)`}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           <button
@@ -229,7 +247,7 @@ export function ClientStoreDetailView({
             className="w-full py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal transition flex items-center justify-center gap-2 cursor-pointer"
           >
             <Edit2 className="w-3.5 h-3.5" />
-            <span>Changer de formule / Modules</span>
+            <span>Modifier mes modules & formules</span>
           </button>
         </div>
 

@@ -23,6 +23,7 @@ export async function POST(
       modules,
       unrenewedModules: reqUnrenewed = [],
       billingCycle = 'monthly',
+      nextBillingCycle: reqNextCycle,
       paymentMethod = 'STRIPE_CARD'
     } = body;
 
@@ -63,6 +64,14 @@ export async function POST(
     const existingSub = await prisma.subscription.findFirst({
       where: { userId: user.id },
     });
+
+    const activeCycle = existingSub?.billingCycle || currentParsed.billingCycle || 'monthly';
+    
+    // Détermination de nextBillingCycle à date anniversaire
+    let finalNextCycle: 'monthly' | 'yearly' | null = reqNextCycle || null;
+    if (billingCycle !== activeCycle) {
+      finalNextCycle = billingCycle;
+    }
 
     // Identification des nouveaux modules (qui n'étaient pas encore actifs)
     const newlyAddedModules = cleanRequested.filter((m) => !currentlyActive.includes(m));
@@ -163,10 +172,12 @@ export async function POST(
       }
     }
 
-    // Sauvegarde des modules dans la base de données WoxxApp
+    // Sauvegarde des modules et de la formule dans la base de données WoxxApp
     const modulesPayload = {
       active: cleanRequested,
       unrenewed: finalUnrenewed,
+      billingCycle: activeCycle,
+      nextBillingCycle: finalNextCycle,
     };
 
     const updatedTenant = await prisma.tenant.update({
@@ -187,6 +198,8 @@ export async function POST(
         ...updatedTenant,
         modules: cleanRequested,
         unrenewedModules: finalUnrenewed,
+        billingCycle: activeCycle,
+        nextBillingCycle: finalNextCycle,
       },
       order: orderSummary,
     });

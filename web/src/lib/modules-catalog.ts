@@ -216,15 +216,21 @@ export const MODULE_PROGRESSION_STEPS: ModuleStepDefinition[] = [
   }
 ];
 
-export function parseTenantModules(rawModules: any): {
+export interface ParsedTenantModules {
   activeModules: string[];
   unrenewedModules: string[];
-} {
+  billingCycle?: 'monthly' | 'yearly';
+  nextBillingCycle?: 'monthly' | 'yearly' | null;
+}
+
+export function parseTenantModules(rawModules: any): ParsedTenantModules {
   try {
     if (Array.isArray(rawModules)) {
       return {
         activeModules: Array.from(new Set(['site_web', ...rawModules])),
         unrenewedModules: [],
+        billingCycle: 'monthly',
+        nextBillingCycle: null,
       };
     }
     if (typeof rawModules === 'string') {
@@ -233,6 +239,8 @@ export function parseTenantModules(rawModules: any): {
         return {
           activeModules: Array.from(new Set(['site_web', ...parsed])),
           unrenewedModules: [],
+          billingCycle: 'monthly',
+          nextBillingCycle: null,
         };
       }
       if (parsed && typeof parsed === 'object') {
@@ -241,11 +249,18 @@ export function parseTenantModules(rawModules: any): {
         return {
           activeModules: Array.from(new Set(['site_web', ...active])),
           unrenewedModules: Array.from(new Set(unrenewed)),
+          billingCycle: parsed.billingCycle === 'yearly' ? 'yearly' : 'monthly',
+          nextBillingCycle: parsed.nextBillingCycle || null,
         };
       }
     }
   } catch {}
-  return { activeModules: ['site_web'], unrenewedModules: [] };
+  return {
+    activeModules: ['site_web'],
+    unrenewedModules: [],
+    billingCycle: 'monthly',
+    nextBillingCycle: null,
+  };
 }
 
 export async function getSystemPricingAndTaxSettings(): Promise<{
