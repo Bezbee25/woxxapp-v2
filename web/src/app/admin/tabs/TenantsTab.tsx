@@ -123,6 +123,26 @@ export function TenantsTab() {
     }
   };
 
+  const [reprovisioning, setReprovisioning] = useState(false);
+
+  const handleReprovisionAll = async () => {
+    if (!confirm('Voulez-vous synchroniser et reprovisionner l\'ensemble des boutiques de la base de données sur Kubernetes ? (Idempotent et sans coupure)')) {
+      return;
+    }
+    setReprovisioning(true);
+    try {
+      const res = await apiRequest<{ message: string; successCount: number; total: number }>('/admin/tenants/reprovision-all', {
+        method: 'POST',
+      });
+      alert(res.message || 'Synchronisation terminée avec succès.');
+      fetchTenants();
+    } catch (err: any) {
+      alert(err.message || 'Erreur lors de la synchronisation K8s');
+    } finally {
+      setReprovisioning(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header & Filtres */}
@@ -137,6 +157,16 @@ export function TenantsTab() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleReprovisionAll}
+            disabled={reprovisioning}
+            className="flex items-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal transition cursor-pointer disabled:opacity-50"
+            title="Recrée ou synchronise l'ensemble des namespaces, deployments et ingress K8s depuis la base de données"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${reprovisioning ? 'animate-spin' : ''}`} />
+            <span>{reprovisioning ? 'Synchronisation K8s...' : 'Réhydrater K8s (Disaster Recovery)'}</span>
+          </button>
+
           <button
             onClick={() => setIsCreateOpen(true)}
             className="flex items-center gap-2 px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-black border-2 border-slate-900 shadow-brutal-xs transition"
