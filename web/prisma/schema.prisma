@@ -41,6 +41,18 @@ model User {
   quotesAsSalesRep     Quote[]      @relation("SalesRepQuotes")
   quotesAsClient       Quote[]      @relation("ClientQuotes")
 
+  // Configuration Stripe & Paiements WoxxPay (Chargé d'affaires / Vendeur)
+  stripeAccountId      String?
+  stripePublishableKey String?
+  stripeSecretKey      String?
+  stripeWebhookSecret  String?
+  stripeConnectStatus  String?      @default("NOT_CONNECTED") // NOT_CONNECTED, PENDING, CONNECTED, RESTRICTED
+  bankIban             String?
+  bankBic              String?
+  bankAccountHolder    String?
+  defaultCommissionRate Float?      @default(10.0)
+  woxxpayLiveMode      Boolean      @default(false)
+
   @@index([role])
   @@index([assignedSalesRepId])
 }

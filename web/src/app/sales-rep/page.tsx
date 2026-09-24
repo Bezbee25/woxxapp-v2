@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { apiRequest } from '@/lib/api';
 import { SalesRepClientsTab } from '@/components/sales-rep/SalesRepClientsTab';
 import { SalesRepQuotesTab } from '@/components/sales-rep/SalesRepQuotesTab';
+import { SalesRepPaymentTab } from '@/components/sales-rep/SalesRepPaymentTab';
 import { CreateQuoteModal } from '@/components/sales-rep/CreateQuoteModal';
 import { CreateClientModal } from '@/components/sales-rep/CreateClientModal';
 import { QuotePaymentModal } from '@/components/sales-rep/QuotePaymentModal';
@@ -75,6 +76,8 @@ export default function SalesRepDashboardPage() {
           onOpenPaymentModal={(q) => setSelectedQuoteForPayment(q)}
         />
       )}
+
+      {activeTab === 'payment' && <SalesRepPaymentTab />}
 
       {/* Modal Création Client */}
       <CreateClientModal

@@ -11,10 +11,11 @@ import {
   ChevronRight,
   ExternalLink,
   Shield,
-  Briefcase
+  Briefcase,
+  CreditCard,
 } from 'lucide-react';
 
-export type SalesRepTab = 'clients' | 'quotes' | 'performance';
+export type SalesRepTab = 'clients' | 'quotes' | 'payment' | 'performance';
 
 interface SalesRepSidebarProps {
   activeTab: SalesRepTab;
@@ -39,7 +40,8 @@ export function SalesRepSidebar({
 }: SalesRepSidebarProps) {
   const navItems = [
     { id: 'clients' as SalesRepTab, label: 'Mes Clients', icon: Users, color: 'text-blue-500' },
-    { id: 'quotes' as SalesRepTab, label: 'Devis & WoxxPay', icon: FileText, color: 'text-amber-500' },
+    { id: 'quotes' as SalesRepTab, label: 'Devis & Facturation', icon: FileText, color: 'text-amber-500' },
+    { id: 'payment' as SalesRepTab, label: 'Stripe & WoxxPay', icon: CreditCard, color: 'text-emerald-500' },
   ];
 
   return (
