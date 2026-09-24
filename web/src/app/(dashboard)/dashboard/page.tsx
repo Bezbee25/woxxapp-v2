@@ -7,6 +7,7 @@ import { ClientQuotesTab } from '@/components/dashboard/ClientQuotesTab';
 import { CreateStoreModal } from '@/components/dashboard/CreateStoreModal';
 import { ClientInvoicesTab } from '@/components/dashboard/ClientInvoicesTab';
 import { ClientAccountTab } from '@/components/dashboard/ClientAccountTab';
+import { ClientPaymentTab } from '@/components/dashboard/ClientPaymentTab';
 import { ClientTab } from '@/components/dashboard/ClientSidebar';
 
 export default function ClientDashboardPage() {
@@ -50,6 +51,8 @@ export default function ClientDashboardPage() {
           onOpenCreate={() => setIsCreateOpen(true)}
         />
       )}
+
+      {activeTab === 'payments' && <ClientPaymentTab />}
 
       {activeTab === 'quotes' && <ClientQuotesTab />}
 

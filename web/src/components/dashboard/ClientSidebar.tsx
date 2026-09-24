@@ -11,10 +11,11 @@ import {
   ChevronRight,
   ExternalLink,
   Shield,
-  Layers
+  Layers,
+  CreditCard,
 } from 'lucide-react';
 
-export type ClientTab = 'stores' | 'quotes' | 'invoices' | 'account';
+export type ClientTab = 'stores' | 'payments' | 'quotes' | 'invoices' | 'account';
 
 interface ClientSidebarProps {
   activeTab: ClientTab;
@@ -39,9 +40,10 @@ export function ClientSidebar({
 }: ClientSidebarProps) {
   const navItems = [
     { id: 'stores' as ClientTab, label: 'Mes Boutiques', icon: Store, color: 'text-emerald-500' },
+    { id: 'payments' as ClientTab, label: 'Paiements & Stripe', icon: CreditCard, color: 'text-blue-600' },
     { id: 'quotes' as ClientTab, label: 'Mes Devis & Offres', icon: FileText, color: 'text-amber-500' },
-    { id: 'invoices' as ClientTab, label: 'Factures & Abonnements', icon: FileText, color: 'text-blue-500' },
-    { id: 'account' as ClientTab, label: 'Mon Compte & Sécurité', icon: User, color: 'text-purple-500' },
+    { id: 'invoices' as ClientTab, label: 'Factures & Abonnements', icon: FileText, color: 'text-purple-500' },
+    { id: 'account' as ClientTab, label: 'Mon Compte & Sécurité', icon: User, color: 'text-indigo-500' },
   ];
 
   return (
