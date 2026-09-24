@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Users, UserPlus, Store, FileText, PlusCircle, RefreshCw, Mail, ExternalLink, ShieldCheck } from 'lucide-react';
+import { Users, UserPlus, Store, FileText, PlusCircle, RefreshCw, Mail, ExternalLink, ShieldCheck, Key } from 'lucide-react';
 
 interface SalesRepClientsTabProps {
   clients: any[];
@@ -18,6 +18,28 @@ export function SalesRepClientsTab({
   onOpenCreateClient,
   onOpenCreateQuote,
 }: SalesRepClientsTabProps) {
+  const [ssoLoadingId, setSsoLoadingId] = useState<string | null>(null);
+
+  const handleOpenSso = async (tenantId: string) => {
+    setSsoLoadingId(tenantId);
+    try {
+      const res = await fetch(`/api/admin/tenants/${tenantId}/sso`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || data.error || 'Erreur lors de la génération du token SSO');
+      }
+      if (data.ssoUrl) {
+        window.open(data.ssoUrl, '_blank');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Erreur lors de l’accès à la boutique en mode Gérant');
+    } finally {
+      setSsoLoadingId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white p-6 rounded-3xl border-2 border-slate-900 shadow-brutal flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -103,17 +125,37 @@ export function SalesRepClientsTab({
                       <p className="text-[11px] text-slate-400 font-medium italic">Pas encore de boutique</p>
                     ) : (
                       tenants.map((t: any) => (
-                        <div key={t.id} className="flex items-center justify-between text-xs font-bold text-slate-900">
-                          <span className="truncate">{t.commerceName}</span>
-                          <a
-                            href={`https://${t.subdomain}.woxxapp.de`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-blue-600 hover:text-blue-800 font-mono text-[10px] flex items-center gap-1"
-                          >
-                            <span>{t.subdomain}</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
+                        <div key={t.id} className="p-2.5 bg-white rounded-xl border border-slate-200 space-y-2">
+                          <div className="flex items-center justify-between text-xs font-bold text-slate-900">
+                            <span className="truncate">{t.commerceName}</span>
+                            <a
+                              href={`https://${t.subdomain}.woxxapp.de`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-blue-600 hover:text-blue-800 font-mono text-[10px] flex items-center gap-1"
+                              title="Voir le site public"
+                            >
+                              <span>{t.subdomain}</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                            <span className="text-[10px] font-medium text-slate-500">Mode Gérant</span>
+                            <button
+                              onClick={() => handleOpenSso(t.id)}
+                              disabled={ssoLoadingId === t.id}
+                              className="px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 text-[10px] font-black rounded-lg border border-slate-900 shadow-brutal-xs inline-flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                              title="Accéder au back-office du client en mode Gérant"
+                            >
+                              {ssoLoadingId === t.id ? (
+                                <RefreshCw className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <Key className="w-3 h-3" />
+                              )}
+                              <span>Gérer (Gérant)</span>
+                            </button>
+                          </div>
                         </div>
                       ))
                     )}
@@ -142,3 +184,4 @@ export function SalesRepClientsTab({
     </div>
   );
 }
+
