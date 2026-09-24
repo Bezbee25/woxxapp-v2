@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Store,
   ExternalLink,
@@ -14,10 +14,13 @@ import {
   PlusCircle,
   Clock,
   Sparkles,
-  Edit2
+  ArrowRight,
+  Globe,
+  CreditCard
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
-import { ClientPurchaseModulesModal } from './ClientPurchaseModulesModal';
+import { ClientStoreDetailView } from './ClientStoreDetailView';
+import { calculateModulesOrder } from '@/lib/modules-catalog';
 
 export interface ClientTenant {
   id: string;
@@ -45,10 +48,20 @@ export function ClientStoresList({
   onRefresh,
   onOpenCreate,
 }: ClientStoresListProps) {
+  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
+  const [salesRep, setSalesRep] = useState<any | null>(null);
   const [ssoLoadingId, setSsoLoadingId] = useState<string | null>(null);
-  const [purchasingModulesTenant, setPurchasingModulesTenant] = useState<ClientTenant | null>(null);
 
-  const handleOpenSso = async (tenantId: string) => {
+  useEffect(() => {
+    apiRequest<any>('/account/sales-rep')
+      .then((res) => {
+        if (res?.salesRep) setSalesRep(res.salesRep);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleOpenSso = async (tenantId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     setSsoLoadingId(tenantId);
     try {
       const res = await fetch(`/api/tenants/${tenantId}/sso`, {
@@ -68,6 +81,19 @@ export function ClientStoresList({
     }
   };
 
+  // Si un site est sélectionné, afficher la vue détaillée
+  const activeTenant = tenants.find((t) => t.id === selectedTenantId);
+  if (activeTenant) {
+    return (
+      <ClientStoreDetailView
+        tenant={activeTenant}
+        onBack={() => setSelectedTenantId(null)}
+        onRefresh={onRefresh}
+        salesRep={salesRep}
+      />
+    );
+  }
+
   if (loading && tenants.length === 0) {
     return (
       <div className="bg-white p-12 rounded-3xl border-2 border-slate-900 shadow-brutal flex flex-col items-center justify-center gap-3">
@@ -83,9 +109,9 @@ export function ClientStoresList({
         <div className="w-16 h-16 rounded-3xl bg-amber-300 border-2 border-slate-900 shadow-brutal-xs flex items-center justify-center mx-auto text-3xl">
           🏪
         </div>
-        <h3 className="text-xl font-black text-slate-900">Vous n'avez pas encore de boutique</h3>
+        <h3 className="text-xl font-black text-slate-900">Vous n'avez pas encore de site boutique</h3>
         <p className="text-xs text-slate-600 font-medium max-w-md mx-auto">
-          Lancez votre première boutique en ligne en quelques clics. Votre site vitrine et son administration seront immédiatement configurés.
+          Lancez votre premier site et boutique en ligne en quelques clics. Votre vitrine et son administration seront immédiatement configurées.
         </p>
         <div className="pt-2">
           <button
@@ -93,7 +119,7 @@ export function ClientStoresList({
             className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs px-6 py-3 rounded-xl border-2 border-slate-900 shadow-brutal hover:shadow-brutal-lg transition active:translate-y-0 cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>Créer ma première boutique</span>
+            <span>Créer mon premier site</span>
           </button>
         </div>
       </div>
@@ -102,13 +128,14 @@ export function ClientStoresList({
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border-2 border-slate-900 shadow-brutal">
         <div>
           <h2 className="text-xl font-black text-slate-950 flex items-center gap-2">
-            <Store className="w-6 h-6 text-emerald-600" /> Mes Boutiques & Entreprises ({tenants.length})
+            <Store className="w-6 h-6 text-emerald-600" /> Mes Sites & Boutiques ({tenants.length})
           </h2>
           <p className="text-xs text-slate-600 font-medium mt-1">
-            Gérez vos sites en ligne, accédez à votre administration en 1 clic et activez des modules.
+            Cliquez sur un site pour ouvrir sa fiche de gestion complète, ses modules et son abonnement.
           </p>
         </div>
 
@@ -117,11 +144,11 @@ export function ClientStoresList({
             onClick={onOpenCreate}
             className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal transition cursor-pointer"
           >
-            <PlusCircle className="w-4 h-4" /> Nouvelle boutique
+            <PlusCircle className="w-4 h-4" /> Nouveau site
           </button>
           <button
             onClick={onRefresh}
-            className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl border-2 border-slate-900 shadow-brutal-xs transition"
+            className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-xl border-2 border-slate-900 shadow-brutal-xs transition cursor-pointer"
             title="Rafraîchir"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -129,38 +156,31 @@ export function ClientStoresList({
         </div>
       </div>
 
+      {/* Liste des boutiques sous forme de cartes d'accès riches */}
       <div className="grid md:grid-cols-2 gap-6">
         {tenants.map((t) => {
-          const isDeployed = t.k8sStatus === 'ACTIVE' || t.k8sStatus === 'DEPLOYED' || t.status === 'ACTIVE';
           const modulesList: string[] = Array.isArray(t.modules) ? t.modules : [];
+          const order = calculateModulesOrder(modulesList, 'monthly');
 
           return (
             <div
               key={t.id}
-              className="bg-white border-2 border-slate-900 rounded-3xl p-6 shadow-brutal hover:shadow-brutal-lg transition flex flex-col justify-between"
+              onClick={() => setSelectedTenantId(t.id)}
+              className="bg-white border-2 border-slate-900 rounded-3xl p-6 shadow-brutal hover:shadow-brutal-lg transition flex flex-col justify-between cursor-pointer group hover:border-blue-600"
             >
               <div>
                 {/* En-tête de la carte */}
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-amber-400 border-2 border-slate-900 shadow-brutal-xs flex items-center justify-center text-2xl font-black">
+                    <div className="w-14 h-14 rounded-2xl bg-amber-400 group-hover:bg-amber-300 border-2 border-slate-900 shadow-brutal-xs flex items-center justify-center text-3xl font-black transition">
                       🏪
                     </div>
                     <div>
-                      <h3 className="text-lg font-black text-slate-950 leading-tight">
+                      <h3 className="text-xl font-black text-slate-950 group-hover:text-blue-600 transition leading-tight">
                         {t.commerceName}
                       </h3>
                       <div className="flex items-center gap-1.5 text-blue-600 font-mono text-xs font-bold mt-1">
                         <span>{t.subdomain}.woxxapp.de</span>
-                        <a
-                          href={`https://${t.subdomain}.woxxapp.de`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="hover:text-blue-800"
-                          title="Ouvrir le site public"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
                       </div>
                     </div>
                   </div>
@@ -169,111 +189,59 @@ export function ClientStoresList({
                     className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase border ${
                       t.status === 'ACTIVE'
                         ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                        : t.status === 'PENDING'
-                        ? 'bg-amber-100 text-amber-800 border-amber-300'
-                        : 'bg-rose-100 text-rose-800 border-rose-300'
+                        : 'bg-amber-100 text-amber-800 border-amber-300'
                     }`}
                   >
                     {t.status === 'ACTIVE' && <ShieldCheck className="w-3 h-3" />}
                     {t.status === 'PENDING' && <AlertTriangle className="w-3 h-3" />}
-                    {t.status}
+                    {t.status === 'ACTIVE' ? 'En ligne' : 'En attente'}
                   </span>
                 </div>
 
-                {/* Domaine personnalisé si existant */}
-                {t.customDomain && (
-                  <div className="mb-4 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-700 flex items-center justify-between">
-                    <span className="font-bold">Domaine pro :</span>
-                    <span className="text-slate-900 font-black">{t.customDomain}</span>
-                  </div>
-                )}
-
-                {/* Modules actifs */}
-                <div className="mb-6 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">
-                      Modules inclus & Services
+                {/* Modules et tarifs */}
+                <div className="my-4 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-black uppercase text-slate-400 block">Formule Active</span>
+                    <span className="text-xs font-black text-slate-900">
+                      {modulesList.length} module{modulesList.length > 1 ? 's' : ''} activé{modulesList.length > 1 ? 's' : ''}
                     </span>
-                    <button
-                      onClick={() => setPurchasingModulesTenant(t)}
-                      className="text-[11px] font-black text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 cursor-pointer"
-                    >
-                      <Edit2 className="w-3 h-3" /> Ajouter / Modifier
-                    </button>
                   </div>
 
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="px-2 py-0.5 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-900 text-[10px] font-black flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" /> Vitrine & Click/Collect
+                  <div className="text-right">
+                    <span className="text-[10px] font-black uppercase text-slate-400 block">Abonnement</span>
+                    <span className="text-sm font-black text-slate-950 font-mono">
+                      {order.totalTtc.toFixed(2)} € <span className="text-[10px] font-normal text-slate-500">/mois</span>
                     </span>
-                    {modulesList.includes('ecommerce') && (
-                      <span className="px-2 py-0.5 rounded-lg bg-blue-50 border border-blue-300 text-blue-900 text-[10px] font-black flex items-center gap-1">
-                        <ShoppingBag className="w-3 h-3" /> Vente CB
-                      </span>
-                    )}
-                    {modulesList.includes('woxxship') && (
-                      <span className="px-2 py-0.5 rounded-lg bg-indigo-50 border border-indigo-300 text-indigo-900 text-[10px] font-black flex items-center gap-1">
-                        <Truck className="w-3 h-3" /> Transport
-                      </span>
-                    )}
-                    {modulesList.includes('reservations') && (
-                      <span className="px-2 py-0.5 rounded-lg bg-purple-50 border border-purple-300 text-purple-900 text-[10px] font-black flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> Réservations
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Boutons d'action */}
-              <div className="pt-4 border-t-2 border-slate-100 flex flex-wrap items-center justify-between gap-3">
-                <a
-                  href={`https://${t.subdomain}.woxxapp.de`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs font-black rounded-xl border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal transition inline-flex items-center gap-1.5"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Voir le site</span>
-                </a>
-
-                {/* Bouton SSO 1-Clic Direct vers l'Admin Boutique */}
+              {/* Actions & Bouton Détail */}
+              <div className="pt-3 border-t-2 border-slate-100 flex items-center justify-between gap-2">
                 <button
-                  onClick={() => handleOpenSso(t.id)}
+                  type="button"
+                  onClick={(e) => handleOpenSso(t.id, e)}
                   disabled={ssoLoadingId === t.id}
-                  className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black rounded-xl border-2 border-slate-900 shadow-brutal hover:shadow-brutal-lg transition inline-flex items-center gap-2 disabled:opacity-50 cursor-pointer"
-                  title="Ouvre immédiatement l'administration de votre boutique sans mot de passe supplémentaire"
+                  className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs font-black rounded-xl border border-slate-900 shadow-brutal-xs inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  title="Accéder directement à l'administration du site"
                 >
                   {ssoLoadingId === t.id ? (
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                   ) : (
                     <Key className="w-3.5 h-3.5" />
                   )}
-                  <span>Gérer ma boutique (Admin) 🚀</span>
+                  <span>Admin 🚀</span>
                 </button>
+
+                <div className="inline-flex items-center gap-1 text-xs font-black text-blue-600 group-hover:translate-x-1 transition">
+                  <span>Gérer ce site</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
               </div>
             </div>
           );
         })}
       </div>
-
-      {/* Modal d'achat et activation des modules pour le client */}
-      <ClientPurchaseModulesModal
-        isOpen={!!purchasingModulesTenant}
-        tenant={
-          purchasingModulesTenant
-            ? {
-                id: purchasingModulesTenant.id,
-                commerceName: purchasingModulesTenant.commerceName,
-                subdomain: purchasingModulesTenant.subdomain,
-                modules: purchasingModulesTenant.modules,
-              }
-            : null
-        }
-        onClose={() => setPurchasingModulesTenant(null)}
-        onSuccess={onRefresh}
-      />
     </div>
   );
 }
-
