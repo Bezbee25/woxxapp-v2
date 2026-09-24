@@ -59,8 +59,16 @@ interface QuoteDetail {
     whatsappNumber?: string;
     calendlyUrl?: string;
     bio?: string;
+    siret?: string;
+    vatNumber?: string;
+    companyAddress?: string;
+    companyEmail?: string;
+    taxType?: string;
+    legalNotice?: string;
+    vatRate?: string;
   };
 }
+
 
 export default function PublicQuotePage() {
   const params = useParams();
@@ -215,11 +223,18 @@ export default function PublicQuotePage() {
                     {quote.salesRep?.fullName || 'Conseiller WoxxApp'}
                   </p>
                   <p className="text-xs text-purple-700 font-bold truncate">
-                    {quote.salesRep?.companyName || 'WoxxApp SAS'}
+                    {quote.salesRep?.companyName || 'Chargé d’affaires WoxxApp'}
                   </p>
-                  <p className="text-[11px] text-slate-500 font-mono truncate">{quote.salesRep?.email}</p>
+                  {quote.salesRep?.siret && (
+                    <p className="text-[10px] text-slate-600 font-mono">SIRET : {quote.salesRep.siret}</p>
+                  )}
+                  {quote.salesRep?.companyAddress && (
+                    <p className="text-[10px] text-slate-500 truncate">📍 {quote.salesRep.companyAddress}</p>
+                  )}
+                  <p className="text-[11px] text-slate-500 font-mono truncate">{quote.salesRep?.companyEmail || quote.salesRep?.email}</p>
                 </div>
               </div>
+
 
               {quote.salesRep?.bio && (
                 <p className="text-xs text-slate-600 font-medium italic bg-slate-50 p-2.5 rounded-xl border border-slate-200">
@@ -326,15 +341,26 @@ export default function PublicQuotePage() {
             <div className="bg-slate-900 text-white rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="text-xs space-y-1">
                 <p className="text-slate-300">Total HT net : <span className="font-bold text-white">{quote.totalHt.toFixed(2)} €</span></p>
-                <p className="text-slate-300">Montant TVA (20%) : <span className="font-bold text-white">{quote.totalVat.toFixed(2)} €</span></p>
+                <p className="text-slate-300">
+                  {quote.salesRep?.taxType === 'MICRO_ENTERPRISE' || !quote.totalVat
+                    ? 'TVA (0% - Franchise CGI 293 B) : 0.00 €'
+                    : `Montant TVA (${quote.salesRep?.vatRate || '20'}%) : ${quote.totalVat.toFixed(2)} €`}
+                </p>
               </div>
               <div className="text-right">
                 <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">Net à Payer TTC</span>
                 <span className="text-3xl font-black text-amber-400">{quote.totalTtc.toFixed(2)} €</span>
               </div>
             </div>
+
+            {quote.salesRep?.legalNotice && (
+              <p className="text-[11px] text-slate-500 font-medium italic pt-2">
+                * {quote.salesRep.legalNotice}
+              </p>
+            )}
           </div>
         </div>
+
 
         {/* ZONE DE RÈGLEMENT OU CONFIRMATION PEAK-END */}
         {!isPaid ? (

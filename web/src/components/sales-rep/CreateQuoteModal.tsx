@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, FileText, ArrowRight, RefreshCw, AlertCircle, ShoppingBag, Sparkles } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 
@@ -27,11 +27,11 @@ interface CreateQuoteModalProps {
 }
 
 const PRESET_ITEMS = [
-  { description: 'Création & Hébergement Site Vitrine (Annuel)', unitPriceHt: 150, vatRate: 20 },
-  { description: 'Module E-commerce & Paiement CB Stripe Connect', unitPriceHt: 300, vatRate: 20 },
-  { description: 'Module Transport WoxxShip & Étiquettes Colissimo/MR', unitPriceHt: 300, vatRate: 20 },
-  { description: 'Accompagnement & Shooting Photo Produits (Élise & Moi)', unitPriceHt: 250, vatRate: 20 },
-  { description: 'Configuration Domaine Personnalisé & Certificat SSL Pro', unitPriceHt: 50, vatRate: 20 },
+  { description: 'Création & Hébergement Site Vitrine (Annuel)', unitPriceHt: 150 },
+  { description: 'Module E-commerce & Paiement CB Stripe Connect', unitPriceHt: 300 },
+  { description: 'Module Transport WoxxShip & Étiquettes Colissimo/MR', unitPriceHt: 300 },
+  { description: 'Accompagnement & Shooting Photo Produits (Élise & Moi)', unitPriceHt: 250 },
+  { description: 'Configuration Domaine Personnalisé & Certificat SSL Pro', unitPriceHt: 50 },
 ];
 
 export function CreateQuoteModal({
@@ -41,18 +41,43 @@ export function CreateQuoteModal({
   clients,
   preselectedClientId,
 }: CreateQuoteModalProps) {
+
   const [clientId, setClientId] = useState(preselectedClientId || (clients[0]?.id || ''));
   const [title, setTitle] = useState('Offre Commerciale WoxxApp');
   const [description, setDescription] = useState('');
   const [selectedTenantId, setSelectedTenantId] = useState('');
   const [validityDays, setValidityDays] = useState(30);
 
+  const [repVatRate, setRepVatRate] = useState<number>(0);
+  const [isMicro, setIsMicro] = useState<boolean>(true);
+
   const [lines, setLines] = useState<QuoteLine[]>([
-    { description: 'Création & Hébergement Site Vitrine (Annuel)', quantity: 1, unitPriceHt: 150, vatRate: 20 },
+    { description: 'Création & Hébergement Site Vitrine (Annuel)', quantity: 1, unitPriceHt: 150, vatRate: 0 },
   ]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Charger le profil fiscal du chargé d'affaires
+  useEffect(() => {
+    if (isOpen) {
+      apiRequest<any>('/sales-rep/profile')
+        .then((profile) => {
+          if (profile) {
+            const micro = profile.taxType !== 'SAS_SARL_WITH_VAT';
+            const rate = micro ? 0 : parseFloat(profile.vatRate || '20') || 20;
+            setIsMicro(micro);
+            setRepVatRate(rate);
+
+            // Mettre à jour les lignes initiales avec le taux de TVA du commercial
+            setLines([
+              { description: 'Création & Hébergement Site Vitrine (Annuel)', quantity: 1, unitPriceHt: 150, vatRate: rate },
+            ]);
+          }
+        })
+        .catch((err) => console.error('Erreur chargement profil fiscal devis:', err));
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -61,7 +86,7 @@ export function CreateQuoteModal({
   const addLine = () => {
     setLines((prev) => [
       ...prev,
-      { description: '', quantity: 1, unitPriceHt: 50, vatRate: 20 },
+      { description: '', quantity: 1, unitPriceHt: 50, vatRate: repVatRate },
     ]);
   };
 
@@ -77,9 +102,10 @@ export function CreateQuoteModal({
     });
   };
 
-  const addPreset = (preset: { description: string; unitPriceHt: number; vatRate: number }) => {
-    setLines((prev) => [...prev, { ...preset, quantity: 1 }]);
+  const addPreset = (preset: { description: string; unitPriceHt: number }) => {
+    setLines((prev) => [...prev, { ...preset, vatRate: repVatRate, quantity: 1 }]);
   };
+
 
   // Calculs totaux
   const totalHt = lines.reduce((acc, l) => acc + (Number(l.quantity) || 0) * (Number(l.unitPriceHt) || 0), 0);
@@ -314,12 +340,15 @@ export function CreateQuoteModal({
           <div className="bg-slate-900 text-white rounded-2xl p-4 flex items-center justify-between">
             <div className="text-xs">
               <span className="text-slate-400">Total HT : {totalHt.toFixed(2)} €</span>
-              <span className="text-slate-400 ml-3">TVA (20%) : {totalVat.toFixed(2)} €</span>
+              <span className="text-slate-400 ml-3">
+                {isMicro ? 'TVA (0% - Franchise CGI 293 B)' : `TVA (${repVatRate}%) : ${totalVat.toFixed(2)} €`}
+              </span>
             </div>
             <div className="text-base font-black">
               Total TTC : <span className="text-amber-400 text-xl">{totalTtc.toFixed(2)} €</span>
             </div>
           </div>
+
 
           <div className="pt-3 border-t-2 border-slate-100 flex items-center justify-end gap-3">
             <button
