@@ -163,3 +163,61 @@ export async function sendQuotePaidToSalesRepEmail(params: {
     text: `Bonjour, le client ${params.clientName || params.clientEmail} a réglé le devis ${params.quoteNumber} (${params.totalTtc.toFixed(2)} € via ${methodLabel}). Vous devez réaliser la prestation dans le délai imparti.`,
   });
 }
+
+/**
+ * 3. Email envoyé au Chargé d'Affaires lorsqu'un client le choisit ou lui est affecté
+ */
+export async function sendClientAssignedToSalesRepEmail(params: {
+  salesRepEmail: string;
+  salesRepName?: string;
+  clientName?: string;
+  clientEmail: string;
+  clientPhone?: string;
+  clientCompany?: string;
+}) {
+  const html = `
+    <div style="font-family: Arial, sans-serif; background-color: #FFFDF9; padding: 24px; color: #0f172a;">
+      <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border: 2px solid #0f172a; border-radius: 20px; padding: 24px; box-shadow: 4px 4px 0px #0f172a;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+          <span style="font-size: 24px;">🤝</span>
+          <h1 style="margin: 0; font-size: 20px; font-weight: 900; color: #0f172a;">Nouveau Client dans votre Portefeuille !</h1>
+        </div>
+        
+        <p style="font-size: 14px; font-weight: bold;">Bonjour ${params.salesRepName || 'Chargé d’affaires'},</p>
+        <p style="font-size: 14px; line-height: 1.5; color: #334155;">
+          Un commerçant a sélectionné votre profil ou vous a été affecté sur <strong>WoxxApp</strong> :
+        </p>
+
+        <div style="background-color: #f8fafc; border: 2px solid #0f172a; border-radius: 12px; padding: 16px; margin: 20px 0;">
+          <p style="margin: 0 0 6px 0; font-size: 15px; font-weight: 900; color: #0f172a;">Nom : ${params.clientName || 'Commerçant'}</p>
+          <p style="margin: 0 0 6px 0; font-size: 13px; color: #334155;">Email : <a href="mailto:${params.clientEmail}">${params.clientEmail}</a></p>
+          ${params.clientPhone ? `<p style="margin: 0 0 6px 0; font-size: 13px; color: #334155;">Téléphone : <a href="tel:${params.clientPhone}">${params.clientPhone}</a></p>` : ''}
+          ${params.clientCompany ? `<p style="margin: 0; font-size: 13px; color: #334155;">Entreprise / Projet : ${params.clientCompany}</p>` : ''}
+        </div>
+
+        <p style="font-size: 14px; color: #334155;">
+          Vous pouvez dès à présent le contacter et lui préparer un devis personnalisé depuis votre espace commercial.
+        </p>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="https://woxxapp.de/sales-rep" style="background-color: #fbbf24; color: #0f172a; padding: 14px 28px; text-decoration: none; font-size: 14px; font-weight: 900; border: 2px solid #0f172a; border-radius: 12px; display: inline-block; box-shadow: 3px 3px 0px #0f172a;">
+            Accéder à mon Espace Commercial →
+          </a>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+        <p style="font-size: 11px; color: #94a3b8; margin: 0;">
+          WoxxApp SAS • Plateforme e-commerce & solutions commerçants
+        </p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to: params.salesRepEmail,
+    subject: `🤝 [Nouveau Client] ${params.clientName || params.clientEmail} vous a sélectionné comme Conseiller`,
+    html,
+    text: `Bonjour ${params.salesRepName || ''}, un nouveau client vous a été affecté : ${params.clientName || ''} (${params.clientEmail}). Connectez-vous sur votre espace commercial pour lui préparer un devis.`,
+  });
+}
+

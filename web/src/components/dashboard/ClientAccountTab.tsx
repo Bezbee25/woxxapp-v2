@@ -16,6 +16,8 @@ import {
 import { useAuth } from '@/lib/auth-context';
 import { apiRequest } from '@/lib/api';
 
+import { ChooseSalesRepModal } from './ChooseSalesRepModal';
+
 interface AssignedSalesRep {
   id: string;
   email: string;
@@ -32,18 +34,20 @@ export function ClientAccountTab() {
   const { user } = useAuth();
   const [downloading, setDownloading] = useState(false);
   const [salesRep, setSalesRep] = useState<AssignedSalesRep | null>(null);
+  const [isChooseRepOpen, setIsChooseRepOpen] = useState(false);
+
+  const fetchSalesRep = async () => {
+    try {
+      const data = await apiRequest<{ salesRep: AssignedSalesRep | null }>('/account/sales-rep');
+      if (data?.salesRep) {
+        setSalesRep(data.salesRep);
+      }
+    } catch (err) {
+      console.warn('Pas de conseiller assigné ou erreur:', err);
+    }
+  };
 
   useEffect(() => {
-    const fetchSalesRep = async () => {
-      try {
-        const data = await apiRequest<{ salesRep: AssignedSalesRep | null }>('/account/sales-rep');
-        if (data?.salesRep) {
-          setSalesRep(data.salesRep);
-        }
-      } catch (err) {
-        console.warn('Pas de conseiller assigné ou erreur:', err);
-      }
-    };
     fetchSalesRep();
   }, []);
 
@@ -69,21 +73,40 @@ export function ClientAccountTab() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white p-6 rounded-3xl border-2 border-slate-900 shadow-brutal">
-        <h2 className="text-xl font-black text-slate-950 flex items-center gap-2">
-          <User className="w-6 h-6 text-purple-600" /> Mon Compte & Profil
-        </h2>
-        <p className="text-xs text-slate-600 font-medium mt-1">
-          Informations de votre compte commerçant et préférences de sécurité.
-        </p>
+      <div className="bg-white p-6 rounded-3xl border-2 border-slate-900 shadow-brutal flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-black text-slate-950 flex items-center gap-2">
+            <User className="w-6 h-6 text-purple-600" /> Mon Compte & Profil
+          </h2>
+          <p className="text-xs text-slate-600 font-medium mt-1">
+            Informations de votre compte commerçant et accompagnement commercial.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsChooseRepOpen(true)}
+          className="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 border-2 border-slate-900 rounded-xl font-black text-xs shadow-brutal-xs hover:shadow-brutal transition flex items-center gap-2 cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4 text-amber-900" />
+          <span>{salesRep ? 'Changer de conseiller' : 'Choisir un Chargé d’Affaires'}</span>
+        </button>
       </div>
 
       {/* CONSEILLER COMMERCIAL DÉDIÉ (SI ASSIGNÉ) */}
-      {salesRep && (
+      {salesRep ? (
         <div className="bg-amber-50 border-2 border-slate-900 rounded-3xl p-6 shadow-brutal space-y-4">
-          <div className="flex items-center gap-2 text-xs font-black uppercase text-amber-900 tracking-wider">
-            <Sparkles className="w-4 h-4 text-amber-600" />
-            <span>Votre Chargé d'Affaires Dédié</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-black uppercase text-amber-900 tracking-wider">
+              <Sparkles className="w-4 h-4 text-amber-600" />
+              <span>Votre Chargé d'Affaires Dédié</span>
+            </div>
+            <button
+              onClick={() => setIsChooseRepOpen(true)}
+              className="text-[11px] font-black text-amber-950 underline hover:text-purple-700 cursor-pointer"
+            >
+              Changer de conseiller
+            </button>
           </div>
 
           <div className="bg-white border-2 border-slate-900 rounded-2xl p-5 shadow-brutal-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -158,7 +181,40 @@ export function ClientAccountTab() {
             </div>
           </div>
         </div>
+      ) : (
+        <div className="bg-purple-50 border-2 border-slate-900 rounded-3xl p-6 shadow-brutal flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-purple-200 border-2 border-slate-900 shadow-brutal-xs flex items-center justify-center text-xl font-black shrink-0">
+              🤝
+            </div>
+            <div>
+              <h3 className="text-sm font-black text-slate-950">Aucun conseiller dédié assigné</h3>
+              <p className="text-xs text-slate-600 font-medium">
+                Choisissez un Chargé d'Affaires pour obtenir des devis sur mesure et un suivi personnalisé.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsChooseRepOpen(true)}
+            className="w-full sm:w-auto px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 border-2 border-slate-900 rounded-xl font-black text-xs shadow-brutal-xs transition shrink-0 cursor-pointer"
+          >
+            Choisir mon conseiller →
+          </button>
+        </div>
       )}
+
+      {/* MODAL CHOIX CONSEILLER */}
+      <ChooseSalesRepModal
+        isOpen={isChooseRepOpen}
+        onClose={() => setIsChooseRepOpen(false)}
+        onSuccess={(selected) => {
+          setSalesRep(selected);
+          fetchSalesRep();
+        }}
+        currentSalesRepId={salesRep?.id}
+      />
 
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-white border-2 border-slate-900 rounded-3xl p-6 shadow-brutal space-y-4">

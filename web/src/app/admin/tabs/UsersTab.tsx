@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Search, UserPlus, RefreshCw, X, Layers, Edit2, Store } from 'lucide-react';
+import { Users, Search, UserPlus, RefreshCw, X, Layers, Edit2, Store, KeyRound } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import { UpgradeImageModal } from '../components/UpgradeImageModal';
+import { ResetUserPasswordModal } from '../components/ResetUserPasswordModal';
 
 interface UserTenant {
   id: string;
@@ -39,6 +40,9 @@ export function UsersTab() {
   const [newPassword, setNewPassword] = useState('');
   const [newFullName, setNewFullName] = useState('');
   const [newRole, setNewRole] = useState<'ADMIN' | 'CHARGE_DAFFAIRE' | 'CLIENT'>('CLIENT');
+
+  // Modal Reset Mot de passe
+  const [selectedUserForPasswordReset, setSelectedUserForPasswordReset] = useState<UserItem | null>(null);
 
   // Modal Mise à jour d'image pour une boutique d'un client
   const [selectedTenantForUpgrade, setSelectedTenantForUpgrade] = useState<UserTenant | null>(null);
@@ -285,16 +289,27 @@ export function UsersTab() {
                     </span>
                   </td>
                   <td className="px-5 py-4 text-right">
-                    <button
-                      onClick={() => handleToggleActive(u.id, u.is_active)}
-                      className={`px-3 py-1 rounded-xl text-xs font-black border-2 border-slate-900 shadow-brutal-xs transition ${
-                        u.is_active
-                          ? 'bg-rose-100 hover:bg-rose-200 text-rose-800'
-                          : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800'
-                      }`}
-                    >
-                      {u.is_active ? 'Désactiver' : 'Réactiver'}
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => setSelectedUserForPasswordReset(u)}
+                        className="px-2.5 py-1 rounded-xl text-xs font-black border-2 border-slate-900 bg-amber-100 hover:bg-amber-200 text-amber-950 shadow-brutal-xs transition flex items-center gap-1 cursor-pointer"
+                        title="Réinitialiser le mot de passe"
+                      >
+                        <KeyRound className="w-3.5 h-3.5" />
+                        <span>MDP</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleToggleActive(u.id, u.is_active)}
+                        className={`px-3 py-1 rounded-xl text-xs font-black border-2 border-slate-900 shadow-brutal-xs transition cursor-pointer ${
+                          u.is_active
+                            ? 'bg-rose-100 hover:bg-rose-200 text-rose-800'
+                            : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800'
+                        }`}
+                      >
+                        {u.is_active ? 'Désactiver' : 'Réactiver'}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -391,6 +406,14 @@ export function UsersTab() {
         isOpen={!!selectedTenantForUpgrade}
         tenant={selectedTenantForUpgrade}
         onClose={() => setSelectedTenantForUpgrade(null)}
+        onSuccess={fetchUsers}
+      />
+
+      {/* Modal Réinitialisation Mot de Passe Utilisateur */}
+      <ResetUserPasswordModal
+        isOpen={!!selectedUserForPasswordReset}
+        user={selectedUserForPasswordReset}
+        onClose={() => setSelectedUserForPasswordReset(null)}
         onSuccess={fetchUsers}
       />
     </div>
