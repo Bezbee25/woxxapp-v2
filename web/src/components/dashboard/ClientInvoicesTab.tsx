@@ -110,13 +110,23 @@ export function ClientInvoicesTab() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => setSelectedInvoice(inv)}
-                        className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 rounded-xl text-xs font-black inline-flex items-center gap-1.5 shadow-brutal-xs cursor-pointer"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>Consulter</span>
-                      </button>
+                      <div className="inline-flex items-center gap-2 justify-end">
+                        <button
+                          onClick={() => window.open(`/api/invoices/${inv.id}`, '_blank')}
+                          className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-black inline-flex items-center gap-1.5 shadow-brutal-xs cursor-pointer"
+                          title="Ouvrir la facture PDF imprimable dans un nouvel onglet"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>PDF / Imprimer</span>
+                        </button>
+                        <button
+                          onClick={() => setSelectedInvoice(inv)}
+                          className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-100 rounded-xl text-xs font-black inline-flex items-center gap-1.5 shadow-brutal-xs cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Aperçu</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -62,7 +62,7 @@ export function OfficialInvoiceModal({
   if (!isOpen || !invoice) return null;
 
   const handlePrint = () => {
-    window.print();
+    window.open(`/api/invoices/${invoice.id}`, '_blank');
   };
 
   const isMicro = invoice.isVatExempt ?? (companySettings.company_tax_type === 'MICRO_ENTERPRISE' || !invoice.totalVat);
@@ -72,10 +72,10 @@ export function OfficialInvoiceModal({
   const periodEnd = new Date(invoiceDate.getTime() + 30 * 24 * 60 * 60 * 1000);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto print:p-0 print:bg-white print:static">
-      <div className="bg-white rounded-3xl border-2 border-slate-900 shadow-brutal w-full max-w-4xl p-6 sm:p-10 space-y-8 my-auto print:border-none print:shadow-none print:p-0 print:rounded-none">
-        {/* BARRE D'ACTIONS (MASQUÉE À L'IMPRESSION) */}
-        <div className="flex items-center justify-between pb-4 border-b-2 border-slate-100 print:hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-3xl border-2 border-slate-900 shadow-brutal w-full max-w-4xl p-6 sm:p-10 space-y-8 my-auto">
+        {/* BARRE D'ACTIONS */}
+        <div className="flex items-center justify-between pb-4 border-b-2 border-slate-100">
           <div className="flex items-center gap-2">
             <span className="p-2 bg-slate-900 text-amber-300 rounded-xl font-mono text-xs font-black">
               FACTURE OFFICIELLE
@@ -86,10 +86,11 @@ export function OfficialInvoiceModal({
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-amber-300 rounded-xl text-xs font-black border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal transition flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-black border-2 border-slate-900 shadow-brutal-xs hover:shadow-brutal transition flex items-center gap-1.5 cursor-pointer"
+              title="Ouvrir la facture PDF propre dans un nouvel onglet"
             >
-              <Printer className="w-4 h-4" />
-              <span>Imprimer / Sauvegarder PDF</span>
+              <Download className="w-4 h-4" />
+              <span>Ouvrir PDF / Imprimer 🖨️</span>
             </button>
             <button
               onClick={onClose}
