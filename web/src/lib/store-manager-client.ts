@@ -11,6 +11,7 @@ export interface ProvisionPayload {
   modules: string[];
   customDomain?: string;
   image?: string;
+  theme?: string;
 }
 
 export interface ProvisionResult {
@@ -71,6 +72,7 @@ export class StoreManagerClient {
           modules: payload.modules,
           custom_domain: payload.customDomain,
           image: payload.image,
+          theme: payload.theme,
         }),
       });
 

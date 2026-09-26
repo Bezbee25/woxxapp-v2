@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { commerceName, subdomain, modules = [], customDomain } = body;
+    const { commerceName, subdomain, modules = [], customDomain, theme = 'mode' } = body;
 
     if (!commerceName || !subdomain) {
       return NextResponse.json(
@@ -104,6 +104,7 @@ export async function POST(req: NextRequest) {
       modules,
       customDomain: tenant.customDomain || undefined,
       image: effectiveImage,
+      theme,
     });
 
     // Mettre à jour l'état k8s en base

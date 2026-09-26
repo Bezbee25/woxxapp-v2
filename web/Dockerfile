@@ -1,5 +1,5 @@
-# Stage 1: Builder (Fast Native Buildx Compilation)
-FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
+# Stage 1: Builder (Fast Compilation)
+FROM node:22-alpine AS builder
 RUN apk update && apk upgrade --no-cache && \
     apk add --no-cache libc6-compat openssl python3 make g++ build-base
 WORKDIR /app
