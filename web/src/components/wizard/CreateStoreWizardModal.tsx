@@ -10,6 +10,8 @@ import { StepRecap } from './StepRecap';
 import { StepProvisioning } from './StepProvisioning';
 import { apiRequest } from '@/lib/api';
 
+import { DEFAULT_PRICING_CATALOG, ModulePricingItem, TaxSettings } from '@/lib/modules-catalog';
+
 interface CreateStoreWizardModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -31,6 +33,24 @@ export function CreateStoreWizardModal({ isOpen, onClose, onSuccess }: CreateSto
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [provisionResult, setProvisionResult] = useState<any>(null);
+  const [pricingMap, setPricingMap] = useState<Record<string, ModulePricingItem>>(DEFAULT_PRICING_CATALOG);
+  const [taxSettings, setTaxSettings] = useState<TaxSettings>({
+    taxType: 'MICRO_ENTERPRISE',
+    vatRate: 0.0,
+    isVatExempt: true,
+    legalNotice: 'Franchise en base de TVA, art. 293 B du CGI',
+    companyName: 'WoxxApp SAS',
+  });
+
+  React.useEffect(() => {
+    fetch('/api/modules/catalog')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.pricingMap) setPricingMap(data.pricingMap);
+        if (data?.taxSettings) setTaxSettings(data.taxSettings);
+      })
+      .catch((err) => console.error('Erreur chargement catalogue wizard:', err));
+  }, []);
 
   if (!isOpen) return null;
 
@@ -193,6 +213,8 @@ export function CreateStoreWizardModal({ isOpen, onClose, onSuccess }: CreateSto
             updateFormData={updateFormData}
             onNext={() => setStep(4)}
             onPrev={() => setStep(2)}
+            pricingMap={pricingMap}
+            taxSettings={taxSettings}
           />
         )}
 
@@ -202,6 +224,8 @@ export function CreateStoreWizardModal({ isOpen, onClose, onSuccess }: CreateSto
             onDeploy={handleDeploy}
             onPrev={() => setStep(3)}
             loading={loading}
+            pricingMap={pricingMap}
+            taxSettings={taxSettings}
           />
         )}
 

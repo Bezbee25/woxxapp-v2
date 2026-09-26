@@ -15,29 +15,40 @@ import {
 } from 'lucide-react';
 import { WizardFormData } from './wizardTypes';
 import { THEME_PRESETS, MODULES_CATALOG } from './wizardConstants';
+import { ModulePricingItem, TaxSettings, calculateModulesOrder } from '@/lib/modules-catalog';
 
 interface StepRecapProps {
   formData: WizardFormData;
   onDeploy: () => void;
   onPrev: () => void;
   loading: boolean;
+  pricingMap?: Record<string, ModulePricingItem>;
+  taxSettings?: TaxSettings;
 }
 
-export function StepRecap({ formData, onDeploy, onPrev, loading }: StepRecapProps) {
+export function StepRecap({
+  formData,
+  onDeploy,
+  onPrev,
+  loading,
+  pricingMap,
+  taxSettings,
+}: StepRecapProps) {
   const isYearly = formData.billingCycle === 'yearly';
   const selectedTheme =
     THEME_PRESETS.find((t) => t.id === formData.themeId) || THEME_PRESETS[0];
 
+  const allSelectedCodes = Array.from(new Set(['site_web', ...formData.selectedModules]));
+  const orderCalc = calculateModulesOrder(
+    allSelectedCodes,
+    formData.billingCycle,
+    pricingMap,
+    taxSettings
+  );
+
   const activeModules = MODULES_CATALOG.filter(
     (m) => m.isBase || formData.selectedModules.includes(m.code)
   );
-
-  const totalHT = activeModules.reduce(
-    (sum, m) => sum + (isYearly ? m.yearlyPrice : m.monthlyPrice),
-    0
-  );
-  const totalTVA = totalHT * 0.2;
-  const totalTTC = totalHT + totalTVA;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -138,7 +149,10 @@ export function StepRecap({ formData, onDeploy, onPrev, loading }: StepRecapProp
 
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
               {activeModules.map((m) => {
-                const price = isYearly ? m.yearlyPrice : m.monthlyPrice;
+                const dyn = pricingMap?.[m.code];
+                const monthly = dyn && typeof dyn.priceMonthly === 'number' ? dyn.priceMonthly : m.monthlyPrice;
+                const yearly = dyn && typeof dyn.priceYearly === 'number' ? dyn.priceYearly : m.yearlyPrice;
+                const price = isYearly ? yearly : monthly;
                 return (
                   <div
                     key={m.code}
@@ -161,16 +175,25 @@ export function StepRecap({ formData, onDeploy, onPrev, loading }: StepRecapProp
           <div className="mt-4 pt-4 border-t-2 border-slate-900 space-y-2">
             <div className="flex justify-between text-xs text-slate-600 font-bold">
               <span>Total HT ({isYearly ? 'Annuel' : 'Mensuel'}) :</span>
-              <span>{totalHT.toFixed(2)} €</span>
+              <span>{orderCalc.totalHt.toFixed(2)} €</span>
             </div>
             <div className="flex justify-between text-xs text-slate-600 font-bold">
-              <span>TVA (20%) :</span>
-              <span>{totalTVA.toFixed(2)} €</span>
+              <span>
+                {orderCalc.isVatExempt ? 'TVA :' : `TVA (${orderCalc.vatRate}%) :`}
+              </span>
+              <span>
+                {orderCalc.isVatExempt ? '0.00 € (Exonéré)' : `${orderCalc.totalVat.toFixed(2)} €`}
+              </span>
             </div>
+            {orderCalc.isVatExempt && (
+              <p className="text-[10px] text-slate-400 font-medium italic">
+                {orderCalc.legalNotice}
+              </p>
+            )}
             <div className="flex justify-between text-base font-black text-slate-950 pt-1 border-t border-slate-200">
               <span>Total à régler :</span>
               <span className="text-amber-600 text-lg">
-                {totalTTC.toFixed(2)} € <span className="text-xs font-bold text-slate-500">TTC</span>
+                {orderCalc.totalTtc.toFixed(2)} € <span className="text-xs font-bold text-slate-500">TTC</span>
               </span>
             </div>
 

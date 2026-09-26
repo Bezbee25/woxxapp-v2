@@ -4,16 +4,38 @@ import React from 'react';
 import { Sparkles, ArrowRight, ArrowLeft, Check, CheckCircle2, Info, Layers, Tag } from 'lucide-react';
 import { WizardFormData, ModuleDefinition } from './wizardTypes';
 import { MODULES_CATALOG } from './wizardConstants';
+import { ModulePricingItem, TaxSettings, calculateModulesOrder } from '@/lib/modules-catalog';
 
 interface StepModulesProps {
   formData: WizardFormData;
   updateFormData: (updates: Partial<WizardFormData>) => void;
   onNext: () => void;
   onPrev: () => void;
+  pricingMap?: Record<string, ModulePricingItem>;
+  taxSettings?: TaxSettings;
 }
 
-export function StepModules({ formData, updateFormData, onNext, onPrev }: StepModulesProps) {
+export function StepModules({
+  formData,
+  updateFormData,
+  onNext,
+  onPrev,
+  pricingMap,
+  taxSettings,
+}: StepModulesProps) {
   const isYearly = formData.billingCycle === 'yearly';
+
+  const getModulePrice = (mod: ModuleDefinition) => {
+    const dyn = pricingMap?.[mod.code];
+    const monthly = dyn && typeof dyn.priceMonthly === 'number' ? dyn.priceMonthly : mod.monthlyPrice;
+    const yearly = dyn && typeof dyn.priceYearly === 'number' ? dyn.priceYearly : mod.yearlyPrice;
+    return {
+      monthly,
+      yearly,
+      activePrice: isYearly ? yearly : monthly,
+      monthlyEquivalent: isYearly ? (yearly / 12).toFixed(1) : null,
+    };
+  };
 
   const toggleModule = (mod: ModuleDefinition) => {
     if (mod.isBase) return; // Le socle site_web ne peut être désactivé
@@ -46,20 +68,14 @@ export function StepModules({ formData, updateFormData, onNext, onPrev }: StepMo
     }
   };
 
-  // Calcul du total HT
-  const calculateTotalHT = () => {
-    let total = 0;
-    MODULES_CATALOG.forEach((mod) => {
-      if (mod.isBase || formData.selectedModules.includes(mod.code)) {
-        total += isYearly ? mod.yearlyPrice : mod.monthlyPrice;
-      }
-    });
-    return total;
-  };
-
-  const totalHT = calculateTotalHT();
-  const totalTVA = totalHT * 0.2;
-  const totalTTC = totalHT + totalTVA;
+  // Calcul du total avec les règles fiscales (ex: Franchise TVA ou SAS 20%)
+  const allSelectedCodes = Array.from(new Set(['site_web', ...formData.selectedModules]));
+  const orderCalc = calculateModulesOrder(
+    allSelectedCodes,
+    formData.billingCycle,
+    pricingMap,
+    taxSettings
+  );
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -108,8 +124,7 @@ export function StepModules({ formData, updateFormData, onNext, onPrev }: StepMo
       <div className="grid sm:grid-cols-2 gap-3.5">
         {MODULES_CATALOG.map((mod) => {
           const isSelected = mod.isBase || formData.selectedModules.includes(mod.code);
-          const price = isYearly ? mod.yearlyPrice : mod.monthlyPrice;
-          const monthlyEquivalent = isYearly ? (mod.yearlyPrice / 12).toFixed(1) : null;
+          const { activePrice, monthlyEquivalent } = getModulePrice(mod);
 
           return (
             <div
@@ -139,7 +154,7 @@ export function StepModules({ formData, updateFormData, onNext, onPrev }: StepMo
 
                   <div className="text-right">
                     <div className="font-black text-sm text-slate-950">
-                      {price.toFixed(0)} €
+                      {activePrice.toFixed(0)} €
                       <span className="text-[11px] font-bold text-slate-500">
                         {isYearly ? ' /an' : ' /mois'}
                       </span>
@@ -205,17 +220,22 @@ export function StepModules({ formData, updateFormData, onNext, onPrev }: StepMo
           </span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-amber-400">
-              {totalTTC.toFixed(2)} € <span className="text-xs text-slate-300 font-bold">TTC</span>
+              {orderCalc.totalTtc.toFixed(2)} € <span className="text-xs text-slate-300 font-bold">TTC</span>
             </span>
             <span className="text-xs text-slate-400 font-medium">
-              ({totalHT.toFixed(2)} € HT + {totalTVA.toFixed(2)} € TVA)
+              ({orderCalc.totalHt.toFixed(2)} € HT {orderCalc.isVatExempt ? '• Exonéré TVA' : `+ ${orderCalc.totalVat.toFixed(2)} € TVA`})
             </span>
           </div>
+          {orderCalc.isVatExempt && (
+            <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
+              {orderCalc.legalNotice}
+            </span>
+          )}
         </div>
 
         <div className="text-right text-xs font-bold text-slate-300">
           <span className="block">
-            {formData.selectedModules.length + 1} modules sélectionnés
+            {orderCalc.items.length} modules facturés
           </span>
           <span className="text-emerald-400 font-black text-[11px]">
             {isYearly ? 'Engagement annuel • Facturation unique' : 'Sans engagement • Résiliable à tout moment'}

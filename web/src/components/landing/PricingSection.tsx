@@ -15,9 +15,9 @@ export function PricingSection() {
 
   // Calcul du total en direct
   const basePrice = isAnnual ? 150 : 15;
-  const ecommercePrice = optEcommerce ? (isAnnual ? 300 : 30) : 0;
-  const shippingPrice = optShipping ? (isAnnual ? 300 : 30) : 0;
-  const foodPrice = optFoodDelivery ? (isAnnual ? 300 : 30) : 0;
+  const ecommercePrice = optEcommerce ? (isAnnual ? 150 : 15) : 0;
+  const shippingPrice = optShipping ? (isAnnual ? 100 : 10) : 0;
+  const foodPrice = optFoodDelivery ? (isAnnual ? 100 : 10) : 0;
   const totalPrice = basePrice + ecommercePrice + shippingPrice + foodPrice;
 
   return (
@@ -122,7 +122,7 @@ export function PricingSection() {
 
               <div className="mb-6 pb-6 border-b border-slate-200/60">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-black text-slate-900">+{isAnnual ? '300 €' : '30 €'}</span>
+                  <span className="text-4xl font-black text-slate-900">+{isAnnual ? '150 €' : '15 €'}</span>
                   <span className="text-xs font-bold text-slate-500">{isAnnual ? '/ an' : '/ mois'}</span>
                 </div>
                 <p className="text-[11px] text-blue-700 font-bold mt-1">+ 2% par transaction Stripe</p>
@@ -165,7 +165,7 @@ export function PricingSection() {
 
               <div className="mb-6 pb-6 border-b border-slate-200/60">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-black text-slate-900">+{isAnnual ? '300 €' : '30 €'}</span>
+                  <span className="text-4xl font-black text-slate-900">+{isAnnual ? '100 €' : '10 €'}</span>
                   <span className="text-xs font-bold text-slate-500">{isAnnual ? '/ an' : '/ mois'}</span>
                 </div>
                 <p className="text-[11px] text-indigo-700 font-bold mt-1">Nécessite le module Vente</p>
