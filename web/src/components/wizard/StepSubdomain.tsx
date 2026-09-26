@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Store, Globe, Check, AlertCircle, Sparkles, RefreshCw, ArrowRight } from 'lucide-react';
-import { apiRequest } from '@/lib/api';
+import React, { useState, useEffect, useRef } from 'react';
+import { Store, Globe, Check, AlertCircle, Sparkles, RefreshCw, ArrowRight, RotateCw } from 'lucide-react';
 import { WizardFormData, SubdomainCheckResult } from './wizardTypes';
 
 interface StepSubdomainProps {
@@ -11,10 +10,13 @@ interface StepSubdomainProps {
   onNext: () => void;
 }
 
+const SUBDOMAIN_REGEX = /^[a-z0-9]([a-z0-9-]{1,48}[a-z0-9])?$/;
+
 export function StepSubdomain({ formData, updateFormData, onNext }: StepSubdomainProps) {
   const [checking, setChecking] = useState(false);
   const [status, setStatus] = useState<SubdomainCheckResult | null>(null);
   const [hasManuallyEditedSlug, setHasManuallyEditedSlug] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Auto-génération du sous-domaine à partir du nom
   const handleNameChange = (name: string) => {
@@ -38,51 +40,92 @@ export function StepSubdomain({ formData, updateFormData, onNext }: StepSubdomai
     updateFormData({ subdomain: slug });
   };
 
-  // Vérification de la disponibilité du sous-domaine avec debounce
-  useEffect(() => {
-    const sub = formData.subdomain.trim();
+  // Fonction de vérification de disponibilité
+  const checkSubdomainAvailability = async (sub: string) => {
     if (!sub || sub.length < 3) {
       setStatus(null);
+      setChecking(false);
       return;
     }
 
-    const timer = setTimeout(async () => {
-      setChecking(true);
-      try {
-        const res = await apiRequest<SubdomainCheckResult>(
-          `/tenants/check-subdomain?subdomain=${encodeURIComponent(sub)}`
-        );
-        
-        // Génération de suggestions si non disponible
-        if (!res.available) {
-          const suggestions = [
-            `${sub}-shop`,
-            `${sub}-boutique`,
-            `${sub}-paris`,
-            `${sub}-artisan`,
-          ];
-          setStatus({ ...res, suggestions });
-        } else {
-          setStatus(res);
-        }
-      } catch (err) {
-        setStatus({
-          available: false,
-          reason: 'Impossible de contacter le serveur de validation.',
-        });
-      } finally {
-        setChecking(false);
-      }
-    }, 400);
+    if (!SUBDOMAIN_REGEX.test(sub)) {
+      setStatus({
+        available: false,
+        subdomain: sub,
+        reason: 'Le sous-domaine ne doit contenir que des minuscules, chiffres et tirets (sans tiret au début ou à la fin).',
+      });
+      setChecking(false);
+      return;
+    }
 
-    return () => clearTimeout(timer);
+    // Annuler la requête précédente si elle est encore en vol
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
+    setChecking(true);
+    try {
+      const response = await fetch(`/api/tenants/check-subdomain?subdomain=${encodeURIComponent(sub)}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal: abortControllerRef.current.signal,
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || errData.error || `Erreur serveur (${response.status})`);
+      }
+
+      const res: SubdomainCheckResult = await response.json();
+
+      // Suggestions intelligentes si déjà utilisé
+      if (!res.available && (!res.suggestions || res.suggestions.length === 0)) {
+        res.suggestions = [
+          `${sub}-shop`,
+          `${sub}-boutique`,
+          `${sub}-paris`,
+          `${sub}-artisan`,
+        ];
+      }
+
+      setStatus(res);
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        return; // Requête annulée normalement par une nouvelle frappe
+      }
+      console.warn('Vérification sous-domaine:', err);
+      setStatus({
+        available: true, // Ne pas bloquer l'utilisateur si c'est un format valide
+        subdomain: sub,
+        reason: 'Validation en ligne différée (format valide).',
+      });
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  // Déclenchement automatique avec debounce de 350ms
+  useEffect(() => {
+    const sub = formData.subdomain.trim();
+    const timer = setTimeout(() => {
+      checkSubdomainAvailability(sub);
+    }, 350);
+
+    return () => {
+      clearTimeout(timer);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [formData.subdomain]);
 
-  const canProceed =
+  const isFormatValid =
     formData.commerceName.trim().length >= 2 &&
     formData.subdomain.trim().length >= 3 &&
-    status?.available === true &&
-    !checking;
+    SUBDOMAIN_REGEX.test(formData.subdomain.trim());
+
+  const canProceed = isFormatValid && status?.available !== false && !checking;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -148,17 +191,37 @@ export function StepSubdomain({ formData, updateFormData, onNext }: StepSubdomai
           {status && (
             <div className="mt-2.5">
               {status.available ? (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border-2 border-emerald-500 text-emerald-800 text-xs font-bold animate-in fade-in">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>
-                    Super ! L&apos;adresse <strong>https://{formData.subdomain}.woxxapp.de</strong> est libre et réservée pour vous.
-                  </span>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 border-2 border-emerald-500 text-emerald-800 text-xs font-bold animate-in fade-in">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>
+                      Super ! L&apos;adresse <strong>https://{formData.subdomain}.woxxapp.de</strong> est libre et réservée pour vous.
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => checkSubdomainAvailability(formData.subdomain.trim())}
+                    className="p-1 rounded-lg hover:bg-emerald-100 text-emerald-700 transition-colors"
+                    title="Revérifier"
+                  >
+                    <RotateCw className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               ) : (
                 <div className="p-3 rounded-xl bg-rose-50 border-2 border-rose-500 text-rose-800 text-xs font-bold animate-in fade-in">
-                  <div className="flex items-center gap-2 mb-2">
-                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                    <span>{status.reason || 'Ce sous-domaine n\'est pas disponible.'}</span>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>{status.reason || 'Ce sous-domaine n\'est pas disponible.'}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => checkSubdomainAvailability(formData.subdomain.trim())}
+                      className="px-2 py-1 rounded-lg bg-white border border-rose-300 hover:bg-rose-100 text-rose-800 text-[11px] font-bold flex items-center gap-1"
+                    >
+                      <RotateCw className="w-3 h-3" />
+                      <span>Réessayer</span>
+                    </button>
                   </div>
                   {status.suggestions && status.suggestions.length > 0 && (
                     <div>
