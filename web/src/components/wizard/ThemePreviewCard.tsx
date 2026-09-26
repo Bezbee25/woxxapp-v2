@@ -159,7 +159,7 @@ export function ThemePreviewCard({ theme, commerceName, subdomain }: ThemePrevie
               <span className="text-[11px] font-bold underline opacity-60">Voir tout</span>
             </div>
 
-            <div className={`grid gap-3 ${deviceView === 'mobile' ? 'grid-cols-1' : 'grid-cols-3'}`}>
+            <div className={`grid gap-3 ${deviceView === 'mobile' ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-4'}`}>
               {theme.sampleProducts.map((prod, idx) => (
                 <div
                   key={idx}

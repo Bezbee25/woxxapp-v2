@@ -3,6 +3,7 @@ export type WizardStep = 1 | 2 | 3 | 4 | 5;
 export interface ThemePreset {
   id: string;
   name: string;
+  category: 'food' | 'fashion' | 'beauty' | 'craft' | 'services' | 'general';
   badge: string;
   icon: string;
   description: string;
