@@ -1,5 +1,5 @@
 # Stage 1: Builder (Fast Compilation)
-FROM node:22-alpine AS builder
+FROM node:26-alpine AS builder
 RUN apk update && apk upgrade --no-cache && \
     apk add --no-cache libc6-compat openssl python3 make g++ build-base
 WORKDIR /app
@@ -16,7 +16,7 @@ ENV NODE_ENV=production
 RUN npm run build
 
 # Stage 2: Runner Ultra-Léger & Sécurisé (Zéro CVE)
-FROM node:22-alpine AS runner
+FROM node:26-alpine AS runner
 RUN apk update && apk upgrade --no-cache && \
     apk add --no-cache libc6-compat openssl && \
     rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
