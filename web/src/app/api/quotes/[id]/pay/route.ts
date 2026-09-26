@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { StoreManagerClient } from '@/lib/store-manager-client';
 import { sendQuotePaidToSalesRepEmail } from '@/lib/email-service';
+import { getSystemPricingAndTaxSettings } from '@/lib/modules-catalog';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,7 +75,8 @@ export async function POST(
         }).catch((err) => console.error('Erreur email notif CA:', err));
       }
 
-      // Facture
+      // Facture avec fiscalité dynamique
+      const { taxSettings } = await getSystemPricingAndTaxSettings();
       const invoiceNumber = `FAC-${quote.quoteNumber.replace('DEV-', '')}`;
       await prisma.invoice.upsert({
         where: { invoiceNumber },
@@ -85,9 +87,10 @@ export async function POST(
           totalHt: quote.totalHt,
           totalVat: quote.totalVat,
           totalTtc: quote.totalTtc,
-          vatRate: 20.0,
+          vatRate: taxSettings.isVatExempt ? 0.0 : (taxSettings.vatRate || 20.0),
+          isVatExempt: taxSettings.isVatExempt,
           status: 'PAID',
-          legalNotice: `Facture acquittée par CB via WoxxPay pour devis ${quote.quoteNumber}.`,
+          legalNotice: `${taxSettings.legalNotice}. Facture acquittée par CB via WoxxPay pour devis ${quote.quoteNumber}.`,
         },
       });
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth';
 import { sendQuoteToClientEmail } from '@/lib/email-service';
+import { getSystemPricingAndTaxSettings } from '@/lib/modules-catalog';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,6 +95,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ detail: 'Client introuvable.' }, { status: 404 });
     }
 
+    // Récupérer le régime fiscal de l'entreprise
+    const { taxSettings } = await getSystemPricingAndTaxSettings();
+    const defaultVatRate = taxSettings.isVatExempt ? 0.0 : (taxSettings.vatRate || 20.0);
+
     // Calcul des montants HT, TVA et TTC
     let totalHt = 0;
     let totalVat = 0;
@@ -101,9 +106,9 @@ export async function POST(req: NextRequest) {
     const formattedItems = items.map((item: QuoteItemInput) => {
       const qty = Math.max(1, Number(item.quantity) || 1);
       const unitHt = Math.max(0, Number(item.unitPriceHt) || 0);
-      const vatRate = item.vatRate !== undefined ? Number(item.vatRate) : 20.0;
+      const vatRate = item.vatRate !== undefined ? Number(item.vatRate) : defaultVatRate;
       const lineHt = qty * unitHt;
-      const lineVat = lineHt * (vatRate / 100);
+      const lineVat = taxSettings.isVatExempt ? 0.0 : lineHt * (vatRate / 100);
       const lineTtc = lineHt + lineVat;
 
       totalHt += lineHt;
@@ -113,7 +118,7 @@ export async function POST(req: NextRequest) {
         description: item.description || 'Prestation / Module',
         quantity: qty,
         unitPriceHt: unitHt,
-        vatRate,
+        vatRate: taxSettings.isVatExempt ? 0.0 : vatRate,
         totalHt: Number(lineHt.toFixed(2)),
         totalTtc: Number(lineTtc.toFixed(2)),
       };

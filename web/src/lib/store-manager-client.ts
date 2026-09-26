@@ -198,7 +198,7 @@ export class StoreManagerClient {
    */
   public static async syncPricingCatalog(catalog: any[]): Promise<boolean> {
     try {
-      const res = await fetch(`${this.apiUrl}/api/v1/pricing/sync`, {
+      const res = await fetch(`${this.apiUrl}/api/v1/pricing/catalog`, {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify({ catalog }),

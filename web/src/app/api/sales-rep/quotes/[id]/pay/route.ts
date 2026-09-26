@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth';
 import { StoreManagerClient } from '@/lib/store-manager-client';
 import { sendQuotePaidToSalesRepEmail } from '@/lib/email-service';
+import { getSystemPricingAndTaxSettings } from '@/lib/modules-catalog';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,7 +66,8 @@ export async function POST(
         },
       });
 
-      // 2. Générer automatiquement une Facture acquittée (Invoice)
+      // 2. Générer automatiquement une Facture acquittée (Invoice) avec fiscalité dynamique
+      const { taxSettings } = await getSystemPricingAndTaxSettings();
       const invoiceNumber = `FAC-${quote.quoteNumber.replace('DEV-', '')}`;
       await prisma.invoice.upsert({
         where: { invoiceNumber },
@@ -74,6 +76,7 @@ export async function POST(
           totalHt: quote.totalHt,
           totalVat: quote.totalVat,
           totalTtc: quote.totalTtc,
+          isVatExempt: taxSettings.isVatExempt,
         },
         create: {
           invoiceNumber,
@@ -81,9 +84,10 @@ export async function POST(
           totalHt: quote.totalHt,
           totalVat: quote.totalVat,
           totalTtc: quote.totalTtc,
-          vatRate: 20.0,
+          vatRate: taxSettings.isVatExempt ? 0.0 : (taxSettings.vatRate || 20.0),
+          isVatExempt: taxSettings.isVatExempt,
           status: 'PAID',
-          legalNotice: `Facture acquittée pour devis ${quote.quoteNumber} via WoxxPay (${method}).`,
+          legalNotice: `${taxSettings.legalNotice}. Facture acquittée pour devis ${quote.quoteNumber} via WoxxPay (${method}).`,
         },
       });
 
